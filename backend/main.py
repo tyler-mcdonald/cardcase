@@ -1,5 +1,8 @@
+import django
+
+
 def main():
-    print("Hello from backend!")
+    print("Django version", django.get_version())
 
 
 if __name__ == "__main__":
