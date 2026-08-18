@@ -10,5 +10,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "django-stubs>=6.1.0,<6.2.0",
+    "pre-commit>=4.6.2,<5.0.0",
     "ruff>=0.16.3,<0.16.4",
 ]

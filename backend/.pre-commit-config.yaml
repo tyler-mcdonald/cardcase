@@ -1,0 +1,13 @@
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version. This can drift away from the installed
+  # version in ./pyproject.toml. The alternative is a
+  # more complex config here, so for now, opting to take
+  # the minor risk of a ruff version mismatch.
+  rev: v0.16.3
+  hooks:
+    # Run the linter.
+    - id: ruff-check
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
