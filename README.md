@@ -10,7 +10,11 @@ cd backend
 make setup
 ```
 
-This installs dependencies, copies `.env.example` to `.env`, starts local Postgres, runs migrations, and starts the dev server. Visit `/admin` to confirm it's running.
+This installs dependencies, copies `.env.example` to `.env`, starts local Postgres, and runs migrations. Then start the dev server with:
+
+```
+uv run manage.py runserver
+```
 
 Optionally, run `uv run pre-commit install` in `backend/` to lint and format staged files on each commit.
 

@@ -1,24 +1,34 @@
-.PHONY: setup check-uv env sync up migrate run
+.PHONY: setup check-uv-installed check-docker-installed initialize-dot-env-file install-dependencies docker-compose-up migrate-db start-django-server
 
-setup: check-uv env sync up migrate run
+setup: migrate-db
 
-check-uv:
+check-uv-installed:
 	@command -v uv >/dev/null 2>&1 || { \
 		echo "uv is not installed: https://docs.astral.sh/uv/getting-started/installation/"; \
 		exit 1; \
 	}
 
-env:
+check-docker-installed: check-uv-installed
+	@command -v docker >/dev/null 2>&1 || { \
+		echo "docker is not installed: https://www.docker.com/"; \
+		exit 1; \
+	}
+	@docker info >/dev/null 2>&1 || { \
+		echo "docker is installed but not running - start Docker Desktop and try again"; \
+		exit 1; \
+	}
+
+initialize-dot-env-file: check-docker-installed
 	@test -f .env || cp .env.example .env
 
-sync:
+install-dependencies: initialize-dot-env-file
 	uv sync
 
-up:
+docker-compose-up: install-dependencies
 	docker compose up -d --wait
 
-migrate:
+migrate-db: docker-compose-up
 	uv run manage.py migrate
 
-run:
+start-django-server:
 	uv run manage.py runserver
