@@ -1,5 +1,6 @@
-.PHONY: setup check-uv-installed check-docker-installed initialize-dot-env-file install-dependencies docker-compose-up migrate-db start-django-server
+.PHONY: setup check-uv-installed check-docker-installed initialize-dot-env-file install-dependencies docker-compose-up migrate-db
 
+# Force `setup` to call each command in order, since `migrate-db` is the last command.
 setup: migrate-db
 
 check-uv-installed:
@@ -29,6 +30,3 @@ docker-compose-up: install-dependencies
 
 migrate-db: docker-compose-up
 	uv run manage.py migrate
-
-start-django-server:
-	uv run manage.py runserver
