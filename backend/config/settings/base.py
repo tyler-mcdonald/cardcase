@@ -18,7 +18,6 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
-# Take environment variables from .env file
 environ.Env.read_env(str(BASE_DIR / ".env"))
 
 
