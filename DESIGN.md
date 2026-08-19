@@ -1,5 +1,5 @@
 ##### Functional Requirements
-- User can authenticate via email token verification
+- User can authenticate via passwordless one-time email code
 - Client includes Bearer token on requests for session auth
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
