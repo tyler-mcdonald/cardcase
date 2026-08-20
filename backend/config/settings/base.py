@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "health_check",
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": env.db("DATABASE_URL"),
+}
+DATABASES["default"]["OPTIONS"] = {
+    "connect_timeout": env.int("DB_CONNECT_TIMEOUT", default=10)
 }
 
 
