@@ -1,6 +1,7 @@
 ##### Functional Requirements
 
 - User can authenticate via passwordless one-time email code
+- New users cannot sign up until signup is explicitly enabled (`ALLOW_SIGNUP`)
 - Client includes Bearer token on requests for session auth
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
@@ -10,7 +11,7 @@
 
 - All accounts and transaction access is scoped to the authenticated user
 - User sessions expire after 30 days
-- User authentication tokens are stored as SHA-256 (or other) hashed values, not plaintext
+- User session tokens are opaque, high-entropy identifiers managed by django-allauth's session store (standard Django session-key auth, not custom-hashed)
 - User verification tokens expire after 15 mins
 - User email authentication will be rate-limited
 
@@ -39,18 +40,9 @@
   - created_at: datetime
   - updated_at: datetime
   - type: enum("starting_balance", "redemption", "refund", "adjustment")
-- VerificationToken
-  - id(pk): string/uuid
-  - email: string
-  - token: hashed
-  - expires_at: datetime
-  - used_at?: datetime
-  - created_at: datetime
-- UserSession
-  - token(pk): hashed
-  - user_id(fk): User
-  - expires_at: datetime
-  - created_at: datetime
+
+Email verification codes and sessions are managed internally by django-allauth
+(no custom VerificationToken/UserSession models).
 
 ##### API Surface
 
@@ -59,8 +51,8 @@
     - { email }
   - POST /_allauth/app/v1/auth/code/confirm
     - { code }
-  - POST /_allauth/app/v1/auth/sessions/end
-  - GET /_allauth/app/v1/account/user
+  - GET /_allauth/app/v1/auth/session
+  - DELETE /_allauth/app/v1/auth/session
 - Accounts
   - POST /accounts
     - { name, description?, type, expiration_date?, starting_balance }

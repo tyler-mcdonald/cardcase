@@ -128,11 +128,7 @@ STATIC_URL = "static/"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
-}
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # Auth
@@ -156,4 +152,22 @@ ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 900  # 15 minutes, per DESIGN.md
 
+ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
+
+# New users cannot sign up until this is enabled. See users.adapter.AccountAdapter.
+ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)
+
 HEADLESS_ONLY = True
+
+# No frontend exists yet; these are placeholders to update once one does.
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+HEADLESS_FRONTEND_URLS = {
+    "account_signup": f"{FRONTEND_URL}/signup",
+    "account_reset_password": f"{FRONTEND_URL}/password/reset",
+    "account_reset_password_from_key": f"{FRONTEND_URL}/password/reset/key/{{key}}",
+    "account_confirm_email": f"{FRONTEND_URL}/email/confirm/{{key}}",
+}
+
+# 30 days, per DESIGN.md. Also governs headless session token expiry, since
+# allauth's default SessionTokenStrategy uses the Django session key as the token.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
