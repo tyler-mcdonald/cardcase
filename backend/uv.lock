@@ -17,7 +17,10 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
+<<<<<<< HEAD
     { name = "django-allauth", extra = ["headless"] },
+=======
+>>>>>>> main
     { name = "django-environ" },
     { name = "psycopg", extra = ["binary"] },
 ]
@@ -32,7 +35,10 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=6.1,<7.0" },
+<<<<<<< HEAD
     { name = "django-allauth", extras = ["headless"], specifier = ">=65.19.1" },
+=======
+>>>>>>> main
     { name = "django-environ", specifier = ">=0.14.0,<0.15.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4,<4.0.0" },
 ]
@@ -45,6 +51,7 @@ dev = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "cffi"
 version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -118,6 +125,8 @@ wheels = [
 ]
 
 [[package]]
+=======
+>>>>>>> main
 name = "cfgv"
 version = "3.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -127,6 +136,7 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "cryptography"
 version = "50.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -177,6 +187,8 @@ wheels = [
 ]
 
 [[package]]
+=======
+>>>>>>> main
 name = "distlib"
 version = "0.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -200,6 +212,7 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "django-allauth"
 version = "65.19.1"
 source = { registry = "https://pypi.org/simple" }
@@ -218,6 +231,8 @@ headless = [
 ]
 
 [[package]]
+=======
+>>>>>>> main
 name = "django-environ"
 version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -353,6 +368,7 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "pycparser"
 version = "3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -376,6 +392,8 @@ crypto = [
 ]
 
 [[package]]
+=======
+>>>>>>> main
 name = "python-discovery"
 version = "1.5.2"
 source = { registry = "https://pypi.org/simple" }
