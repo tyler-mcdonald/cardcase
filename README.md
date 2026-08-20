@@ -3,7 +3,10 @@ A virtual case to store and track gift cards, flight credits, and other cash-lik
 
 ## Development
 
-Requires [uv](https://docs.astral.sh/uv/) and [Docker](https://www.docker.com/).
+Requires:
+- [uv](https://docs.astral.sh/uv/)
+- [Docker](https://www.docker.com/)
+- [Make](https://www.gnu.org/software/make/)
 
 ```
 cd backend
