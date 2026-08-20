@@ -1,24 +1,43 @@
 # card-case
-A virtual case to store and track gift cards, flight credits, and other cash-like accounts. 
+
+A virtual case to store and track gift cards, flight credits, and other cash-like accounts.
 
 ## Development
 
-Requires:
+### Backend
+
+#### Requires
+
 - [uv](https://docs.astral.sh/uv/)
 - [Docker](https://www.docker.com/)
 - [Make](https://www.gnu.org/software/make/)
 
+#### Backend Server Setup
+
+Move into the `backend` directory:
+
 ```
 cd backend
+```
+
+Setup the project environment. This will install dependencies, create `.env` file, start local Postgres, and run migrations:
+
+```
 make setup
 ```
 
-This installs dependencies, copies `.env.example` to `.env`, starts local Postgres, and runs migrations. Then start the dev server with:
+Start the Django server:
 
 ```
 uv run manage.py runserver
 ```
 
-Optionally, run `uv run pre-commit install` in `backend/` to lint and format staged files on each commit.
+#### Optional Dev Tools
+
+To install a pre-commit hook that lints and formats staged files on each commit:
+
+```
+uv run pre-commit install
+```
 
 See [DESIGN.md](DESIGN.md) for the project spec.
