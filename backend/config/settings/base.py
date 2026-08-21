@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "health_check",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -125,6 +126,8 @@ STATIC_URL = "static/"
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+
+RESEND_API_KEY = env("RESEND_API_KEY")
 
 MAILERS = {
     "default": {
