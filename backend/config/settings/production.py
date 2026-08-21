@@ -5,7 +5,12 @@ DEBUG = False
 # Security
 # https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])  # pyright: ignore[reportArgumentType]
+
+# https://render.com/docs/deploy-django#creating-a-new-django-project
+RENDER_EXTERNAL_HOSTNAME = env.str("RENDER_EXTERNAL_HOSTNAME", default=None)  # pyright: ignore[reportArgumentType]
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 SECURE_SSL_REDIRECT = True
 
