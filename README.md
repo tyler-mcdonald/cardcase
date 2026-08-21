@@ -40,4 +40,4 @@ To install a pre-commit hook that lints and formats staged files on each commit:
 uv run pre-commit install
 ```
 
-See [DESIGN.md](DESIGN.md) for the project spec.
+See [DESIGN.md](DESIGN.md) for the project spec, and [docs/infrastructure.md](docs/infrastructure.md) for hosting/infra.
