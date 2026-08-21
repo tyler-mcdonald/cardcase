@@ -1,5 +1,9 @@
 # Card Case
 
+![status](https://img.shields.io/badge/status-under%20construction-yellow)
+
+> 🚧 This project is under active development and not yet feature-complete.
+
 A virtual case to store and track gift cards 🎁, flight credits ✈️, and other cash-like accounts 💸.
 
 ## Development
