@@ -5,12 +5,15 @@ from .base import *
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
+SECURE_SSL_REDIRECT = True
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # Start as short as possible and ramp up to the standard 31536000 (1 year)
 # once HTTPS is confirmed stable in production.
 SECURE_HSTS_SECONDS = 60
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 # Email
 # https://pypi.org/project/django-anymail/
