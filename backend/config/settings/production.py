@@ -7,7 +7,7 @@ MAILERS = {
     "default": {
         "BACKEND": "anymail.backends.resend.EmailBackend",
         "OPTIONS": {
-            "api_key": env("RESEND_API_KEY"),
+            "api_key": RESEND_API_KEY,
         },
     },
 }
