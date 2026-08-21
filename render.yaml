@@ -10,7 +10,6 @@ projects:
         databases:
           - name: cardcase-db
             plan: free
-            diskSizeGB: 1 # Default for the free plan
             region: oregon
             ipAllowList: [] # Only allow internal connections
             postgresMajorVersion: "18"
