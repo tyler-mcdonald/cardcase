@@ -1,5 +1,7 @@
 from .base import *
 
+DEBUG = False
+
 # Security
 # https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
