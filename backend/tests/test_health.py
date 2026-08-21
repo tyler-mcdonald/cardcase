@@ -28,3 +28,7 @@ def test_health_endpoint_returns_error_when_db_down(client, monkeypatch):
     response = client.get("/health/?format=json")
 
     assert response.status_code == 500
+
+
+def test_intentional_failure_for_ci_verification():
+    assert False
