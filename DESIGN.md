@@ -2,7 +2,7 @@
 
 - User can authenticate via passwordless one-time email code
 - New users cannot sign up until signup is explicitly enabled (`ALLOW_SIGNUP`)
-- Client includes Bearer token on requests for session auth
+- Client includes session token (`X-Session-Token`) on requests for session auth
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
 - User can log out, ending their session
