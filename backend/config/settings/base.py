@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "health_check",
     "anymail",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.headless",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -55,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -145,3 +151,45 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+
+# Auth
+# https://docs.allauth.org/en/dev/account/configuration.html
+# https://docs.allauth.org/en/dev/headless/configuration.html
+
+AUTH_USER_MODEL = "users.User"
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+ACCOUNT_SIGNUP_FIELDS = ["email*"]
+ACCOUNT_LOGIN_METHODS = {"email"}
+
+ACCOUNT_LOGIN_BY_CODE_ENABLED = True
+ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 900  # 15 minutes, per DESIGN.md
+
+ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
+
+# New users cannot sign up until this is enabled. See users.adapter.AccountAdapter.
+ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)
+
+HEADLESS_ONLY = True
+
+# No frontend exists yet; these are placeholders to update once one does.
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+HEADLESS_FRONTEND_URLS = {
+    "account_signup": f"{FRONTEND_URL}/signup",
+    "account_reset_password": f"{FRONTEND_URL}/password/reset",
+    "account_reset_password_from_key": f"{FRONTEND_URL}/password/reset/key/{{key}}",
+    "account_confirm_email": f"{FRONTEND_URL}/email/confirm/{{key}}",
+}
+
+# 30 days, per DESIGN.md. Also governs headless session token expiry, since
+# allauth's default SessionTokenStrategy uses the Django session key as the token.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
