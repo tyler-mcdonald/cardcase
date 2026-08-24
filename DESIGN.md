@@ -12,7 +12,7 @@
 - All accounts and transaction access is scoped to the authenticated user
 - User sessions expire after 30 days
 - User session tokens are opaque, high-entropy identifiers managed by django-allauth's session store (standard Django session-key auth, not custom-hashed)
-- User verification tokens expire after 15 mins
+- User verification tokens expire after 3 mins (django-allauth's default)
 - User email authentication will be rate-limited
 
 ##### Data Model

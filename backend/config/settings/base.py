@@ -159,6 +159,8 @@ MAILERS = {
 
 AUTH_USER_MODEL = "users.User"
 
+# Single-domain project -- one fixed Site row is all allauth needs, and is
+# recommended by allauth for single-domain projects.
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
@@ -172,7 +174,6 @@ ACCOUNT_SIGNUP_FIELDS = ["email*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
-ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 900  # 15 minutes, per DESIGN.md
 
 ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
 

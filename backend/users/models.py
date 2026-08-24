@@ -27,6 +27,8 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+# Custom instead of Django's default: we need a UUID pk and no username field,
+# and AUTH_USER_MODEL can't be changed after the first migration.
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)

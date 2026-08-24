@@ -4,6 +4,7 @@ import pytest
 from django.core import mail
 
 from users.adapter import AccountAdapter
+from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
 
 
@@ -15,6 +16,29 @@ def test_open_for_signup_when_flag_enabled(settings):
 def test_closed_for_signup_when_flag_disabled(settings):
     settings.ALLOW_SIGNUP = False
     assert AccountAdapter().is_open_for_signup(None) is False
+
+
+def test_check_flags_signup_open_with_placeholder_frontend_url(settings):
+    settings.ALLOW_SIGNUP = True
+    settings.FRONTEND_URL = "http://localhost:3000"
+
+    errors = check_frontend_url_configured_for_signup(None)
+
+    assert [e.id for e in errors] == ["users.E001"]
+
+
+@pytest.mark.parametrize(
+    ("allow_signup", "frontend_url"),
+    [
+        (False, "http://localhost:3000"),
+        (True, "https://app.cardcase.example"),
+    ],
+)
+def test_check_passes_otherwise(settings, allow_signup, frontend_url):
+    settings.ALLOW_SIGNUP = allow_signup
+    settings.FRONTEND_URL = frontend_url
+
+    assert check_frontend_url_configured_for_signup(None) == []
 
 
 def _post(client, path, data, session_token=None):
