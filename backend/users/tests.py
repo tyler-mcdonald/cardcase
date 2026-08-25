@@ -130,6 +130,16 @@ def test_signup_endpoint_forbidden_when_signup_disabled(client, settings):
 
 
 @pytest.mark.django_db
+def test_signup_endpoint_creates_user_when_signup_enabled(client, settings):
+    settings.ALLOW_SIGNUP = True
+
+    response = _post(client, "/auth/signup", {"email": "new@example.com"})
+
+    assert response.status_code == 200
+    assert User.objects.filter(email="new@example.com").exists()
+
+
+@pytest.mark.django_db
 def test_logout_invalidates_the_session(client, existing_user):
     _request_and_confirm_code(client, existing_user.email)
     assert _get(client, "/auth/session").status_code == 200
