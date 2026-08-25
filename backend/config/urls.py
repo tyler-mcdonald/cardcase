@@ -25,6 +25,5 @@ urlpatterns = [
         "health/",
         HealthCheckView.as_view(checks=("health_check.checks.Database",)),
     ),
-    path("accounts/", include("allauth.urls")),
     path("_allauth/", include("allauth.headless.urls")),
 ]
