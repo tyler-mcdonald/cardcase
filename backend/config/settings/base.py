@@ -158,10 +158,6 @@ MAILERS = {
 
 AUTH_USER_MODEL = "users.User"
 
-# No django.contrib.sites / SITE_ID: allauth's sites support is optional and
-# mainly for multi-domain projects. Without it, Django's get_current_site()
-# falls back to a RequestSite built from the real request Host header --
-# simpler than a DB row we'd have to keep in sync ourselves.
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
@@ -176,12 +172,10 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 
 ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
 
-# New users cannot sign up until this is enabled. See users.adapter.AccountAdapter.
 ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)
 
 HEADLESS_ONLY = True
 
-# No frontend exists yet; these are placeholders to update once one does.
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 HEADLESS_FRONTEND_URLS = {
     "account_signup": f"{FRONTEND_URL}/signup",
@@ -190,6 +184,4 @@ HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": f"{FRONTEND_URL}/email/confirm/{{key}}",
 }
 
-# 30 days, per DESIGN.md. Also governs headless session token expiry, since
-# allauth's default SessionTokenStrategy uses the Django session key as the token.
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30

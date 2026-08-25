@@ -89,9 +89,6 @@ def test_request_code_for_unknown_email_does_not_create_user_or_send_code(client
     assert not User.objects.filter(email="new@example.com").exists()
     assert len(mail.outbox) == 1
     assert "code" not in mail.outbox[0].body.lower()
-    # 401 here means "pending, not yet authenticated" -- the same status a
-    # known email gets at this step -- not an error. Identical status either
-    # way is what makes this enumeration-safe.
     assert response.status_code == 401
 
 
@@ -130,12 +127,7 @@ def test_logout_invalidates_the_session(client, existing_user):
 
     response = _delete(client, "/auth/session", session_token=session_token)
 
-    # The response reflects the resulting (now logged-out) state, so 401
-    # here is the "logout succeeded" signal, not an error.
     assert response.status_code == 401
     assert response.json()["meta"]["is_authenticated"] is False
-    # 410, not 401: the token itself no longer exists in the session store,
-    # confirming logout actually invalidated it rather than just reflecting
-    # a momentarily-unauthenticated request.
     stale_response = _get(client, "/auth/session", session_token=session_token)
     assert stale_response.status_code == 410
