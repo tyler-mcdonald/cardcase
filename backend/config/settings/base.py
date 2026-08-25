@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "health_check",
     "anymail",
-    "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.headless",
@@ -159,10 +158,10 @@ MAILERS = {
 
 AUTH_USER_MODEL = "users.User"
 
-# Single-domain project -- one fixed Site row is all allauth needs, and is
-# recommended by allauth for single-domain projects.
-SITE_ID = 1
-
+# No django.contrib.sites / SITE_ID: allauth's sites support is optional and
+# mainly for multi-domain projects. Without it, Django's get_current_site()
+# falls back to a RequestSite built from the real request Host header --
+# simpler than a DB row we'd have to keep in sync ourselves.
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
