@@ -179,3 +179,10 @@ def test_app_client_is_not_mounted(client):
     response = client.get("/_allauth/app/v1/auth/session")
 
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_django_admin_is_not_mounted(client):
+    response = client.get("/admin/")
+
+    assert response.status_code == 404
