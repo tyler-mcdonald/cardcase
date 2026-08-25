@@ -41,30 +41,30 @@ def test_check_passes_otherwise(settings, allow_signup, frontend_url):
     assert check_frontend_url_configured_for_signup(None) == []
 
 
-def _post(client, path, data, session_token=None):
-    extra = {}
-    if session_token:
-        extra["HTTP_X_SESSION_TOKEN"] = session_token
+def _csrf_token(client):
+    if "csrftoken" not in client.cookies:
+        client.get("/_allauth/browser/v1/auth/session")
+    return client.cookies["csrftoken"].value
+
+
+def _get(client, path):
+    return client.get(f"/_allauth/browser/v1{path}")
+
+
+def _post(client, path, data):
     return client.post(
-        f"/_allauth/app/v1{path}",
+        f"/_allauth/browser/v1{path}",
         data=json.dumps(data),
         content_type="application/json",
-        **extra,
+        HTTP_X_CSRFTOKEN=_csrf_token(client),
     )
 
 
-def _get(client, path, session_token=None):
-    extra = {}
-    if session_token:
-        extra["HTTP_X_SESSION_TOKEN"] = session_token
-    return client.get(f"/_allauth/app/v1{path}", **extra)
-
-
-def _delete(client, path, session_token=None):
-    extra = {}
-    if session_token:
-        extra["HTTP_X_SESSION_TOKEN"] = session_token
-    return client.delete(f"/_allauth/app/v1{path}", **extra)
+def _delete(client, path):
+    return client.delete(
+        f"/_allauth/browser/v1{path}",
+        HTTP_X_CSRFTOKEN=_csrf_token(client),
+    )
 
 
 @pytest.fixture
@@ -73,13 +73,25 @@ def existing_user(db):
 
 
 def _request_and_confirm_code(client, email):
-    request_response = _post(client, "/auth/code/request", {"email": email})
-    session_token = request_response.json()["meta"]["session_token"]
+    _post(client, "/auth/code/request", {"email": email})
     code = mail.outbox[-1].body.split("\n\n")[2].strip()
+    return _post(client, "/auth/code/confirm", {"code": code})
 
-    return _post(
-        client, "/auth/code/confirm", {"code": code}, session_token=session_token
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("headers", [{}, {"HTTP_X_CSRFTOKEN": "not-a-real-token"}])
+def test_post_without_valid_csrf_token_is_rejected(client, headers):
+    client.get("/_allauth/browser/v1/auth/session")
+
+    response = client.post(
+        "/_allauth/browser/v1/auth/code/request",
+        data=json.dumps({"email": "new@example.com"}),
+        content_type="application/json",
+        **headers,
     )
+
+    assert response.status_code == 403
+    assert len(mail.outbox) == 0
 
 
 @pytest.mark.django_db
@@ -101,7 +113,6 @@ def test_request_and_confirm_code_for_existing_user_creates_session(
     assert response.status_code == 200
     payload = response.json()
     assert payload["data"]["user"]["id"]
-    assert "session_token" in payload["meta"]
 
 
 @pytest.mark.django_db
@@ -120,14 +131,41 @@ def test_signup_endpoint_forbidden_when_signup_disabled(client, settings):
 
 @pytest.mark.django_db
 def test_logout_invalidates_the_session(client, existing_user):
-    session_token = _request_and_confirm_code(client, existing_user.email).json()[
-        "meta"
-    ]["session_token"]
-    assert _get(client, "/auth/session", session_token=session_token).status_code == 200
+    _request_and_confirm_code(client, existing_user.email)
+    assert _get(client, "/auth/session").status_code == 200
 
-    response = _delete(client, "/auth/session", session_token=session_token)
+    response = _delete(client, "/auth/session")
 
     assert response.status_code == 401
     assert response.json()["meta"]["is_authenticated"] is False
-    stale_response = _get(client, "/auth/session", session_token=session_token)
-    assert stale_response.status_code == 410
+    assert _get(client, "/auth/session").status_code == 401
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/auth/password/request",
+        "/auth/password/reset",
+        "/auth/login",
+        "/auth/phone/verify",
+        "/auth/phone/verify/resend",
+        "/auth/reauthenticate",
+        "/auth/email/verify",
+        "/auth/email/verify/resend",
+        "/account/password/change",
+        "/account/email",
+        "/account/phone",
+        "/tokens/refresh",
+        "/config",
+    ],
+)
+def test_unused_headless_routes_are_not_exposed(client, path):
+    assert _get(client, path).status_code == 404
+
+
+@pytest.mark.django_db
+def test_app_client_is_not_mounted(client):
+    response = client.get("/_allauth/app/v1/auth/session")
+
+    assert response.status_code == 404

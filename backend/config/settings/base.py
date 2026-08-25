@@ -172,6 +172,7 @@ ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
 ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)  # blocking until ready for users
 
 HEADLESS_ONLY = True
+HEADLESS_CLIENTS = ("browser",)
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 HEADLESS_FRONTEND_URLS = {
     "account_signup": f"{FRONTEND_URL}/signup",

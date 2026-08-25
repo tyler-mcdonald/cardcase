@@ -2,7 +2,7 @@
 
 - User can authenticate via passwordless one-time email code
 - New users cannot sign up until signup is explicitly enabled (`ALLOW_SIGNUP`)
-- Client includes session token (`X-Session-Token`) on requests for session auth
+- Client authenticates via a first-party session cookie; mutating requests include a CSRF token (`X-CSRFToken`)
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
 - User can log out, ending their session
@@ -11,7 +11,7 @@
 
 - All accounts and transaction access is scoped to the authenticated user
 - User sessions expire after 30 days
-- User session tokens are opaque, high-entropy identifiers managed by django-allauth's session store (standard Django session-key auth, not custom-hashed)
+- User sessions are managed by django-allauth's session store via a first-party session cookie (standard Django session-key auth, not custom-hashed)
 - User verification tokens expire after 3 mins (django-allauth's default)
 - User email authentication will be rate-limited
 
@@ -46,13 +46,16 @@ Email verification codes and sessions are managed internally by django-allauth
 
 ##### API Surface
 
-- Auth (django-allauth headless, `app` client)
-  - POST /_allauth/app/v1/auth/code/request
+- Auth (django-allauth headless, `browser` client; intended to be same-parent-domain with the frontend so session cookies are first-party. Only these routes are mounted -- see `users/headless_urls.py`)
+  - POST /_allauth/browser/v1/auth/code/request
     - { email }
-  - POST /_allauth/app/v1/auth/code/confirm
+  - POST /_allauth/browser/v1/auth/code/confirm
     - { code }
-  - GET /_allauth/app/v1/auth/session
-  - DELETE /_allauth/app/v1/auth/session
+  - POST /_allauth/browser/v1/auth/code/resend
+  - POST /_allauth/browser/v1/auth/signup
+    - { email }
+  - GET /_allauth/browser/v1/auth/session
+  - DELETE /_allauth/browser/v1/auth/session
 - Accounts
   - POST /accounts
     - { name, description?, type, expiration_date?, starting_balance }
