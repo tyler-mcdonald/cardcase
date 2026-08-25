@@ -167,15 +167,11 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
 ACCOUNT_SIGNUP_FIELDS = ["email*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
-
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
-
 ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
-
-ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)
+ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)  # blocking until ready for users
 
 HEADLESS_ONLY = True
-
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 HEADLESS_FRONTEND_URLS = {
     "account_signup": f"{FRONTEND_URL}/signup",
