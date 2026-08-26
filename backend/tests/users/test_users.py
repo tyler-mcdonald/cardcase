@@ -7,15 +7,20 @@ from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
 
-
-def test_open_for_signup_when_flag_enabled(settings):
-    settings.ALLOW_SIGNUP = True
-    assert AccountAdapter().is_open_for_signup(None) is True
+BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
+NEW_USER_EMAIL = "new@example.com"
 
 
-def test_closed_for_signup_when_flag_disabled(settings):
-    settings.ALLOW_SIGNUP = False
-    assert AccountAdapter().is_open_for_signup(None) is False
+@pytest.mark.parametrize(
+    ("allow_signup", "expected"),
+    [
+        (True, True),
+        (False, False),
+    ],
+)
+def test_open_for_signup_reflects_allow_signup_flag(settings, allow_signup, expected):
+    settings.ALLOW_SIGNUP = allow_signup
+    assert AccountAdapter().is_open_for_signup(None) is expected
 
 
 def test_check_flags_signup_open_with_placeholder_frontend_url(settings):
@@ -34,26 +39,28 @@ def test_check_flags_signup_open_with_placeholder_frontend_url(settings):
         (True, "https://app.cardcase.example"),
     ],
 )
-def test_check_passes_otherwise(settings, allow_signup, frontend_url):
+def test_check_passes_when_signup_disabled_or_frontend_url_configured(
+    settings, allow_signup, frontend_url
+):
     settings.ALLOW_SIGNUP = allow_signup
     settings.FRONTEND_URL = frontend_url
 
     assert check_frontend_url_configured_for_signup(None) == []
 
 
+def _get(client, path):
+    return client.get(f"{BROWSER_CLIENT_BASE}{path}")
+
+
 def _csrf_token(client):
     if "csrftoken" not in client.cookies:
-        client.get("/_allauth/browser/v1/auth/session")
+        _get(client, "/auth/session")
     return client.cookies["csrftoken"].value
-
-
-def _get(client, path):
-    return client.get(f"/_allauth/browser/v1{path}")
 
 
 def _post(client, path, data):
     return client.post(
-        f"/_allauth/browser/v1{path}",
+        f"{BROWSER_CLIENT_BASE}{path}",
         data=json.dumps(data),
         content_type="application/json",
         HTTP_X_CSRFTOKEN=_csrf_token(client),
@@ -62,9 +69,39 @@ def _post(client, path, data):
 
 def _delete(client, path):
     return client.delete(
-        f"/_allauth/browser/v1{path}",
+        f"{BROWSER_CLIENT_BASE}{path}",
         HTTP_X_CSRFTOKEN=_csrf_token(client),
     )
+
+
+def _get_session(client):
+    return _get(client, "/auth/session")
+
+
+def _logout(client):
+    return _delete(client, "/auth/session")
+
+
+def _request_code(client, email):
+    return _post(client, "/auth/code/request", {"email": email})
+
+
+def _confirm_code(client, code):
+    return _post(client, "/auth/code/confirm", {"code": code})
+
+
+def _request_and_confirm_code(client, email):
+    _request_code(client, email)
+    code = mail.outbox[-1].body.split("\n\n")[2].strip()
+    return _confirm_code(client, code)
+
+
+def _signup(client, email, **extra):
+    return _post(client, "/auth/signup", {"email": email, **extra})
+
+
+def _new_user_exists():
+    return User.objects.filter(email=NEW_USER_EMAIL).exists()
 
 
 @pytest.fixture
@@ -72,20 +109,14 @@ def existing_user(db):
     return User.objects.create_user(email="existing@example.com")
 
 
-def _request_and_confirm_code(client, email):
-    _post(client, "/auth/code/request", {"email": email})
-    code = mail.outbox[-1].body.split("\n\n")[2].strip()
-    return _post(client, "/auth/code/confirm", {"code": code})
-
-
 @pytest.mark.django_db
 @pytest.mark.parametrize("headers", [{}, {"HTTP_X_CSRFTOKEN": "not-a-real-token"}])
 def test_post_without_valid_csrf_token_is_rejected(client, headers):
-    client.get("/_allauth/browser/v1/auth/session")
+    _get_session(client)
 
     response = client.post(
-        "/_allauth/browser/v1/auth/code/request",
-        data=json.dumps({"email": "new@example.com"}),
+        f"{BROWSER_CLIENT_BASE}/auth/code/request",
+        data=json.dumps({"email": NEW_USER_EMAIL}),
         content_type="application/json",
         **headers,
     )
@@ -96,9 +127,9 @@ def test_post_without_valid_csrf_token_is_rejected(client, headers):
 
 @pytest.mark.django_db
 def test_request_code_for_unknown_email_does_not_create_user_or_send_code(client):
-    response = _post(client, "/auth/code/request", {"email": "new@example.com"})
+    response = _request_code(client, NEW_USER_EMAIL)
 
-    assert not User.objects.filter(email="new@example.com").exists()
+    assert not _new_user_exists()
     assert len(mail.outbox) == 1
     assert "code" not in mail.outbox[0].body.lower()
     assert response.status_code == 401
@@ -119,36 +150,32 @@ def test_request_and_confirm_code_for_existing_user_creates_session(
 def test_signup_endpoint_forbidden_when_signup_disabled(client, settings):
     settings.ALLOW_SIGNUP = False
 
-    response = _post(
-        client,
-        "/auth/signup",
-        {"email": "new@example.com", "password": "a-strong-password-123"},
-    )
+    response = _signup(client, NEW_USER_EMAIL, password="a-strong-password-123")
 
     assert response.status_code == 403
-    assert not User.objects.filter(email="new@example.com").exists()
+    assert not _new_user_exists()
 
 
 @pytest.mark.django_db
 def test_signup_endpoint_creates_user_when_signup_enabled(client, settings):
     settings.ALLOW_SIGNUP = True
 
-    response = _post(client, "/auth/signup", {"email": "new@example.com"})
+    response = _signup(client, NEW_USER_EMAIL)
 
     assert response.status_code == 200
-    assert User.objects.filter(email="new@example.com").exists()
+    assert _new_user_exists()
 
 
 @pytest.mark.django_db
 def test_logout_invalidates_the_session(client, existing_user):
     _request_and_confirm_code(client, existing_user.email)
-    assert _get(client, "/auth/session").status_code == 200
+    assert _get_session(client).status_code == 200
 
-    response = _delete(client, "/auth/session")
+    response = _logout(client)
 
     assert response.status_code == 401
     assert response.json()["meta"]["is_authenticated"] is False
-    assert _get(client, "/auth/session").status_code == 401
+    assert _get_session(client).status_code == 401
 
 
 @pytest.mark.django_db
