@@ -16,6 +16,11 @@ BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
 NEW_USER_EMAIL = "new@example.com"
 CODE_PATTERN = re.compile(r"[A-Z0-9]{4}-[A-Z0-9]{4}")
 
+# allauth hardcodes the confirm_email rate limit to "1/10s/key" when
+# EMAIL_VERIFICATION_BY_CODE_ENABLED is True; it isn't exposed as a
+# named Django setting we can read, so this mirrors that internal value.
+EMAIL_VERIFICATION_RESEND_RATE_LIMIT_SECONDS = 10
+
 
 @pytest.mark.parametrize(
     ("allow_signup", "expected"),
@@ -100,13 +105,13 @@ def _confirm_code(client, code):
     return _post(client, "/auth/code/confirm", {"code": code})
 
 
-def _extract_code():
+def _extract_code_from_email():
     return CODE_PATTERN.search(mail.outbox[-1].body).group()
 
 
-def _request_and_confirm_code(client, email):
+def _login(client, email):
     _request_code(client, email)
-    return _confirm_code(client, _extract_code())
+    return _confirm_code(client, _extract_code_from_email())
 
 
 def _signup(client, email, **extra):
@@ -119,6 +124,11 @@ def _verify_email(client, key):
 
 def _resend_email_verification(client):
     return _post(client, "/auth/email/verify/resend", {})
+
+
+def _signup_and_verify(client, email):
+    _signup(client, email)
+    return _verify_email(client, _extract_code_from_email())
 
 
 def _new_user_exists():
@@ -161,10 +171,8 @@ def test_request_code_for_unknown_email_does_not_create_user_or_send_code(client
 
 
 @pytest.mark.django_db
-def test_request_and_confirm_code_for_existing_user_creates_session(
-    client, existing_user
-):
-    response = _request_and_confirm_code(client, existing_user.email)
+def test_login_for_existing_user_creates_session(client, existing_user):
+    response = _login(client, existing_user.email)
 
     assert response.status_code == 200
     payload = response.json()
@@ -175,7 +183,7 @@ def test_request_and_confirm_code_for_existing_user_creates_session(
 def test_requesting_code_while_authenticated_returns_current_session(
     client, existing_user
 ):
-    _request_and_confirm_code(client, existing_user.email)
+    _login(client, existing_user.email)
 
     response = _request_code(client, existing_user.email)
 
@@ -186,7 +194,7 @@ def test_requesting_code_while_authenticated_returns_current_session(
 @pytest.mark.django_db
 def test_new_code_request_invalidates_previous_code(client, existing_user):
     _request_code(client, existing_user.email)
-    stale_code = _extract_code()
+    stale_code = _extract_code_from_email()
 
     _request_code(client, existing_user.email)
 
@@ -197,12 +205,12 @@ def test_new_code_request_invalidates_previous_code(client, existing_user):
 @pytest.mark.django_db
 def test_code_resend_issues_new_code_and_invalidates_previous(client, existing_user):
     _request_code(client, existing_user.email)
-    stale_code = _extract_code()
+    stale_code = _extract_code_from_email()
 
     response = _resend_code(client)
 
     assert response.status_code == 200
-    assert _extract_code() != stale_code
+    assert _extract_code_from_email() != stale_code
     assert _confirm_code(client, stale_code).status_code == 400
 
 
@@ -218,9 +226,11 @@ def test_fourth_code_request_in_one_minute_is_rate_limited(client, existing_user
 
 
 @pytest.mark.django_db
-def test_wrong_code_lockout_also_invalidates_the_correct_code(client, existing_user):
+def test_exceeding_max_login_attempts_locks_out_even_the_correct_code(
+    client, existing_user
+):
     _request_code(client, existing_user.email)
-    real_code = _extract_code()
+    real_code = _extract_code_from_email()
 
     for _ in range(allauth_settings.LOGIN_BY_CODE_MAX_ATTEMPTS + 1):
         response = _confirm_code(client, "000000")
@@ -232,7 +242,7 @@ def test_wrong_code_lockout_also_invalidates_the_correct_code(client, existing_u
 @pytest.mark.django_db
 def test_code_expires_after_timeout(client, existing_user):
     _request_code(client, existing_user.email)
-    code = _extract_code()
+    code = _extract_code_from_email()
 
     with time_machine.travel(
         timedelta(seconds=allauth_settings.LOGIN_BY_CODE_TIMEOUT + 1), tick=True
@@ -254,26 +264,19 @@ def test_signup_endpoint_forbidden_when_signup_disabled(client, settings):
 
 
 @pytest.mark.django_db
-def test_signup_endpoint_creates_unverified_user_pending_email_verification(
-    client, settings
-):
-    settings.ALLOW_SIGNUP = True
-
+def test_signup_endpoint_creates_unverified_user_pending_email_verification(client):
     response = _signup(client, NEW_USER_EMAIL)
 
     assert response.status_code == 401
     assert _new_user_exists()
+    assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
     flow_ids = [f["id"] for f in response.json()["data"]["flows"]]
     assert "verify_email" in flow_ids
 
 
 @pytest.mark.django_db
-def test_signup_then_verify_email_grants_session(client, settings):
-    settings.ALLOW_SIGNUP = True
-    _signup(client, NEW_USER_EMAIL)
-    code = _extract_code()
-
-    response = _verify_email(client, code)
+def test_signup_then_verify_email_grants_session(client):
+    response = _signup_and_verify(client, NEW_USER_EMAIL)
 
     assert response.status_code == 200
     assert response.json()["meta"]["is_authenticated"] is True
@@ -281,8 +284,7 @@ def test_signup_then_verify_email_grants_session(client, settings):
 
 
 @pytest.mark.django_db
-def test_verify_email_with_wrong_code_is_rejected(client, settings):
-    settings.ALLOW_SIGNUP = True
+def test_verify_email_with_wrong_code_is_rejected(client):
     _signup(client, NEW_USER_EMAIL)
 
     response = _verify_email(client, "ZZZZ-ZZZZ")
@@ -292,10 +294,9 @@ def test_verify_email_with_wrong_code_is_rejected(client, settings):
 
 
 @pytest.mark.django_db
-def test_verify_email_lockout_also_invalidates_the_correct_code(client, settings):
-    settings.ALLOW_SIGNUP = True
+def test_exceeding_max_verify_attempts_locks_out_even_the_correct_code(client):
     _signup(client, NEW_USER_EMAIL)
-    real_code = _extract_code()
+    real_code = _extract_code_from_email()
 
     for _ in range(allauth_settings.EMAIL_VERIFICATION_BY_CODE_MAX_ATTEMPTS + 1):
         response = _verify_email(client, "ZZZZ-ZZZZ")
@@ -305,16 +306,15 @@ def test_verify_email_lockout_also_invalidates_the_correct_code(client, settings
 
 
 @pytest.mark.django_db
-def test_resend_email_verification_issues_new_code_and_invalidates_previous(
-    client, settings
-):
-    settings.ALLOW_SIGNUP = True
+def test_resend_email_verification_issues_new_code_and_invalidates_previous(client):
     _signup(client, NEW_USER_EMAIL)
-    stale_code = _extract_code()
+    stale_code = _extract_code_from_email()
 
-    with time_machine.travel(timedelta(seconds=11), tick=True):
+    with time_machine.travel(
+        timedelta(seconds=EMAIL_VERIFICATION_RESEND_RATE_LIMIT_SECONDS + 1), tick=True
+    ):
         response = _resend_email_verification(client)
-        new_code = _extract_code()
+        new_code = _extract_code_from_email()
 
         assert response.status_code == 200
         assert new_code != stale_code
@@ -323,7 +323,7 @@ def test_resend_email_verification_issues_new_code_and_invalidates_previous(
 
 @pytest.mark.django_db
 def test_logout_invalidates_the_session(client, existing_user):
-    _request_and_confirm_code(client, existing_user.email)
+    _login(client, existing_user.email)
     assert _get_session(client).status_code == 200
 
     response = _logout(client)
