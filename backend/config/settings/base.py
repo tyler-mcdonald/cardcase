@@ -177,7 +177,6 @@ HEADLESS_FRONTEND_URLS = {
     "account_signup": f"{FRONTEND_URL}/signup",
     "account_reset_password": f"{FRONTEND_URL}/password/reset",
     "account_reset_password_from_key": f"{FRONTEND_URL}/password/reset/key/{{key}}",
-    "account_confirm_email": f"{FRONTEND_URL}/email/confirm/{{key}}",
 }
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30

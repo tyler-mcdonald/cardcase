@@ -9,7 +9,8 @@ def check_frontend_url_configured_for_signup(app_configs, **kwargs):
         return [
             Error(
                 "ALLOW_SIGNUP is on but FRONTEND_URL is still a localhost "
-                "placeholder -- signup confirmation emails will link nowhere.",
+                "placeholder -- the signup-invite email sent to unknown "
+                "addresses will link nowhere.",
                 hint="Set the FRONTEND_URL environment variable to the real "
                 "frontend origin before enabling signups.",
                 id="users.E001",
