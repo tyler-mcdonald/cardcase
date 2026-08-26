@@ -19,7 +19,7 @@ extend-exclude = ["*/migrations/*"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
-python_files = ["tests.py", "test_*.py", "*_test.py"]
+python_files = ["test_*.py", "*_test.py"]
 
 [dependency-groups]
 dev = [
