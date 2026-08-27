@@ -7,7 +7,7 @@ from tests.client import BROWSER_CLIENT_BASE, csrf_token, get_session
 
 MUTATING_ENDPOINT = "/auth/code/request"
 REQUEST_EMAIL = "new@example.com"
-UNTRUSTED_ORIGIN = "https://evil.example"
+UNTRUSTED_ORIGIN = "https://malicious.example"
 
 
 def _post_with_origin(client, origin, **headers):
@@ -29,7 +29,6 @@ def _preflight(client, origin):
     )
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("headers", [{}, {"HTTP_X_CSRFTOKEN": "not-a-real-token"}])
 def test_post_without_valid_csrf_token_is_rejected(client, headers):
     get_session(client)
@@ -45,10 +44,7 @@ def test_post_without_valid_csrf_token_is_rejected(client, headers):
     assert len(mail.outbox) == 0
 
 
-@pytest.mark.django_db
 def test_post_from_untrusted_origin_is_rejected(client):
-    get_session(client)
-
     response = _post_with_origin(
         client, UNTRUSTED_ORIGIN, HTTP_X_CSRFTOKEN=csrf_token(client)
     )
@@ -67,7 +63,6 @@ def test_post_from_frontend_origin_is_accepted(client, settings):
     assert len(mail.outbox) == 1
 
 
-@pytest.mark.django_db
 def test_cors_preflight_allows_frontend_origin(client, settings):
     response = _preflight(client, settings.FRONTEND_URL)
 
@@ -75,7 +70,6 @@ def test_cors_preflight_allows_frontend_origin(client, settings):
     assert response["Access-Control-Allow-Credentials"] == "true"
 
 
-@pytest.mark.django_db
 def test_cors_preflight_from_untrusted_origin_gets_no_cors_headers(client):
     response = _preflight(client, UNTRUSTED_ORIGIN)
 
