@@ -28,10 +28,17 @@ Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`)
 not co-located inside each app. Project-level tests not owned by a single app live
 directly under `tests/` (e.g. `tests/test_health.py`).
 
-Shared test infrastructure (helpers, not test cases) lives under `tests/support/`,
-which mypy holds to full strictness — see `tests.support.*` in `pyproject.toml`.
-This applies at any depth: an app-scoped helper goes under `tests/support/<app>/`
-(e.g. `tests/support/users/helper.py`), never directly in `tests/<app>/` alongside
-that app's `test_*.py` files — mypy can't tell a helper from a test case by name,
-so anything left in `tests/<app>/` silently gets the relaxed test-case typing rules
-instead of the strict ones.
+mypy is strict by default for everything under `tests/`, including shared test
+infrastructure (helpers, not test cases) — there is no directory-based exemption,
+so a misplaced or forgotten helper can't silently lose type coverage. Each actual
+`test_*.py` file opts itself out of the annotation requirement (not the type
+checking itself) with a header comment:
+
+```python
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+```
+
+By convention, shared test infrastructure still lives under `tests/support/`
+(mirroring app structure at any depth, e.g. `tests/support/users/helper.py`) to
+keep it separate from test cases — but that's organizational only; it's not what
+makes mypy strict there. Strictness comes from simply not adding the header.
