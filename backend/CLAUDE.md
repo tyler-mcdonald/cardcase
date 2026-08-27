@@ -28,8 +28,9 @@ Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`)
 not co-located inside each app. Project-level tests not owned by a single app live
 directly under `tests/` (e.g. `tests/test_health.py`).
 
-## Commit and PR title style
+## Pull Requests
 
-Use Conventional Commits for commit messages and PR titles, e.g.
-`fix(backend): serve static assets with whitenoise` or
-`feat(backend): add user authentication`.
+- Use Conventional Commits for PR titles, e.g.
+  `fix(backend): serve static assets with whitenoise` or
+  `feat(backend): add user authentication`.
+- Do not add a desciption other than "Closes #x" to reference the issue.
