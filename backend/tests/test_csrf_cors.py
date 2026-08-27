@@ -1,24 +1,24 @@
+from __future__ import annotations
+
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from django.core import mail
 from django.test import Client
 from pytest_django import Settings
 
-from tests.support.client import (
-    BROWSER_CLIENT_BASE,
-    TestResponse,
-    csrf_token,
-    get_session,
-)
+from tests.client import BROWSER_CLIENT_BASE, csrf_token, get_session
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as ClientResponse
 
 MUTATING_ENDPOINT = "/auth/code/request"
 REQUEST_EMAIL = "new@example.com"
 UNTRUSTED_ORIGIN = "https://malicious.example"
 
 
-def _post_with_origin(client: Client, origin: str, **headers: Any) -> TestResponse:
+def _post_with_origin(client: Client, origin: str, **headers: Any) -> ClientResponse:
     return client.post(
         f"{BROWSER_CLIENT_BASE}{MUTATING_ENDPOINT}",
         data=json.dumps({"email": REQUEST_EMAIL}),
@@ -28,7 +28,7 @@ def _post_with_origin(client: Client, origin: str, **headers: Any) -> TestRespon
     )
 
 
-def _preflight(client: Client, origin: str) -> TestResponse:
+def _preflight(client: Client, origin: str) -> ClientResponse:
     return client.options(
         f"{BROWSER_CLIENT_BASE}{MUTATING_ENDPOINT}",
         HTTP_ORIGIN=origin,

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import re
 from datetime import timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import time_machine
@@ -11,10 +13,13 @@ from django.http import HttpRequest
 from django.test import Client
 from pytest_django import Settings
 
-from tests.support.client import TestResponse, delete, get, get_session, post
+from tests.client import delete, get, get_session, post
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as ClientResponse
 
 NEW_USER_EMAIL = "new@example.com"
 CODE_PATTERN = re.compile(r"[A-Z0-9]{4}-[A-Z0-9]{4}")
@@ -66,19 +71,19 @@ def test_check_passes_when_signup_disabled_or_frontend_url_configured(
     assert check_frontend_url_configured_for_signup(None) == []
 
 
-def _logout(client: Client) -> TestResponse:
+def _logout(client: Client) -> ClientResponse:
     return delete(client, "/auth/session")
 
 
-def _request_code(client: Client, email: str) -> TestResponse:
+def _request_code(client: Client, email: str) -> ClientResponse:
     return post(client, "/auth/code/request", {"email": email})
 
 
-def _resend_code(client: Client) -> TestResponse:
+def _resend_code(client: Client) -> ClientResponse:
     return post(client, "/auth/code/resend", {})
 
 
-def _confirm_code(client: Client, code: str) -> TestResponse:
+def _confirm_code(client: Client, code: str) -> ClientResponse:
     return post(client, "/auth/code/confirm", {"code": code})
 
 
@@ -88,24 +93,24 @@ def _extract_code_from_email() -> str:
     return match.group()
 
 
-def _login(client: Client, email: str) -> TestResponse:
+def _login(client: Client, email: str) -> ClientResponse:
     _request_code(client, email)
     return _confirm_code(client, _extract_code_from_email())
 
 
-def _signup(client: Client, email: str, **extra: Any) -> TestResponse:
+def _signup(client: Client, email: str, **extra: Any) -> ClientResponse:
     return post(client, "/auth/signup", {"email": email, **extra})
 
 
-def _verify_email(client: Client, key: str) -> TestResponse:
+def _verify_email(client: Client, key: str) -> ClientResponse:
     return post(client, "/auth/email/verify", {"key": key})
 
 
-def _resend_email_verification(client: Client) -> TestResponse:
+def _resend_email_verification(client: Client) -> ClientResponse:
     return post(client, "/auth/email/verify/resend", {})
 
 
-def _signup_and_verify(client: Client, email: str) -> TestResponse:
+def _signup_and_verify(client: Client, email: str) -> ClientResponse:
     _signup(client, email)
     return _verify_email(client, _extract_code_from_email())
 
