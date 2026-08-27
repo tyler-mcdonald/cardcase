@@ -32,7 +32,7 @@ initialize-dot-env-file: check-docker-installed
 
 install-dependencies: initialize-dot-env-file
 	@echo "==> Installing dependencies"
-	uv sync
+	uv sync --locked
 
 docker-compose-up: install-dependencies
 	@echo "==> Bringing up Docker containers"
