@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 from .base import *
 
 DEBUG = False
@@ -27,17 +25,14 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 # Email
 # https://pypi.org/project/django-anymail/
 
-MAILERS = cast(
-    "dict[str, dict[str, Any]]",
-    {
-        "default": {
-            "BACKEND": "anymail.backends.resend.EmailBackend",
-            "OPTIONS": {
-                "api_key": RESEND_API_KEY,
-            },
+MAILERS = {
+    "default": {
+        "BACKEND": "anymail.backends.resend.EmailBackend",
+        "OPTIONS": {  # type: ignore[dict-item]
+            "api_key": RESEND_API_KEY,
         },
     },
-)
+}
 
 # Do not change this unless you've updated the domain with the provider,
 # which should happen rarely, if ever.

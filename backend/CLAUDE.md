@@ -30,3 +30,8 @@ directly under `tests/` (e.g. `tests/test_health.py`).
 
 Shared test infrastructure (helpers, not test cases) lives under `tests/support/`,
 which mypy holds to full strictness — see `tests.support.*` in `pyproject.toml`.
+This applies at any depth: an app-scoped helper goes under `tests/support/<app>/`
+(e.g. `tests/support/users/helper.py`), never directly in `tests/<app>/` alongside
+that app's `test_*.py` files — mypy can't tell a helper from a test case by name,
+so anything left in `tests/<app>/` silently gets the relaxed test-case typing rules
+instead of the strict ones.
