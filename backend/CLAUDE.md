@@ -27,3 +27,6 @@ uv add <package> --bounds <major|minor|exact|none>
 Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`) —
 not co-located inside each app. Project-level tests not owned by a single app live
 directly under `tests/` (e.g. `tests/test_health.py`).
+
+Shared test infrastructure (helpers, not test cases) lives under `tests/support/`,
+which mypy holds to full strictness — see `tests.support.*` in `pyproject.toml`.

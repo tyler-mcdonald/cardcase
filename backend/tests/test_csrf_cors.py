@@ -3,7 +3,7 @@ import json
 import pytest
 from django.core import mail
 
-from tests.client import BROWSER_CLIENT_BASE, csrf_token, get_session
+from tests.support.client import BROWSER_CLIENT_BASE, csrf_token, get_session
 
 MUTATING_ENDPOINT = "/auth/code/request"
 REQUEST_EMAIL = "new@example.com"

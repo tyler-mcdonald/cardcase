@@ -24,13 +24,16 @@ strict = true
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
+# Don't require typing for pytest fixtures.
 module = "tests.*"
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
-module = ["tests.client", "tests.conftest"]
+# Shared test infrastructure (tests/support/, tests/conftest.py) stays fully
+# typed; new helpers just need to live under tests/support/ to be covered here.
+module = ["tests.conftest", "tests.support.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
@@ -38,10 +41,6 @@ disallow_untyped_calls = true
 [[tool.mypy.overrides]]
 module = ["environ", "allauth.*", "health_check.*"]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "users.adapter"
-disallow_subclassing_any = false
 
 [tool.django-stubs]
 django_settings_module = "config.settings.test"
