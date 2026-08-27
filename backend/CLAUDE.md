@@ -28,17 +28,14 @@ Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`)
 not co-located inside each app. Project-level tests not owned by a single app live
 directly under `tests/` (e.g. `tests/test_health.py`).
 
-mypy is strict by default for everything under `tests/`, including shared test
-infrastructure (helpers, not test cases) — there is no directory-based exemption,
-so a misplaced or forgotten helper can't silently lose type coverage. Each actual
-`test_*.py` file opts itself out of the annotation requirement (not the type
-checking itself) with a header comment:
+mypy strict mode applies uniformly to everything under `tests/`, including test
+cases themselves — there is no relaxation and no per-file opt-out, so every test
+function needs full signature annotations (fixture params included) and a `-> None`
+return type. This was a deliberate choice over any directory- or comment-based
+exemption: those mechanisms depend on placement or a remembered header line, and
+either one being missed or gotten wrong silently reduces type coverage. Full
+strictness has no such failure mode.
 
-```python
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-```
-
-By convention, shared test infrastructure still lives under `tests/support/`
-(mirroring app structure at any depth, e.g. `tests/support/users/helper.py`) to
-keep it separate from test cases — but that's organizational only; it's not what
-makes mypy strict there. Strictness comes from simply not adding the header.
+Shared test infrastructure lives under `tests/support/` (mirroring app structure
+at any depth, e.g. `tests/support/users/helper.py`) to keep it visually separate
+from test cases — purely organizational at this point, not load-bearing for mypy.
