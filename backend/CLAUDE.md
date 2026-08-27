@@ -38,4 +38,5 @@ the Conventional Commit style.
     - `fix(backend): serve static assets with whitenoise`
     - `feat(backend): add user authentication`
     - `docs: update claude instructions for PR titles`
-- Do not add a desciption other than "Closes #x" to reference the issue.
+- Do not add a desciption other than "Closes #x" to reference the issue, unless explicitly requested by the user.
+- PR Titles should not exceed 50 characters.
