@@ -63,6 +63,16 @@ def test_post_from_frontend_origin_is_accepted(client, settings):
     assert len(mail.outbox) == 1
 
 
+@pytest.mark.django_db
+def test_cors_headers_present_on_actual_response_for_frontend_origin(client, settings):
+    response = _post_with_origin(
+        client, settings.FRONTEND_URL, HTTP_X_CSRFTOKEN=csrf_token(client)
+    )
+
+    assert response["Access-Control-Allow-Origin"] == settings.FRONTEND_URL
+    assert response["Access-Control-Allow-Credentials"] == "true"
+
+
 def test_cors_preflight_allows_frontend_origin(client, settings):
     response = _preflight(client, settings.FRONTEND_URL)
 
