@@ -6,6 +6,7 @@ import time_machine
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
+from django.http import HttpRequest
 
 from tests.client import delete, get, get_session, post
 from users.adapter import AccountAdapter
@@ -30,7 +31,7 @@ EMAIL_VERIFICATION_RESEND_RATE_LIMIT_SECONDS = 10
 )
 def test_open_for_signup_reflects_allow_signup_flag(settings, allow_signup, expected):
     settings.ALLOW_SIGNUP = allow_signup
-    assert AccountAdapter().is_open_for_signup(None) is expected
+    assert AccountAdapter().is_open_for_signup(HttpRequest()) is expected
 
 
 def test_check_flags_signup_open_with_placeholder_frontend_url(settings):
@@ -75,7 +76,9 @@ def _confirm_code(client, code):
 
 
 def _extract_code_from_email():
-    return CODE_PATTERN.search(mail.outbox[-1].body).group()
+    match = CODE_PATTERN.search(str(mail.outbox[-1].body))
+    assert match is not None
+    return match.group()
 
 
 def _login(client, email):

@@ -5,4 +5,4 @@ from django.http import HttpRequest
 
 class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request: HttpRequest) -> bool:
-        return settings.ALLOW_SIGNUP
+        return bool(settings.ALLOW_SIGNUP)
