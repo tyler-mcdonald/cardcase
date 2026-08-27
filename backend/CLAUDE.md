@@ -27,3 +27,9 @@ uv add <package> --bounds <major|minor|exact|none>
 Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`) —
 not co-located inside each app. Project-level tests not owned by a single app live
 directly under `tests/` (e.g. `tests/test_health.py`).
+
+## Commit and PR title style
+
+Use Conventional Commits for commit messages and PR titles, e.g.
+`fix(backend): serve static assets with whitenoise` or
+`feat(backend): add user authentication`.
