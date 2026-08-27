@@ -1,17 +1,13 @@
-from __future__ import annotations
-
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from django.http import HttpResponseBase
 from django.test import Client
-
-if TYPE_CHECKING:
-    from django.test.client import _MonkeyPatchedWSGIResponse as ClientResponse
 
 BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
 
 
-def get(client: Client, path: str) -> ClientResponse:
+def get(client: Client, path: str) -> HttpResponseBase:
     return client.get(f"{BROWSER_CLIENT_BASE}{path}")
 
 
@@ -21,7 +17,7 @@ def csrf_token(client: Client) -> str:
     return client.cookies["csrftoken"].value
 
 
-def post(client: Client, path: str, data: dict[str, Any]) -> ClientResponse:
+def post(client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
     return client.post(
         f"{BROWSER_CLIENT_BASE}{path}",
         data=json.dumps(data),
@@ -30,12 +26,12 @@ def post(client: Client, path: str, data: dict[str, Any]) -> ClientResponse:
     )
 
 
-def delete(client: Client, path: str) -> ClientResponse:
+def delete(client: Client, path: str) -> HttpResponseBase:
     return client.delete(
         f"{BROWSER_CLIENT_BASE}{path}",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
 
 
-def get_session(client: Client) -> ClientResponse:
+def get_session(client: Client) -> HttpResponseBase:
     return get(client, "/auth/session")
