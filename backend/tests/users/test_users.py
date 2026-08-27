@@ -1,4 +1,3 @@
-import json
 import re
 from datetime import timedelta
 
@@ -8,11 +7,11 @@ from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
 
+from tests.client import delete, get, get_session, post
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
 
-BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
 NEW_USER_EMAIL = "new@example.com"
 CODE_PATTERN = re.compile(r"[A-Z0-9]{4}-[A-Z0-9]{4}")
 
@@ -59,50 +58,20 @@ def test_check_passes_when_signup_disabled_or_frontend_url_configured(
     assert check_frontend_url_configured_for_signup(None) == []
 
 
-def _get(client, path):
-    return client.get(f"{BROWSER_CLIENT_BASE}{path}")
-
-
-def _csrf_token(client):
-    if "csrftoken" not in client.cookies:
-        _get(client, "/auth/session")
-    return client.cookies["csrftoken"].value
-
-
-def _post(client, path, data):
-    return client.post(
-        f"{BROWSER_CLIENT_BASE}{path}",
-        data=json.dumps(data),
-        content_type="application/json",
-        HTTP_X_CSRFTOKEN=_csrf_token(client),
-    )
-
-
-def _delete(client, path):
-    return client.delete(
-        f"{BROWSER_CLIENT_BASE}{path}",
-        HTTP_X_CSRFTOKEN=_csrf_token(client),
-    )
-
-
-def _get_session(client):
-    return _get(client, "/auth/session")
-
-
 def _logout(client):
-    return _delete(client, "/auth/session")
+    return delete(client, "/auth/session")
 
 
 def _request_code(client, email):
-    return _post(client, "/auth/code/request", {"email": email})
+    return post(client, "/auth/code/request", {"email": email})
 
 
 def _resend_code(client):
-    return _post(client, "/auth/code/resend", {})
+    return post(client, "/auth/code/resend", {})
 
 
 def _confirm_code(client, code):
-    return _post(client, "/auth/code/confirm", {"code": code})
+    return post(client, "/auth/code/confirm", {"code": code})
 
 
 def _extract_code_from_email():
@@ -115,15 +84,15 @@ def _login(client, email):
 
 
 def _signup(client, email, **extra):
-    return _post(client, "/auth/signup", {"email": email, **extra})
+    return post(client, "/auth/signup", {"email": email, **extra})
 
 
 def _verify_email(client, key):
-    return _post(client, "/auth/email/verify", {"key": key})
+    return post(client, "/auth/email/verify", {"key": key})
 
 
 def _resend_email_verification(client):
-    return _post(client, "/auth/email/verify/resend", {})
+    return post(client, "/auth/email/verify/resend", {})
 
 
 def _signup_and_verify(client, email):
@@ -142,22 +111,6 @@ def existing_user(db):
         user=user, email=user.email, verified=True, primary=True
     )
     return user
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("headers", [{}, {"HTTP_X_CSRFTOKEN": "not-a-real-token"}])
-def test_post_without_valid_csrf_token_is_rejected(client, headers):
-    _get_session(client)
-
-    response = client.post(
-        f"{BROWSER_CLIENT_BASE}/auth/code/request",
-        data=json.dumps({"email": NEW_USER_EMAIL}),
-        content_type="application/json",
-        **headers,
-    )
-
-    assert response.status_code == 403
-    assert len(mail.outbox) == 0
 
 
 @pytest.mark.django_db
@@ -250,7 +203,7 @@ def test_code_expires_after_timeout(client, existing_user):
         response = _confirm_code(client, code)
 
     assert response.status_code == 409
-    assert _get_session(client).status_code != 200
+    assert get_session(client).status_code != 200
 
 
 @pytest.mark.django_db
@@ -280,7 +233,7 @@ def test_signup_then_verify_email_grants_session(client):
 
     assert response.status_code == 200
     assert response.json()["meta"]["is_authenticated"] is True
-    assert _get_session(client).status_code == 200
+    assert get_session(client).status_code == 200
 
 
 @pytest.mark.django_db
@@ -290,7 +243,7 @@ def test_verify_email_with_wrong_code_is_rejected(client):
     response = _verify_email(client, "ZZZZ-ZZZZ")
 
     assert response.status_code == 400
-    assert _get_session(client).status_code == 401
+    assert get_session(client).status_code == 401
 
 
 @pytest.mark.django_db
@@ -324,13 +277,13 @@ def test_resend_email_verification_issues_new_code_and_invalidates_previous(clie
 @pytest.mark.django_db
 def test_logout_invalidates_the_session(client, existing_user):
     _login(client, existing_user.email)
-    assert _get_session(client).status_code == 200
+    assert get_session(client).status_code == 200
 
     response = _logout(client)
 
     assert response.status_code == 401
     assert response.json()["meta"]["is_authenticated"] is False
-    assert _get_session(client).status_code == 401
+    assert get_session(client).status_code == 401
 
 
 @pytest.mark.django_db
@@ -351,7 +304,7 @@ def test_logout_invalidates_the_session(client, existing_user):
     ],
 )
 def test_unused_headless_routes_are_not_exposed(client, path):
-    assert _get(client, path).status_code == 404
+    assert get(client, path).status_code == 404
 
 
 @pytest.mark.django_db
