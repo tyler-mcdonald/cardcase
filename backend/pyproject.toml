@@ -7,6 +7,7 @@ dependencies = [
     "django>=6.1,<7.0",
     "django-allauth[headless]>=65.19.1",
     "django-anymail>=15.1,<16.0",
+    "django-cors-headers>=4.9.0,<5.0.0",
     "django-environ>=0.14.0,<0.15.0",
     "django-health-check>=4.5.0,<5.0.0",
     "gunicorn>=26.1.0,<27.0.0",

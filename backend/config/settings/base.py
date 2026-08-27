@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "health_check",
     "anymail",
+    "corsheaders",
     "allauth",
     "allauth.account",
     "allauth.headless",
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -173,6 +175,9 @@ ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)  # blocking until ready f
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ("browser",)
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+CSRF_TRUSTED_ORIGINS = [FRONTEND_URL]
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+CORS_ALLOW_CREDENTIALS = True
 HEADLESS_FRONTEND_URLS = {
     "account_signup": f"{FRONTEND_URL}/signup",
     "account_reset_password": f"{FRONTEND_URL}/password/reset",
