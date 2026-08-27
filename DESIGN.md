@@ -1,8 +1,8 @@
 ##### Functional Requirements
 
 - User can authenticate via passwordless one-time email code
-- New users cannot sign up until signup is explicitly enabled (`ALLOW_SIGNUP`)
-- Client authenticates via a first-party session cookie; mutating requests include a CSRF token (`X-CSRFToken`)
+- New users cannot sign up until signups are enabled
+- Client authenticates via a session cookie; mutating requests require CSRF protection
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
 - User can log out, ending their session
@@ -11,8 +11,8 @@
 
 - All accounts and transaction access is scoped to the authenticated user
 - User sessions expire after 30 days
-- User sessions are managed by django-allauth's session store via a first-party session cookie (standard Django session-key auth, not custom-hashed)
-- User verification tokens expire after 3 mins (django-allauth's default)
+- Browser sessions are cookie-based
+- Verification codes expire after a few minutes
 - User email authentication will be rate-limited
 
 ##### Data Model
@@ -41,21 +41,14 @@
   - updated_at: datetime
   - type: enum("starting_balance", "redemption", "refund", "adjustment")
 
-Email verification codes and sessions are managed internally by django-allauth
-(no custom VerificationToken/UserSession models).
-
 ##### API Surface
 
-- Auth (django-allauth headless, `browser` client; intended to be same-parent-domain with the frontend so session cookies are first-party. Only these routes are mounted -- see `users/headless_urls.py`)
-  - POST /_allauth/browser/v1/auth/code/request
-    - { email }
-  - POST /_allauth/browser/v1/auth/code/confirm
-    - { code }
-  - POST /_allauth/browser/v1/auth/code/resend
-  - POST /_allauth/browser/v1/auth/signup
-    - { email }
-  - GET /_allauth/browser/v1/auth/session
-  - DELETE /_allauth/browser/v1/auth/session
+- Auth (cookie session-based)
+  - Request login code (email)
+  - Confirm login code (code)
+  - Resend login code
+  - Sign up (email)
+  - Get session / end session (log out)
 - Accounts
   - POST /accounts
     - { name, description?, type, expiration_date?, starting_balance }
