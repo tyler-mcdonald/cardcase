@@ -70,7 +70,7 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: true
-      - run: uv sync --frozen
+      - run: uv sync --locked
       - run: uv run mypy .
 
   migrations:
