@@ -5,7 +5,9 @@ description = "Shared backend for Card Case"
 requires-python = ">=3.13"
 dependencies = [
     "django>=6.1,<7.0",
+    "django-allauth[headless]>=65.19.1",
     "django-anymail>=15.1,<16.0",
+    "django-cors-headers>=4.9.0,<5.0.0",
     "django-environ>=0.14.0,<0.15.0",
     "django-health-check>=4.5.0,<5.0.0",
     "gunicorn>=26.1.0,<27.0.0",
@@ -18,7 +20,7 @@ extend-exclude = ["*/migrations/*"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
-python_files = ["tests.py", "test_*.py", "*_test.py"]
+python_files = ["test_*.py", "*_test.py"]
 
 [dependency-groups]
 dev = [
@@ -27,4 +29,5 @@ dev = [
     "pytest>=9.1.1,<10.0.0",
     "pytest-django>=4.14.0,<5.0.0",
     "ruff>=0.16.3,<0.16.4",
+    "time-machine>=3.5.0,<4.0.0",
 ]

@@ -21,3 +21,9 @@ Once the user has chosen, add the package with:
 ```
 uv add <package> --bounds <major|minor|exact|none>
 ```
+
+## Test layout
+
+Tests live under `tests/`, mirroring the app structure (`tests/<app>/test_*.py`) —
+not co-located inside each app. Project-level tests not owned by a single app live
+directly under `tests/` (e.g. `tests/test_health.py`).
