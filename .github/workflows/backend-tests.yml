@@ -56,6 +56,17 @@ jobs:
       - run: uv run ruff check
       - run: uv run ruff format --check
 
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run mypy .
+
   migrations:
     runs-on: ubuntu-latest
     steps:
