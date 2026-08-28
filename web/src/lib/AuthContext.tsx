@@ -28,7 +28,10 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const AUTH_API_BASE = '/_allauth/browser/v1'
+const SESSION_PATH = '/auth/session'
 const GENERIC_ERROR = 'Something went wrong. Please try again.'
+
+type SessionData = { user?: User }
 
 function toActionResult(response: ApiResponse): ActionResult {
   const error = response.errors?.[0]?.message
@@ -40,11 +43,11 @@ async function authAction(
   path: string,
   { body, onResponse }: {
     body?: unknown
-    onResponse?: (response: ApiResponse<{ user?: User }>) => void
+    onResponse?: (response: ApiResponse<SessionData>) => void
   } = {},
 ): Promise<ActionResult> {
   try {
-    const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}${path}`, {
+    const response = await apiRequest<SessionData>(`${AUTH_API_BASE}${path}`, {
       method,
       body: JSON.stringify(body),
     })
@@ -59,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
   const [user, setUser] = useState<User | null>(null)
 
-  const applySession = useCallback((response: ApiResponse<{ user?: User }>) => {
+  const applySession = useCallback((response: ApiResponse<SessionData>) => {
     if (response.meta?.is_authenticated) {
       setUser(response.data?.user ?? null)
       setStatus('authenticated')
@@ -72,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadSession() {
       try {
-        const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`)
+        const response = await apiRequest<SessionData>(`${AUTH_API_BASE}${SESSION_PATH}`)
         applySession(response)
       } catch {
         setStatus('anonymous')
@@ -90,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
-    return authAction('DELETE', '/auth/session', { onResponse: applySession })
+    return authAction('DELETE', SESSION_PATH, { onResponse: applySession })
   }
 
   return (
