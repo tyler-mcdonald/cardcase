@@ -1,4 +1,4 @@
-import { useAuth } from '@/lib/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 
 export function HomePage() {
   const { user, logout } = useAuth()
