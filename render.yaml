@@ -20,8 +20,8 @@ projects:
             runtime: python
             plan: free
             rootDir: backend
-            buildCommand: pip install uv && uv sync --frozen --no-dev && uv run python manage.py collectstatic --noinput && uv run python manage.py migrate
-            startCommand: uv run gunicorn config.wsgi:application
+            buildCommand: pip install uv && unset VIRTUAL_ENV && uv sync --frozen --no-dev && uv run python manage.py collectstatic --noinput && uv run python manage.py migrate
+            startCommand: unset VIRTUAL_ENV && uv run gunicorn config.wsgi:application
             envVars:
               - key: DJANGO_SETTINGS_MODULE
                 value: config.settings.production
