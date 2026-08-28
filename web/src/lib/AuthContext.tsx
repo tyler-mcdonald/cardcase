@@ -45,7 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`).then(applySession)
+    async function loadSession() {
+      try {
+        const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`)
+        applySession(response)
+      } catch {
+        setStatus('anonymous')
+      }
+    }
+    loadSession()
   }, [applySession])
 
   const requestLoginCode = useCallback(async (email: string): Promise<ActionResult> => {

@@ -29,9 +29,9 @@ export async function apiRequest<T = unknown>(
 ): Promise<ApiResponse<T>> {
   const method = options.method ?? 'GET'
   const headers = new Headers(options.headers)
-  headers.set('Content-Type', 'application/json')
 
   if (method !== 'GET') {
+    headers.set('Content-Type', 'application/json')
     const csrfToken = Cookies.get('csrftoken')
     if (csrfToken) {
       headers.set('X-CSRFToken', csrfToken)
