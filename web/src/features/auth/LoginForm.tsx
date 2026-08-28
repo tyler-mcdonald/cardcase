@@ -9,29 +9,27 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  async function handleRequestCode(event: FormEvent) {
+  async function submit(
+    event: FormEvent,
+    action: () => ReturnType<typeof requestLoginCode>,
+    onSuccess?: () => void,
+  ) {
     event.preventDefault()
     setSubmitting(true)
     setError(null)
-    const result = await requestLoginCode(email)
+    const result = await action()
     setSubmitting(false)
     if (result.ok) {
-      setStep('code')
+      onSuccess?.()
     } else {
       setError(result.error)
     }
   }
 
-  async function handleConfirmCode(event: FormEvent) {
-    event.preventDefault()
-    setSubmitting(true)
-    setError(null)
-    const result = await confirmLoginCode(code)
-    setSubmitting(false)
-    if (!result.ok) {
-      setError(result.error)
-    }
-  }
+  const handleRequestCode = (event: FormEvent) =>
+    submit(event, () => requestLoginCode(email), () => setStep('code'))
+
+  const handleConfirmCode = (event: FormEvent) => submit(event, () => confirmLoginCode(code))
 
   return (
     <main>
