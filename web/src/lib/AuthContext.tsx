@@ -59,17 +59,11 @@ async function authAction(
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>('loading')
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null | undefined>(undefined)
+  const status: AuthStatus = user === undefined ? 'loading' : user ? 'authenticated' : 'anonymous'
 
   const applySession = useCallback((response: ApiResponse<SessionData>) => {
-    if (response.meta?.is_authenticated) {
-      setUser(response.data?.user ?? null)
-      setStatus('authenticated')
-    } else {
-      setUser(null)
-      setStatus('anonymous')
-    }
+    setUser(response.meta?.is_authenticated ? (response.data?.user ?? null) : null)
   }, [])
 
   useEffect(() => {
@@ -78,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await apiRequest<SessionData>(`${AUTH_API_BASE}${SESSION_PATH}`)
         applySession(response)
       } catch {
-        setStatus('anonymous')
+        setUser(null)
       }
     }
     loadSession()
@@ -98,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ status, user, requestLoginCode, confirmLoginCode, logout }}
+      value={{ status, user: user ?? null, requestLoginCode, confirmLoginCode, logout }}
     >
       {children}
     </AuthContext.Provider>
