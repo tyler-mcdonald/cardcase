@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie'
+
 const API_URL = import.meta.env.VITE_API_URL
 
 export type ApiUser = {
@@ -21,15 +23,6 @@ export type ApiResponse<T = unknown> = {
   errors?: ApiError[]
 }
 
-function getCookie(name: string): string | undefined {
-  return document.cookie
-    .split('; ')
-    .find((row) => row.startsWith(`${name}=`))
-    ?.split('=')
-    .slice(1)
-    .join('=')
-}
-
 export async function apiRequest<T = unknown>(
   path: string,
   options: RequestInit = {},
@@ -39,7 +32,7 @@ export async function apiRequest<T = unknown>(
   headers.set('Content-Type', 'application/json')
 
   if (method !== 'GET') {
-    const csrfToken = getCookie('csrftoken')
+    const csrfToken = Cookies.get('csrftoken')
     if (csrfToken) {
       headers.set('X-CSRFToken', csrfToken)
     }
