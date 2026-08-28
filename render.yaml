@@ -33,3 +33,5 @@ projects:
                 fromDatabase:
                   name: cardcase-db
                   property: connectionString
+              - key: DJANGO_ALLOWED_HOSTS
+                value: api.cardcase.jtm-dev.com
