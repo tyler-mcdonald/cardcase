@@ -44,4 +44,37 @@ To install a pre-commit hook that lints and formats staged files on each commit:
 uv run pre-commit install
 ```
 
+### Frontend
+
+#### Requires
+
+- [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
+- [pnpm](https://pnpm.io/)
+
+#### Frontend Setup
+
+Move into the `web` directory:
+
+```
+cd web
+```
+
+Copy the example env file:
+
+```
+cp .env.example .env
+```
+
+Install dependencies:
+
+```
+pnpm install
+```
+
+Start the dev server (the backend must also be running for login to work):
+
+```
+pnpm dev
+```
+
 See [DESIGN.md](DESIGN.md) for the project spec, and [docs/](docs/) for other documentation.

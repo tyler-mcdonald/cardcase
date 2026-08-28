@@ -33,3 +33,21 @@ projects:
                 fromDatabase:
                   name: cardcase-db
                   property: connectionString
+              - key: FRONTEND_URL
+                value: https://app.cardcase.jtm-dev.com
+
+          - type: web
+            name: cardcase-web
+            runtime: static
+            rootDir: web
+            buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+            staticPublishPath: dist
+            routes:
+              - type: rewrite
+                source: /*
+                destination: /index.html
+            domains:
+              - app.cardcase.jtm-dev.com
+            envVars:
+              - key: VITE_API_URL
+                value: https://api.cardcase.jtm-dev.com
