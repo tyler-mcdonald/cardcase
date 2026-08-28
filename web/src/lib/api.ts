@@ -11,10 +11,7 @@ export type ApiError = {
 export type ApiResponse<T = unknown> = {
   status: number
   data?: T
-  meta?: {
-    is_authenticated?: boolean
-    [key: string]: unknown
-  }
+  meta?: Record<string, unknown>
   errors?: ApiError[]
 }
 
