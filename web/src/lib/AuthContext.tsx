@@ -22,6 +22,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+const AUTH_API_BASE = '/_allauth/browser/v1'
 const GENERIC_ERROR = 'Something went wrong. Please try again.'
 
 function toActionResult(response: ApiResponse): ActionResult {
@@ -44,12 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    apiRequest<{ user?: ApiUser }>('auth/session').then(applySession)
+    apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`).then(applySession)
   }, [applySession])
 
   const requestLoginCode = useCallback(async (email: string): Promise<ActionResult> => {
     try {
-      const response = await apiRequest('auth/code/request', {
+      const response = await apiRequest(`${AUTH_API_BASE}/auth/code/request`, {
         method: 'POST',
         body: JSON.stringify({ email }),
       })
@@ -61,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const confirmLoginCode = useCallback(async (code: string): Promise<ActionResult> => {
     try {
-      const response = await apiRequest<{ user?: ApiUser }>('auth/code/confirm', {
+      const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/code/confirm`, {
         method: 'POST',
         body: JSON.stringify({ code }),
       })
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [applySession])
 
   const logout = useCallback(async () => {
-    const response = await apiRequest<{ user?: ApiUser }>('auth/session', {
+    const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`, {
       method: 'DELETE',
     })
     applySession(response)

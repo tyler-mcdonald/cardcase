@@ -38,7 +38,7 @@ export async function apiRequest<T = unknown>(
     }
   }
 
-  const response = await fetch(`${API_URL}/_allauth/browser/v1/${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     ...options,
     method,
     headers,
