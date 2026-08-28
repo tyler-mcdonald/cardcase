@@ -2,11 +2,6 @@ import Cookies from 'js-cookie'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-export type ApiUser = {
-  id: string
-  email: string
-}
-
 export type ApiError = {
   message: string
   code?: string

@@ -6,15 +6,20 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { apiRequest, type ApiResponse, type ApiUser } from './api'
+import { apiRequest, type ApiResponse } from './api'
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous'
 
 type ActionResult = { ok: true } | { ok: false; error: string }
 
+export type User = {
+  id: string
+  email: string
+}
+
 type AuthContextValue = {
   status: AuthStatus
-  user: ApiUser | null
+  user: User | null
   requestLoginCode: (email: string) => Promise<ActionResult>
   confirmLoginCode: (code: string) => Promise<ActionResult>
   logout: () => Promise<void>
@@ -32,9 +37,9 @@ function toActionResult(response: ApiResponse): ActionResult {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
-  const [user, setUser] = useState<ApiUser | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
-  const applySession = useCallback((response: ApiResponse<{ user?: ApiUser }>) => {
+  const applySession = useCallback((response: ApiResponse<{ user?: User }>) => {
     if (response.meta?.is_authenticated) {
       setUser(response.data?.user ?? null)
       setStatus('authenticated')
@@ -47,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadSession() {
       try {
-        const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`)
+        const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`)
         applySession(response)
       } catch {
         setStatus('anonymous')
@@ -70,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const confirmLoginCode = useCallback(async (code: string): Promise<ActionResult> => {
     try {
-      const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/code/confirm`, {
+      const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/code/confirm`, {
         method: 'POST',
         body: JSON.stringify({ code }),
       })
@@ -82,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [applySession])
 
   const logout = useCallback(async () => {
-    const response = await apiRequest<{ user?: ApiUser }>(`${AUTH_API_BASE}/auth/session`, {
+    const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`, {
       method: 'DELETE',
     })
     applySession(response)
