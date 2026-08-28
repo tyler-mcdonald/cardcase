@@ -22,7 +22,7 @@ type AuthContextValue = {
   user: User | null
   requestLoginCode: (email: string) => Promise<ActionResult>
   confirmLoginCode: (code: string) => Promise<ActionResult>
-  logout: () => Promise<void>
+  logout: () => Promise<ActionResult>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -33,6 +33,26 @@ const GENERIC_ERROR = 'Something went wrong. Please try again.'
 function toActionResult(response: ApiResponse): ActionResult {
   const error = response.errors?.[0]?.message
   return error ? { ok: false, error } : { ok: true }
+}
+
+async function authAction(
+  method: 'POST' | 'DELETE',
+  path: string,
+  { body, onResponse }: {
+    body?: unknown
+    onResponse?: (response: ApiResponse<{ user?: User }>) => void
+  } = {},
+): Promise<ActionResult> {
+  try {
+    const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}${path}`, {
+      method,
+      body: JSON.stringify(body),
+    })
+    onResponse?.(response)
+    return toActionResult(response)
+  } catch {
+    return { ok: false, error: GENERIC_ERROR }
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -61,40 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadSession()
   }, [applySession])
 
-  async function requestLoginCode(email: string): Promise<ActionResult> {
-    try {
-      const response = await apiRequest(`${AUTH_API_BASE}/auth/code/request`, {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-      })
-      return toActionResult(response)
-    } catch {
-      return { ok: false, error: GENERIC_ERROR }
-    }
+  function requestLoginCode(email: string) {
+    return authAction('POST', '/auth/code/request', { body: { email } })
   }
 
-  async function confirmLoginCode(code: string): Promise<ActionResult> {
-    try {
-      const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/code/confirm`, {
-        method: 'POST',
-        body: JSON.stringify({ code }),
-      })
-      applySession(response)
-      return toActionResult(response)
-    } catch {
-      return { ok: false, error: GENERIC_ERROR }
-    }
+  function confirmLoginCode(code: string) {
+    return authAction('POST', '/auth/code/confirm', { body: { code }, onResponse: applySession })
   }
 
-  async function logout() {
-    try {
-      const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`, {
-        method: 'DELETE',
-      })
-      applySession(response)
-    } catch {
-      // best-effort; the session cookie may still be valid server-side
-    }
+  function logout() {
+    return authAction('DELETE', '/auth/session', { onResponse: applySession })
   }
 
   return (
