@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useAuth } from './AuthContext'
+import { useAuth } from '@/lib/AuthContext'
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth()

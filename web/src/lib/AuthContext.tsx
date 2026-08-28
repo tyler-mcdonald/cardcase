@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { apiRequest, type ApiResponse } from '@/services/api'
+import { apiRequest, type ApiResponse } from './api'
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous'
 

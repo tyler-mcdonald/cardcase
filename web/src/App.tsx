@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { HomePage } from './routes/HomePage'
 import { LoginPage } from './routes/LoginPage'
-import { ProtectedRoute } from './features/auth/ProtectedRoute'
+import { ProtectedRoute } from './lib/ProtectedRoute'
 
 function App() {
   return (
