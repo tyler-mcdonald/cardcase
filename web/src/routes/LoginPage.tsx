@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../lib/AuthContext'
+import { useAuth } from '@/lib/AuthContext'
 
 export function LoginPage() {
   const { status, requestLoginCode, confirmLoginCode } = useAuth()
