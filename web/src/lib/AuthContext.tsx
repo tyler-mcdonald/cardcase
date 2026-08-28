@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadSession()
   }, [applySession])
 
-  const requestLoginCode = useCallback(async (email: string): Promise<ActionResult> => {
+  async function requestLoginCode(email: string): Promise<ActionResult> {
     try {
       const response = await apiRequest(`${AUTH_API_BASE}/auth/code/request`, {
         method: 'POST',
@@ -71,9 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return { ok: false, error: GENERIC_ERROR }
     }
-  }, [])
+  }
 
-  const confirmLoginCode = useCallback(async (code: string): Promise<ActionResult> => {
+  async function confirmLoginCode(code: string): Promise<ActionResult> {
     try {
       const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/code/confirm`, {
         method: 'POST',
@@ -84,14 +84,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return { ok: false, error: GENERIC_ERROR }
     }
-  }, [applySession])
+  }
 
-  const logout = useCallback(async () => {
-    const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`, {
-      method: 'DELETE',
-    })
-    applySession(response)
-  }, [applySession])
+  async function logout() {
+    try {
+      const response = await apiRequest<{ user?: User }>(`${AUTH_API_BASE}/auth/session`, {
+        method: 'DELETE',
+      })
+      applySession(response)
+    } catch {
+      // best-effort; the session cookie may still be valid server-side
+    }
+  }
 
   return (
     <AuthContext.Provider
