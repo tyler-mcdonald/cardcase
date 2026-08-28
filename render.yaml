@@ -35,5 +35,3 @@ projects:
                   property: connectionString
               - key: DJANGO_ALLOWED_HOSTS
                 value: api.cardcase.jtm-dev.com
-              - key: FRONTEND_URL
-                value: https://app.cardcase.jtm-dev.com
