@@ -17,9 +17,6 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# The frontend and API are deployed on separate subdomains, so cookies must
-# be scoped to the parent domain for the frontend to read the CSRF cookie
-# and send both cookies back to the API.
 SESSION_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
 CSRF_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
 
