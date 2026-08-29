@@ -35,39 +35,84 @@ export function LoginForm() {
     <main>
       <h1>Log in</h1>
       {step === 'email' ? (
-        <form onSubmit={handleRequestCode}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <button type="submit" disabled={submitting}>
-            Send login code
-          </button>
-        </form>
+        <EmailStep
+          email={email}
+          onEmailChange={setEmail}
+          onSubmit={handleRequestCode}
+          submitting={submitting}
+        />
       ) : (
-        <form onSubmit={handleConfirmCode}>
-          <p>Enter the code sent to {email}</p>
-          <label htmlFor="code">Code</label>
-          <input
-            id="code"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            required
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-          />
-          <button type="submit" disabled={submitting}>
-            Confirm
-          </button>
-        </form>
+        <CodeStep
+          email={email}
+          code={code}
+          onCodeChange={setCode}
+          onSubmit={handleConfirmCode}
+          submitting={submitting}
+        />
       )}
       {error && <p role="alert">{error}</p>}
     </main>
+  )
+}
+
+function EmailStep({
+  email,
+  onEmailChange,
+  onSubmit,
+  submitting,
+}: {
+  email: string
+  onEmailChange: (email: string) => void
+  onSubmit: (event: FormEvent) => void
+  submitting: boolean
+}) {
+  return (
+    <form onSubmit={onSubmit}>
+      <label htmlFor="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        autoComplete="email"
+        required
+        value={email}
+        onChange={(event) => onEmailChange(event.target.value)}
+      />
+      <button type="submit" disabled={submitting}>
+        Send login code
+      </button>
+    </form>
+  )
+}
+
+function CodeStep({
+  email,
+  code,
+  onCodeChange,
+  onSubmit,
+  submitting,
+}: {
+  email: string
+  code: string
+  onCodeChange: (code: string) => void
+  onSubmit: (event: FormEvent) => void
+  submitting: boolean
+}) {
+  return (
+    <form onSubmit={onSubmit}>
+      <p>Enter the code sent to {email}</p>
+      <label htmlFor="code">Code</label>
+      <input
+        id="code"
+        type="text"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        required
+        value={code}
+        onChange={(event) => onCodeChange(event.target.value)}
+      />
+      <button type="submit" disabled={submitting}>
+        Confirm
+      </button>
+    </form>
   )
 }
