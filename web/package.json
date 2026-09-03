@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "format:check": "prettier --check .",
     "preview": "vite preview"
   },
   "dependencies": {
