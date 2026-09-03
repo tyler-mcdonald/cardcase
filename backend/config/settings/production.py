@@ -31,7 +31,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 MAILERS = {
     "default": {
         "BACKEND": "anymail.backends.resend.EmailBackend",
-        "OPTIONS": {
+        "OPTIONS": {  # type: ignore[dict-item]
             "api_key": RESEND_API_KEY,
         },
     },
