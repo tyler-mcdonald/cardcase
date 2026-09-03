@@ -17,7 +17,7 @@ from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
 
 NEW_USER_EMAIL = "new@example.com"
-CODE_PATTERN = re.compile(r"[A-Z0-9]{4}-[A-Z0-9]{4}")
+CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")
 
 # allauth hardcodes the confirm_email rate limit to "1/10s/key" when
 # EMAIL_VERIFICATION_BY_CODE_ENABLED is True; it isn't exposed as a

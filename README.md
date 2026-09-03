@@ -16,15 +16,15 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 - [Docker](https://www.docker.com/)
 - [Make](https://www.gnu.org/software/make/)
 
-#### Backend Server Setup
+#### Backend Setup
 
-Move into the `backend` directory:
+Change into the `backend` directory:
 
 ```
 cd backend
 ```
 
-Setup the project environment. This will install dependencies, create `.env` file, start local Postgres, and run migrations:
+Setup the project environment. This will install dependencies, create a `.env` file, start local Postgres, and run migrations:
 
 ```
 make setup
@@ -42,6 +42,39 @@ To install a pre-commit hook that lints and formats staged files on each commit:
 
 ```
 uv run pre-commit install
+```
+
+### Web Frontend
+
+#### Requires
+
+- [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
+- [pnpm](https://pnpm.io/)
+
+#### Frontend Setup
+
+Change into the `web` directory:
+
+```
+cd web
+```
+
+Copy the example env file:
+
+```
+cp .env.example .env
+```
+
+Install dependencies:
+
+```
+pnpm install
+```
+
+Start the dev server (the backend must also be running for login to work):
+
+```
+pnpm dev
 ```
 
 See [DESIGN.md](DESIGN.md) for the project spec, and [docs/](docs/) for other documentation.

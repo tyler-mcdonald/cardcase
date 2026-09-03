@@ -17,6 +17,9 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+SESSION_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
+CSRF_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
+
 # Start as short as possible and ramp up to the standard 31536000 (1 year)
 # once HTTPS is confirmed stable in production.
 SECURE_HSTS_SECONDS = 60
