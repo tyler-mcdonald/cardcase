@@ -8,13 +8,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "prepare": "cd .. && husky web/.husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md}": "prettier --write"
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "pnpm run lint"
+    ],
+    "*.{json,css,md}": "prettier --write"
   },
   "dependencies": {
     "js-cookie": "^3.0.8",
@@ -30,7 +35,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.4.1",
-    "oxlint": "^1.79.0",
+    "oxlint": "^1.80.0",
     "prettier": "^3.9.6",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
