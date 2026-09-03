@@ -10,11 +10,11 @@ vi.mock("@/lib/api", () => ({
 
 const mockedApiRequest = vi.mocked(apiRequest);
 
-function anonymousSession(): ApiResponse {
+function anonymousSessionResponse(): ApiResponse {
   return { status: 200, meta: { is_authenticated: false } };
 }
 
-function authenticatedSession(email: string): ApiResponse {
+function authenticatedSessionResponse(email: string): ApiResponse {
   return {
     status: 200,
     meta: { is_authenticated: true },
@@ -41,7 +41,7 @@ describe("when the session starts unauthenticated", () => {
   let auth: Awaited<ReturnType<typeof renderAuthWithSession>>;
 
   beforeEach(async () => {
-    auth = await renderAuthWithSession(anonymousSession());
+    auth = await renderAuthWithSession(anonymousSessionResponse());
   });
 
   it("reports anonymous status with no user", () => {
@@ -51,7 +51,7 @@ describe("when the session starts unauthenticated", () => {
 
   it("confirmLoginCode applies the session and reports ok on success", async () => {
     mockedApiRequest.mockResolvedValueOnce(
-      authenticatedSession("test@example.com"),
+      authenticatedSessionResponse("test@example.com"),
     );
 
     const actionResult = await runAction(() =>
@@ -92,7 +92,7 @@ describe("when the session starts authenticated", () => {
 
   beforeEach(async () => {
     auth = await renderAuthWithSession(
-      authenticatedSession("test@example.com"),
+      authenticatedSessionResponse("test@example.com"),
     );
   });
 
@@ -102,7 +102,7 @@ describe("when the session starts authenticated", () => {
   });
 
   it("logout resets the session to anonymous", async () => {
-    mockedApiRequest.mockResolvedValueOnce(anonymousSession());
+    mockedApiRequest.mockResolvedValueOnce(anonymousSessionResponse());
 
     await runAction(() => auth.current.logout());
 
