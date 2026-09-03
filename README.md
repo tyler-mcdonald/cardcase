@@ -16,15 +16,15 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 - [Docker](https://www.docker.com/)
 - [Make](https://www.gnu.org/software/make/)
 
-#### Backend Server Setup
+#### Backend Setup
 
-Move into the `backend` directory:
+Change into the `backend` directory:
 
 ```
 cd backend
 ```
 
-Setup the project environment. This will install dependencies, create `.env` file, start local Postgres, and run migrations:
+Setup the project environment. This will install dependencies, create a `.env` file, start local Postgres, and run migrations:
 
 ```
 make setup
@@ -44,7 +44,7 @@ To install a pre-commit hook that lints and formats staged files on each commit:
 uv run pre-commit install
 ```
 
-### Frontend
+### Web Frontend
 
 #### Requires
 
@@ -53,7 +53,7 @@ uv run pre-commit install
 
 #### Frontend Setup
 
-Move into the `web` directory:
+Change into the `web` directory:
 
 ```
 cd web
