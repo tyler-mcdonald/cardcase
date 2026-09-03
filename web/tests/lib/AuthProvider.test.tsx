@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AuthProvider, GENERIC_ERROR, useAuth } from "@/lib/AuthContext";
+import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
+import { useAuth } from "@/lib/use-auth";
 import { apiRequest, type ApiResponse } from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({

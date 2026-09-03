@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Backend CI
 
 on:
   pull_request:
@@ -37,22 +37,14 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.0.1
-        with:
-          python-version: "3.13"
-          enable-cache: true
-      - run: uv sync --locked
+      - uses: ./.github/actions/setup-backend
       - run: uv run pytest
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.0.1
-        with:
-          python-version: "3.13"
-          enable-cache: true
-      - run: uv sync --locked
+      - uses: ./.github/actions/setup-backend
       - run: uv run ruff check
       - run: uv run ruff format --check
 
@@ -60,20 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.0.1
-        with:
-          python-version: "3.13"
-          enable-cache: true
-      - run: uv sync --locked
+      - uses: ./.github/actions/setup-backend
       - run: uv run mypy .
 
   migrations:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.0.1
-        with:
-          python-version: "3.13"
-          enable-cache: true
-      - run: uv sync --locked
+      - uses: ./.github/actions/setup-backend
       - run: uv run manage.py makemigrations --check --dry-run
