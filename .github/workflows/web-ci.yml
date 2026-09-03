@@ -1,4 +1,4 @@
-name: Web Tests
+name: Web CI
 
 on:
   pull_request:
