@@ -1,0 +1,17 @@
+name: Setup web
+description: Install web dependencies with pnpm
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+      with:
+        version: 11
+    - uses: actions/setup-node@v7
+      with:
+        node-version-file: web/.nvmrc
+        cache: pnpm
+        cache-dependency-path: web/pnpm-lock.yaml
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+      working-directory: web
