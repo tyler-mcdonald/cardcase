@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/use-auth";
@@ -23,47 +22,11 @@ function authenticatedSession(email: string): ApiResponse {
   };
 }
 
-function AuthHarness() {
-  const { status, user, requestLoginCode, confirmLoginCode, logout } =
-    useAuth();
-  const [result, setResult] = useState("");
-
-  return (
-    <div>
-      <span data-testid="status">{status}</span>
-      <span data-testid="email">{user?.email ?? ""}</span>
-      <span data-testid="result">{result}</span>
-      <button
-        onClick={async () =>
-          setResult(JSON.stringify(await requestLoginCode("test@example.com")))
-        }
-      >
-        request
-      </button>
-      <button
-        onClick={async () =>
-          setResult(JSON.stringify(await confirmLoginCode("123456")))
-        }
-      >
-        confirm
-      </button>
-      <button onClick={async () => setResult(JSON.stringify(await logout()))}>
-        logout
-      </button>
-    </div>
-  );
-}
-
-async function renderHarness(initialSession: ApiResponse) {
+async function renderAuth(initialSession: ApiResponse) {
   mockedApiRequest.mockResolvedValueOnce(initialSession);
-  render(
-    <AuthProvider>
-      <AuthHarness />
-    </AuthProvider>,
-  );
-  await waitFor(() =>
-    expect(screen.getByTestId("status")).not.toHaveTextContent("loading"),
-  );
+  const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+  await waitFor(() => expect(result.current.status).not.toBe("loading"));
+  return result;
 }
 
 beforeEach(() => {
@@ -72,80 +35,84 @@ beforeEach(() => {
 
 describe("AuthProvider", () => {
   it("starts anonymous when the session fetch reports unauthenticated", async () => {
-    await renderHarness(anonymousSession());
+    const auth = await renderAuth(anonymousSession());
 
-    expect(screen.getByTestId("status")).toHaveTextContent("anonymous");
-    expect(screen.getByTestId("email")).toHaveTextContent("");
+    expect(auth.current.status).toBe("anonymous");
+    expect(auth.current.user).toBeNull();
   });
 
   it("becomes authenticated with the session user when the session fetch reports authenticated", async () => {
-    await renderHarness(authenticatedSession("test@example.com"));
+    const auth = await renderAuth(authenticatedSession("test@example.com"));
 
-    expect(screen.getByTestId("status")).toHaveTextContent("authenticated");
-    expect(screen.getByTestId("email")).toHaveTextContent("test@example.com");
+    expect(auth.current.status).toBe("authenticated");
+    expect(auth.current.user?.email).toBe("test@example.com");
   });
 
   it("requestLoginCode resolves ok on success", async () => {
-    await renderHarness(anonymousSession());
+    const auth = await renderAuth(anonymousSession());
     mockedApiRequest.mockResolvedValueOnce({ status: 200 });
 
-    fireEvent.click(screen.getByText("request"));
+    let actionResult;
+    await act(async () => {
+      actionResult = await auth.current.requestLoginCode("test@example.com");
+    });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("result")).toHaveTextContent('{"ok":true}'),
-    );
+    expect(actionResult).toEqual({ ok: true });
   });
 
   it("confirmLoginCode applies the session and reports ok on success", async () => {
-    await renderHarness(anonymousSession());
+    const auth = await renderAuth(anonymousSession());
     mockedApiRequest.mockResolvedValueOnce(
       authenticatedSession("test@example.com"),
     );
 
-    fireEvent.click(screen.getByText("confirm"));
+    let actionResult;
+    await act(async () => {
+      actionResult = await auth.current.confirmLoginCode("123456");
+    });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("status")).toHaveTextContent("authenticated"),
-    );
-    expect(screen.getByTestId("email")).toHaveTextContent("test@example.com");
-    expect(screen.getByTestId("result")).toHaveTextContent('{"ok":true}');
+    expect(actionResult).toEqual({ ok: true });
+    expect(auth.current.status).toBe("authenticated");
+    expect(auth.current.user?.email).toBe("test@example.com");
   });
 
   it("confirmLoginCode returns the error and leaves the session unauthenticated", async () => {
-    await renderHarness(anonymousSession());
+    const auth = await renderAuth(anonymousSession());
     mockedApiRequest.mockResolvedValueOnce({
       status: 400,
       errors: [{ message: "Incorrect code." }],
     });
 
-    fireEvent.click(screen.getByText("confirm"));
+    let actionResult;
+    await act(async () => {
+      actionResult = await auth.current.confirmLoginCode("000000");
+    });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("result")).toHaveTextContent("Incorrect code."),
-    );
-    expect(screen.getByTestId("status")).toHaveTextContent("anonymous");
+    expect(actionResult).toEqual({ ok: false, error: "Incorrect code." });
+    expect(auth.current.status).toBe("anonymous");
   });
 
   it("logout resets the session to anonymous", async () => {
-    await renderHarness(authenticatedSession("test@example.com"));
+    const auth = await renderAuth(authenticatedSession("test@example.com"));
     mockedApiRequest.mockResolvedValueOnce(anonymousSession());
 
-    fireEvent.click(screen.getByText("logout"));
+    await act(async () => {
+      await auth.current.logout();
+    });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("status")).toHaveTextContent("anonymous"),
-    );
-    expect(screen.getByTestId("email")).toHaveTextContent("");
+    expect(auth.current.status).toBe("anonymous");
+    expect(auth.current.user).toBeNull();
   });
 
   it("returns a generic error when the request throws", async () => {
-    await renderHarness(anonymousSession());
+    const auth = await renderAuth(anonymousSession());
     mockedApiRequest.mockRejectedValueOnce(new Error("network down"));
 
-    fireEvent.click(screen.getByText("request"));
+    let actionResult;
+    await act(async () => {
+      actionResult = await auth.current.requestLoginCode("test@example.com");
+    });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("result")).toHaveTextContent(GENERIC_ERROR),
-    );
+    expect(actionResult).toEqual({ ok: false, error: GENERIC_ERROR });
   });
 });
