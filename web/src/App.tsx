@@ -1,7 +1,7 @@
-import { Route, Routes } from 'react-router-dom'
-import { HomePage } from './routes/HomePage'
-import { LoginPage } from './routes/LoginPage'
-import { ProtectedRoute } from './lib/ProtectedRoute'
+import { Route, Routes } from "react-router-dom";
+import { HomePage } from "./routes/HomePage";
+import { LoginPage } from "./routes/LoginPage";
+import { ProtectedRoute } from "./lib/ProtectedRoute";
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
         }
       />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
