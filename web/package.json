@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "format:check": "prettier --check .",
+    "typecheck": "tsc -b",
     "preview": "vite preview",
     "prepare": "cd .. && husky web/.husky"
   },
