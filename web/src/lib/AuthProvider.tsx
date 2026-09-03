@@ -5,7 +5,7 @@ import {
   type AuthStatus,
   type ActionResult,
   type User,
-} from "./auth-context-value";
+} from "./use-auth";
 
 const AUTH_API_BASE = "/_allauth/browser/v1";
 const SESSION_PATH = "/auth/session";
