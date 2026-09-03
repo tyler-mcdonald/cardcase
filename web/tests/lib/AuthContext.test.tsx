@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import { AuthProvider, GENERIC_ERROR, useAuth } from "@/lib/AuthContext";
 import { apiRequest, type ApiResponse } from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
@@ -9,8 +9,6 @@ vi.mock("@/lib/api", () => ({
 }));
 
 const mockedApiRequest = vi.mocked(apiRequest);
-
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 function anonymousSession(): ApiResponse {
   return { status: 200, meta: { is_authenticated: false } };
