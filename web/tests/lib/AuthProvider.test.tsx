@@ -22,97 +22,93 @@ function authenticatedSession(email: string): ApiResponse {
   };
 }
 
-async function renderAuth(initialSession: ApiResponse) {
+async function renderAuthWithSession(initialSession: ApiResponse) {
   mockedApiRequest.mockResolvedValueOnce(initialSession);
   const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
   await waitFor(() => expect(result.current.status).not.toBe("loading"));
   return result;
 }
 
-beforeEach(() => {
-  mockedApiRequest.mockReset();
-});
+async function runAction<T>(action: () => Promise<T>) {
+  let actionResult!: T;
+  await act(async () => {
+    actionResult = await action();
+  });
+  return actionResult;
+}
 
 describe("AuthProvider", () => {
-  it("starts anonymous when the session fetch reports unauthenticated", async () => {
-    const auth = await renderAuth(anonymousSession());
+  describe("when the session starts unauthenticated", () => {
+    let auth: Awaited<ReturnType<typeof renderAuthWithSession>>;
 
-    expect(auth.current.status).toBe("anonymous");
-    expect(auth.current.user).toBeNull();
-  });
-
-  it("becomes authenticated with the session user when the session fetch reports authenticated", async () => {
-    const auth = await renderAuth(authenticatedSession("test@example.com"));
-
-    expect(auth.current.status).toBe("authenticated");
-    expect(auth.current.user?.email).toBe("test@example.com");
-  });
-
-  it("requestLoginCode resolves ok on success", async () => {
-    const auth = await renderAuth(anonymousSession());
-    mockedApiRequest.mockResolvedValueOnce({ status: 200 });
-
-    let actionResult;
-    await act(async () => {
-      actionResult = await auth.current.requestLoginCode("test@example.com");
+    beforeEach(async () => {
+      auth = await renderAuthWithSession(anonymousSession());
     });
 
-    expect(actionResult).toEqual({ ok: true });
+    it("reports anonymous status with no user", () => {
+      expect(auth.current.status).toBe("anonymous");
+      expect(auth.current.user).toBeNull();
+    });
+
+    it("confirmLoginCode applies the session and reports ok on success", async () => {
+      mockedApiRequest.mockResolvedValueOnce(
+        authenticatedSession("test@example.com"),
+      );
+
+      const actionResult = await runAction(() =>
+        auth.current.confirmLoginCode("123456"),
+      );
+
+      expect(actionResult).toEqual({ ok: true });
+      expect(auth.current.status).toBe("authenticated");
+      expect(auth.current.user?.email).toBe("test@example.com");
+    });
+
+    it("confirmLoginCode returns the error message on failure", async () => {
+      mockedApiRequest.mockResolvedValueOnce({
+        status: 400,
+        errors: [{ message: "Incorrect code." }],
+      });
+
+      const actionResult = await runAction(() =>
+        auth.current.confirmLoginCode("000000"),
+      );
+
+      expect(actionResult).toEqual({ ok: false, error: "Incorrect code." });
+    });
+
+    it("returns a generic error when the request throws", async () => {
+      mockedApiRequest.mockRejectedValueOnce(new Error("network down"));
+
+      const actionResult = await runAction(() =>
+        auth.current.requestLoginCode("test@example.com"),
+      );
+
+      expect(actionResult).toEqual({ ok: false, error: GENERIC_ERROR });
+    });
   });
 
-  it("confirmLoginCode applies the session and reports ok on success", async () => {
-    const auth = await renderAuth(anonymousSession());
-    mockedApiRequest.mockResolvedValueOnce(
-      authenticatedSession("test@example.com"),
-    );
+  describe("when the session starts authenticated", () => {
+    let auth: Awaited<ReturnType<typeof renderAuthWithSession>>;
 
-    let actionResult;
-    await act(async () => {
-      actionResult = await auth.current.confirmLoginCode("123456");
+    beforeEach(async () => {
+      auth = await renderAuthWithSession(
+        authenticatedSession("test@example.com"),
+      );
     });
 
-    expect(actionResult).toEqual({ ok: true });
-    expect(auth.current.status).toBe("authenticated");
-    expect(auth.current.user?.email).toBe("test@example.com");
-  });
-
-  it("confirmLoginCode returns the error and leaves the session unauthenticated", async () => {
-    const auth = await renderAuth(anonymousSession());
-    mockedApiRequest.mockResolvedValueOnce({
-      status: 400,
-      errors: [{ message: "Incorrect code." }],
+    it("reports authenticated status with the session user", () => {
+      expect(auth.current.status).toBe("authenticated");
+      expect(auth.current.user?.email).toBe("test@example.com");
     });
 
-    let actionResult;
-    await act(async () => {
-      actionResult = await auth.current.confirmLoginCode("000000");
+    it("logout resets the session to anonymous", async () => {
+      mockedApiRequest.mockResolvedValueOnce(anonymousSession());
+
+      await runAction(() => auth.current.logout());
+
+      expect(auth.current.status).toBe("anonymous");
+      expect(auth.current.user).toBeNull();
     });
-
-    expect(actionResult).toEqual({ ok: false, error: "Incorrect code." });
-    expect(auth.current.status).toBe("anonymous");
-  });
-
-  it("logout resets the session to anonymous", async () => {
-    const auth = await renderAuth(authenticatedSession("test@example.com"));
-    mockedApiRequest.mockResolvedValueOnce(anonymousSession());
-
-    await act(async () => {
-      await auth.current.logout();
-    });
-
-    expect(auth.current.status).toBe("anonymous");
-    expect(auth.current.user).toBeNull();
-  });
-
-  it("returns a generic error when the request throws", async () => {
-    const auth = await renderAuth(anonymousSession());
-    mockedApiRequest.mockRejectedValueOnce(new Error("network down"));
-
-    let actionResult;
-    await act(async () => {
-      actionResult = await auth.current.requestLoginCode("test@example.com");
-    });
-
-    expect(actionResult).toEqual({ ok: false, error: GENERIC_ERROR });
   });
 });
