@@ -1,31 +1,11 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { apiRequest, type ApiResponse } from "./api";
-
-type AuthStatus = "loading" | "authenticated" | "anonymous";
-
-type ActionResult = { ok: true } | { ok: false; error: string };
-
-export type User = {
-  id: string;
-  email: string;
-};
-
-type AuthContextValue = {
-  status: AuthStatus;
-  user: User | null;
-  requestLoginCode: (email: string) => Promise<ActionResult>;
-  confirmLoginCode: (code: string) => Promise<ActionResult>;
-  logout: () => Promise<ActionResult>;
-};
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+import {
+  AuthContext,
+  type AuthStatus,
+  type ActionResult,
+  type User,
+} from "./auth-context-value";
 
 const AUTH_API_BASE = "/_allauth/browser/v1";
 const SESSION_PATH = "/auth/session";
@@ -114,12 +94,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }
