@@ -49,7 +49,7 @@ describe("when the session starts unauthenticated", () => {
     expect(auth.current.user).toBeNull();
   });
 
-  it("confirmLoginCode applies the session and reports ok on success", async () => {
+  it("returns ok and correctly sets user context", async () => {
     mockedApiRequest.mockResolvedValueOnce(
       authenticatedSessionResponse("test@example.com"),
     );
@@ -63,7 +63,7 @@ describe("when the session starts unauthenticated", () => {
     expect(auth.current.user?.email).toBe("test@example.com");
   });
 
-  it("confirmLoginCode returns the error message on failure", async () => {
+  it("returns error for an incorrect login code", async () => {
     mockedApiRequest.mockResolvedValueOnce({
       status: 400,
       errors: [{ message: "Incorrect code." }],
