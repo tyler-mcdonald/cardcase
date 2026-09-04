@@ -23,6 +23,7 @@
     "*.{json,css,md}": "prettier --write"
   },
   "dependencies": {
+    "dompurify": "^3.4.14",
     "js-cookie": "^3.0.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

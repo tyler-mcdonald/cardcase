@@ -12,6 +12,7 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["error", { "allowConstantExport": true }],
+    "react/no-danger": "error",
     "eslint/eqeqeq": "error",
     "import/no-duplicates": "error",
     "unicorn/error-message": "error",
