@@ -1,0 +1,17 @@
+import DOMPurify from "dompurify";
+
+export function SafeHtml({
+  html,
+  className,
+}: {
+  html: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={className}
+      // oxlint-disable-next-line react/no-danger -- sanitized via DOMPurify above
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+    />
+  );
+}
