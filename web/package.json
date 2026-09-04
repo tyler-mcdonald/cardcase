@@ -10,6 +10,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format:check": "prettier --check .",
+    "test": "vitest run",
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "prepare": "cd .. && husky web/.husky"
@@ -28,16 +29,19 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "husky": "^9.1.7",
+    "jsdom": "^30.0.1",
     "lint-staged": "^17.4.1",
     "oxlint": "^1.80.0",
     "prettier": "^3.9.6",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }
