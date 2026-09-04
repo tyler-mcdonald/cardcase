@@ -9,7 +9,7 @@ import {
 
 const AUTH_API_BASE = "/_allauth/browser/v1";
 const SESSION_PATH = "/auth/session";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
+export const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 type SessionData = { user?: User };
 
