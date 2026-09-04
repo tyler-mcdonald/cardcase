@@ -10,6 +10,8 @@ vi.mock("@/lib/api", () => ({
 
 const mockedApiRequest = vi.mocked(apiRequest);
 
+const TEST_EMAIL = "test@example.com";
+
 function anonymousSessionResponse(): ApiResponse {
   return { status: 200, meta: { is_authenticated: false } };
 }
@@ -29,6 +31,8 @@ async function renderAuthWithSession(initialSession: ApiResponse) {
   return result;
 }
 
+type AuthResult = Awaited<ReturnType<typeof renderAuthWithSession>>;
+
 async function runAction<T>(action: () => Promise<T>) {
   let actionResult!: T;
   await act(async () => {
@@ -38,7 +42,7 @@ async function runAction<T>(action: () => Promise<T>) {
 }
 
 describe("when the session starts unauthenticated", () => {
-  let auth: Awaited<ReturnType<typeof renderAuthWithSession>>;
+  let auth: AuthResult;
 
   beforeEach(async () => {
     auth = await renderAuthWithSession(anonymousSessionResponse());
@@ -51,7 +55,7 @@ describe("when the session starts unauthenticated", () => {
 
   it("returns ok and correctly sets user context", async () => {
     mockedApiRequest.mockResolvedValueOnce(
-      authenticatedSessionResponse("test@example.com"),
+      authenticatedSessionResponse(TEST_EMAIL),
     );
 
     const actionResult = await runAction(() =>
@@ -60,7 +64,7 @@ describe("when the session starts unauthenticated", () => {
 
     expect(actionResult).toEqual({ ok: true });
     expect(auth.current.status).toBe("authenticated");
-    expect(auth.current.user?.email).toBe("test@example.com");
+    expect(auth.current.user?.email).toBe(TEST_EMAIL);
   });
 
   it("returns error for an incorrect login code", async () => {
@@ -80,7 +84,7 @@ describe("when the session starts unauthenticated", () => {
     mockedApiRequest.mockRejectedValueOnce(new Error("network down"));
 
     const actionResult = await runAction(() =>
-      auth.current.requestLoginCode("test@example.com"),
+      auth.current.requestLoginCode(TEST_EMAIL),
     );
 
     expect(actionResult).toEqual({ ok: false, error: GENERIC_ERROR });
@@ -88,17 +92,17 @@ describe("when the session starts unauthenticated", () => {
 });
 
 describe("when the session starts authenticated", () => {
-  let auth: Awaited<ReturnType<typeof renderAuthWithSession>>;
+  let auth: AuthResult;
 
   beforeEach(async () => {
     auth = await renderAuthWithSession(
-      authenticatedSessionResponse("test@example.com"),
+      authenticatedSessionResponse(TEST_EMAIL),
     );
   });
 
   it("reports authenticated status with the session user", () => {
     expect(auth.current.status).toBe("authenticated");
-    expect(auth.current.user?.email).toBe("test@example.com");
+    expect(auth.current.user?.email).toBe(TEST_EMAIL);
   });
 
   it("logout resets the session to anonymous", async () => {
