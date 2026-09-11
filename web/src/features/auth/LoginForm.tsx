@@ -1,4 +1,14 @@
 import { useState, type FormEvent } from "react";
+import {
+  Alert,
+  Button,
+  Paper,
+  PinInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { useAuth } from "@/lib/use-auth";
 
 export function LoginForm() {
@@ -37,8 +47,10 @@ export function LoginForm() {
     submit(event, () => confirmLoginCode(code));
 
   return (
-    <main>
-      <h1>Log in</h1>
+    <Paper withBorder shadow="sm" p="xl" radius="md">
+      <Title order={2} ta="center" mb="lg">
+        Log in
+      </Title>
       {step === "email" ? (
         <EmailStep
           email={email}
@@ -55,8 +67,12 @@ export function LoginForm() {
           submitting={submitting}
         />
       )}
-      {error && <p role="alert">{error}</p>}
-    </main>
+      {error && (
+        <Alert color="red" mt="md" role="alert">
+          {error}
+        </Alert>
+      )}
+    </Paper>
   );
 }
 
@@ -73,18 +89,20 @@ function EmailStep({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <label htmlFor="email">Email</label>
-      <input
-        id="email"
-        type="email"
-        autoComplete="email"
-        required
-        value={email}
-        onChange={(event) => onEmailChange(event.target.value)}
-      />
-      <button type="submit" disabled={submitting}>
-        Send login code
-      </button>
+      <Stack>
+        <TextInput
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => onEmailChange(event.target.value)}
+        />
+        <Button type="submit" loading={submitting} fullWidth>
+          Send login code
+        </Button>
+      </Stack>
     </form>
   );
 }
@@ -104,22 +122,21 @@ function CodeStep({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <p>Enter the code sent to {email}</p>
-      <label htmlFor="code">Code</label>
-      <input
-        id="code"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        maxLength={6}
-        autoComplete="one-time-code"
-        required
-        value={code}
-        onChange={(event) => onCodeChange(event.target.value)}
-      />
-      <button type="submit" disabled={submitting}>
-        Confirm
-      </button>
+      <Stack align="center">
+        <Text size="sm" ta="center">
+          Enter the code sent to {email}
+        </Text>
+        <PinInput
+          id="code"
+          length={6}
+          type="number"
+          value={code}
+          onChange={onCodeChange}
+        />
+        <Button type="submit" loading={submitting} fullWidth>
+          Confirm
+        </Button>
+      </Stack>
     </form>
   );
 }
