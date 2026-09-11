@@ -7,8 +7,8 @@ from django.test import Client
 BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
 
 
-def get(client: Client, path: str) -> HttpResponseBase:
-    return client.get(f"{BROWSER_CLIENT_BASE}{path}")
+def get(client: Client, path: str, base: str = BROWSER_CLIENT_BASE) -> HttpResponseBase:
+    return client.get(f"{base}{path}")
 
 
 def csrf_token(client: Client) -> str:
@@ -17,18 +17,33 @@ def csrf_token(client: Client) -> str:
     return client.cookies["csrftoken"].value
 
 
-def post(client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
+def post(
+    client: Client, path: str, data: dict[str, Any], base: str = BROWSER_CLIENT_BASE
+) -> HttpResponseBase:
     return client.post(
-        f"{BROWSER_CLIENT_BASE}{path}",
+        f"{base}{path}",
         data=json.dumps(data),
         content_type="application/json",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
 
 
-def delete(client: Client, path: str) -> HttpResponseBase:
+def patch(
+    client: Client, path: str, data: dict[str, Any], base: str = BROWSER_CLIENT_BASE
+) -> HttpResponseBase:
+    return client.patch(
+        f"{base}{path}",
+        data=json.dumps(data),
+        content_type="application/json",
+        HTTP_X_CSRFTOKEN=csrf_token(client),
+    )
+
+
+def delete(
+    client: Client, path: str, base: str = BROWSER_CLIENT_BASE
+) -> HttpResponseBase:
     return client.delete(
-        f"{BROWSER_CLIENT_BASE}{path}",
+        f"{base}{path}",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
 

@@ -1,4 +1,7 @@
+from collections.abc import Callable
+
 import pytest
+from django.http import HttpResponseBase
 from django.test import Client
 
 from accounts.models import Account
@@ -116,17 +119,6 @@ def test_retrieve_own_account(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
-def test_retrieve_other_users_account_is_not_found(
-    auth_client: Client, other_user: User
-) -> None:
-    account = _create_account(other_user)
-
-    response = get(auth_client, f"/accounts/{account.id}")
-
-    assert response.status_code == 404
-
-
-@pytest.mark.django_db
 def test_update_account_fields(auth_client: Client, user: User) -> None:
     account = _create_account(user, name="Amazon")
 
@@ -139,36 +131,17 @@ def test_update_account_fields(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
-def test_update_other_users_account_is_not_found(
-    auth_client: Client, other_user: User
+@pytest.mark.parametrize("new_type", ["flight_credit", "gift_card"])
+def test_update_rejects_type_field(
+    auth_client: Client, user: User, new_type: str
 ) -> None:
-    account = _create_account(other_user)
-
-    response = patch(auth_client, f"/accounts/{account.id}", {"name": "Hijacked"})
-
-    assert response.status_code == 404
-
-
-@pytest.mark.django_db
-def test_update_rejects_type_change(auth_client: Client, user: User) -> None:
     account = _create_account(user, type=Account.Type.GIFT_CARD)
 
-    response = patch(auth_client, f"/accounts/{account.id}", {"type": "flight_credit"})
+    response = patch(auth_client, f"/accounts/{account.id}", {"type": new_type})
 
     assert response.status_code == 400
     account.refresh_from_db()
     assert account.type == Account.Type.GIFT_CARD
-
-
-@pytest.mark.django_db
-def test_update_rejects_type_field_even_with_same_value(
-    auth_client: Client, user: User
-) -> None:
-    account = _create_account(user, type=Account.Type.GIFT_CARD)
-
-    response = patch(auth_client, f"/accounts/{account.id}", {"type": "gift_card"})
-
-    assert response.status_code == 400
 
 
 @pytest.mark.django_db
@@ -200,12 +173,23 @@ def test_delete_soft_deletes_and_hides_account(auth_client: Client, user: User) 
 
 
 @pytest.mark.django_db
-def test_delete_other_users_account_is_not_found(
-    auth_client: Client, other_user: User
+@pytest.mark.parametrize(
+    "make_request",
+    [
+        lambda c, account_id: get(c, f"/accounts/{account_id}"),
+        lambda c, account_id: patch(c, f"/accounts/{account_id}", {"name": "Hijacked"}),
+        lambda c, account_id: delete(c, f"/accounts/{account_id}"),
+    ],
+    ids=["get", "patch", "delete"],
+)
+def test_other_users_account_is_not_found(
+    auth_client: Client,
+    other_user: User,
+    make_request: Callable[[Client, object], HttpResponseBase],
 ) -> None:
     account = _create_account(other_user)
 
-    response = delete(auth_client, f"/accounts/{account.id}")
+    response = make_request(auth_client, account.id)
 
     assert response.status_code == 404
     account.refresh_from_db()
