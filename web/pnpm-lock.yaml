@@ -11,9 +11,6 @@ importers:
       '@mantine/core':
         specifier: ^9.6.1
         version: 9.6.1(@mantine/hooks@9.6.1(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@mantine/hooks':
-        specifier: ^9.6.1
-        version: 9.6.1(react@19.2.8)
       js-cookie:
         specifier: ^3.0.8
         version: 3.0.8
