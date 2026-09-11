@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth, type ActionResult } from "@/lib/use-auth";
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth();
@@ -24,9 +24,11 @@ export function LoginForm() {
     {
       action,
       onSuccess,
+      onFailure,
     }: {
       action: () => ReturnType<typeof requestLoginCode>;
       onSuccess?: () => void;
+      onFailure?: (result: Extract<ActionResult, { ok: false }>) => void;
     },
   ) {
     event.preventDefault();
@@ -38,6 +40,7 @@ export function LoginForm() {
       onSuccess?.();
     } else {
       setError(result.error);
+      onFailure?.(result);
     }
   }
 
@@ -48,7 +51,18 @@ export function LoginForm() {
     });
 
   const handleConfirmCode = (event: FormEvent) =>
-    submit(event, { action: () => confirmLoginCode(code) });
+    submit(event, {
+      action: () => confirmLoginCode(code),
+      onFailure: (result) => {
+        if (result.expired) {
+          setStep("email");
+          setCode("");
+          setError(
+            "Your code expired or was entered incorrectly too many times. Please request a new one.",
+          );
+        }
+      },
+    });
 
   function handleStartOver() {
     setStep("email");

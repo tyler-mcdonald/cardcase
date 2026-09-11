@@ -21,10 +21,10 @@ function toActionResult(response: ApiResponse): ActionResult {
   // A 401 here just means "not authenticated yet" (e.g. a code was sent
   // and is awaiting confirmation) — allauth's headless API uses it as a
   // normal pending state, not a failure. A 409 has no `errors` either,
-  // but does mean the login-by-code process is dead (expired or too
-  // many wrong attempts) and can't be recovered.
+  // but does mean the process (e.g. login-by-code) is no longer valid —
+  // expired, or aborted after too many wrong attempts.
   return response.status === 409
-    ? { ok: false, error: GENERIC_ERROR }
+    ? { ok: false, error: GENERIC_ERROR, expired: true }
     : { ok: true };
 }
 
