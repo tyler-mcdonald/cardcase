@@ -130,6 +130,7 @@ function CodeStep({
         </Text>
         <PinInput
           id="code"
+          ariaLabel="Code"
           length={6}
           type="number"
           placeholder=""
@@ -137,9 +138,6 @@ function CodeStep({
           disabled={submitting}
           value={code}
           onChange={onCodeChange}
-          getInputProps={(index) => ({
-            "aria-label": `Code, digit ${index + 1} of 6`,
-          })}
         />
         <Button
           type="submit"
