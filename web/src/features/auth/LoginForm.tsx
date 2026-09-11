@@ -47,32 +47,34 @@ export function LoginForm() {
     submit(event, () => confirmLoginCode(code));
 
   return (
-    <Paper withBorder shadow="sm" p="xl" radius="md">
-      <Title order={2} ta="center" mb="lg">
-        Log in
-      </Title>
-      {step === "email" ? (
-        <EmailStep
-          email={email}
-          onEmailChange={setEmail}
-          onSubmit={handleRequestCode}
-          submitting={submitting}
-        />
-      ) : (
-        <CodeStep
-          email={email}
-          code={code}
-          onCodeChange={setCode}
-          onSubmit={handleConfirmCode}
-          submitting={submitting}
-        />
-      )}
-      {error && (
-        <Alert color="red" mt="md" role="alert">
-          {error}
-        </Alert>
-      )}
-    </Paper>
+    <main>
+      <Paper withBorder shadow="sm" p="xl" radius="md">
+        <Title order={1} ta="center" mb="lg">
+          Log in
+        </Title>
+        {step === "email" ? (
+          <EmailStep
+            email={email}
+            onEmailChange={setEmail}
+            onSubmit={handleRequestCode}
+            submitting={submitting}
+          />
+        ) : (
+          <CodeStep
+            email={email}
+            code={code}
+            onCodeChange={setCode}
+            onSubmit={handleConfirmCode}
+            submitting={submitting}
+          />
+        )}
+        {error && (
+          <Alert color="red" mt="md" role="alert">
+            {error}
+          </Alert>
+        )}
+      </Paper>
+    </main>
   );
 }
 
@@ -128,12 +130,18 @@ function CodeStep({
         </Text>
         <PinInput
           id="code"
+          ariaLabel="Code"
           length={6}
           type="number"
           value={code}
           onChange={onCodeChange}
         />
-        <Button type="submit" loading={submitting} fullWidth>
+        <Button
+          type="submit"
+          loading={submitting}
+          disabled={code.length !== 6}
+          fullWidth
+        >
           Confirm
         </Button>
       </Stack>
