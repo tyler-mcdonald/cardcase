@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from typing import Any
 
 from django.http import HttpResponseBase
@@ -50,3 +51,24 @@ def delete(
 
 def get_session(client: Client) -> HttpResponseBase:
     return get(client, "/auth/session")
+
+
+@dataclass
+class ScopedClient:
+    base: str
+
+    def get(self, client: Client, path: str) -> HttpResponseBase:
+        return get(client, path, base=self.base)
+
+    def post(self, client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
+        return post(client, path, data, base=self.base)
+
+    def patch(self, client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
+        return patch(client, path, data, base=self.base)
+
+    def delete(self, client: Client, path: str) -> HttpResponseBase:
+        return delete(client, path, base=self.base)
+
+
+def scoped(base: str) -> ScopedClient:
+    return ScopedClient(base)

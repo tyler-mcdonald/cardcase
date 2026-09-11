@@ -1,24 +1,8 @@
-from typing import Any
+from tests.client import scoped
 
-from django.http import HttpResponseBase
-from django.test import Client
+_client = scoped("/v1")
 
-from tests import client as base_client
-
-BASE = "/v1"
-
-
-def get(client: Client, path: str) -> HttpResponseBase:
-    return base_client.get(client, path, base=BASE)
-
-
-def post(client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
-    return base_client.post(client, path, data, base=BASE)
-
-
-def patch(client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
-    return base_client.patch(client, path, data, base=BASE)
-
-
-def delete(client: Client, path: str) -> HttpResponseBase:
-    return base_client.delete(client, path, base=BASE)
+get = _client.get
+post = _client.post
+patch = _client.patch
+delete = _client.delete
