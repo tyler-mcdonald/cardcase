@@ -63,7 +63,9 @@ class ScopedClient:
     def post(self, client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
         return post(client, path, data, base=self.base)
 
-    def patch(self, client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
+    def patch(
+        self, client: Client, path: str, data: dict[str, Any]
+    ) -> HttpResponseBase:
         return patch(client, path, data, base=self.base)
 
     def delete(self, client: Client, path: str) -> HttpResponseBase:
