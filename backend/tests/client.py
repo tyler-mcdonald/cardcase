@@ -53,6 +53,10 @@ def get_session(client: Client) -> HttpResponseBase:
     return get(client, "/auth/session")
 
 
+def as_json(response: HttpResponseBase) -> Any:
+    return response.json()  # type: ignore[attr-defined]
+
+
 @dataclass
 class ScopedClient:
     base: str

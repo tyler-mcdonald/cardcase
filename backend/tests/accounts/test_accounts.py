@@ -1,26 +1,12 @@
+from datetime import date
+
 import pytest
 from django.test import Client
 
 from accounts.models import Account
 from tests.accounts.client import delete, get, patch, post
-from tests.client import csrf_token
+from tests.client import as_json, csrf_token
 from users.models import User
-
-
-@pytest.fixture
-def user(db: None) -> User:
-    return User.objects.create_user(email="owner@example.com")
-
-
-@pytest.fixture
-def other_user(db: None) -> User:
-    return User.objects.create_user(email="other@example.com")
-
-
-@pytest.fixture
-def auth_client(client: Client, user: User) -> Client:
-    client.force_login(user)
-    return client
 
 
 def _create_account(owner: User, **overrides: object) -> Account:
@@ -41,6 +27,24 @@ def test_create_requires_authentication(client: Client) -> None:
 
 
 @pytest.mark.django_db
+def test_update_requires_authentication(client: Client, user: User) -> None:
+    account = _create_account(user)
+
+    response = patch(client, f"/accounts/{account.id}", {"name": "Hijacked"})
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_delete_requires_authentication(client: Client, user: User) -> None:
+    account = _create_account(user)
+
+    response = delete(client, f"/accounts/{account.id}")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
 def test_create_account_success(auth_client: Client, user: User) -> None:
     response = post(
         auth_client,
@@ -54,7 +58,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
     )
 
     assert response.status_code == 201
-    payload = response.json()  # type: ignore[attr-defined]
+    payload = as_json(response)
     assert payload["name"] == "Amazon"
     assert payload["description"] == "Birthday gift"
     assert payload["type"] == "gift_card"
@@ -72,7 +76,7 @@ def test_create_account_without_expiration_date_defaults_to_null(
     response = post(auth_client, "/accounts", {"name": "Delta", "type": "gift_card"})
 
     assert response.status_code == 201
-    assert response.json()["expiration_date"] is None  # type: ignore[attr-defined]
+    assert as_json(response)["expiration_date"] is None
 
 
 @pytest.mark.django_db
@@ -101,7 +105,7 @@ def test_list_only_returns_own_accounts(
     response = get(auth_client, "/accounts")
 
     assert response.status_code == 200
-    results = response.json()["results"]  # type: ignore[attr-defined]
+    results = as_json(response)["results"]
     assert [r["id"] for r in results] == [str(mine.id)]
 
 
@@ -112,19 +116,34 @@ def test_retrieve_own_account(auth_client: Client, user: User) -> None:
     response = get(auth_client, f"/accounts/{account.id}")
 
     assert response.status_code == 200
-    assert response.json()["id"] == str(account.id)  # type: ignore[attr-defined]
+    assert as_json(response)["id"] == str(account.id)
 
 
 @pytest.mark.django_db
-def test_update_account_fields(auth_client: Client, user: User) -> None:
+@pytest.mark.parametrize(
+    ("field", "api_value", "model_attr", "model_value"),
+    [
+        ("name", "Amazon.com", "name", "Amazon.com"),
+        ("description", "Updated description", "description", "Updated description"),
+        ("expiration_date", "2028-06-15", "expires_at", date(2028, 6, 15)),
+    ],
+)
+def test_update_account_fields(
+    auth_client: Client,
+    user: User,
+    field: str,
+    api_value: str,
+    model_attr: str,
+    model_value: object,
+) -> None:
     account = _create_account(user, name="Amazon")
 
-    response = patch(auth_client, f"/accounts/{account.id}", {"name": "Amazon.com"})
+    response = patch(auth_client, f"/accounts/{account.id}", {field: api_value})
 
     assert response.status_code == 200
-    assert response.json()["name"] == "Amazon.com"  # type: ignore[attr-defined]
+    assert as_json(response)[field] == api_value
     account.refresh_from_db()
-    assert account.name == "Amazon.com"
+    assert getattr(account, model_attr) == model_value
 
 
 @pytest.mark.django_db
@@ -170,7 +189,19 @@ def test_delete_soft_deletes_and_hides_account(auth_client: Client, user: User) 
 
 
 @pytest.mark.django_db
-def test_other_users_account_get_is_not_found(
+def test_soft_deleted_account_excluded_from_list(
+    auth_client: Client, user: User
+) -> None:
+    account = _create_account(user)
+    account.soft_delete()
+
+    response = get(auth_client, "/accounts")
+
+    assert as_json(response)["results"] == []
+
+
+@pytest.mark.django_db
+def test_cannot_retrieve_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = _create_account(other_user)
@@ -181,7 +212,7 @@ def test_other_users_account_get_is_not_found(
 
 
 @pytest.mark.django_db
-def test_other_users_account_patch_is_not_found(
+def test_cannot_update_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = _create_account(other_user)
@@ -194,7 +225,7 @@ def test_other_users_account_patch_is_not_found(
 
 
 @pytest.mark.django_db
-def test_other_users_account_delete_is_not_found(
+def test_cannot_delete_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = _create_account(other_user)
@@ -204,18 +235,6 @@ def test_other_users_account_delete_is_not_found(
     assert response.status_code == 404
     account.refresh_from_db()
     assert account.deleted_at is None
-
-
-@pytest.mark.django_db
-def test_soft_deleted_account_excluded_from_list(
-    auth_client: Client, user: User
-) -> None:
-    account = _create_account(user)
-    account.soft_delete()
-
-    response = get(auth_client, "/accounts")
-
-    assert response.json()["results"] == []  # type: ignore[attr-defined]
 
 
 def test_post_without_csrf_token_is_rejected(client: Client, user: User) -> None:
