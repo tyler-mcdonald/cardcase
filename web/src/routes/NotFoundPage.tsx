@@ -9,8 +9,7 @@ export function NotFoundPage() {
       <Title>Something is not right...</Title>
       <Text c="dimmed" size="lg" mt="md">
         Page you are trying to open does not exist. You may have mistyped the
-        address, or the page has been moved to another URL. If you think this is
-        an error, contact support.
+        address, or the page has been moved to another URL.
       </Text>
       <Button mt="xl" size="md" onClick={() => navigate("/")}>
         Get back to home page
