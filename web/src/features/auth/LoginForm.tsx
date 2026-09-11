@@ -46,6 +46,17 @@ export function LoginForm() {
   const handleConfirmCode = (event: FormEvent) =>
     submit(event, () => confirmLoginCode(code));
 
+  function handleCodeChange(value: string) {
+    // Once all 6 digits are filled, typing over the last box replaces it
+    // in place rather than growing the string, so length alone can't cap
+    // entry — only block same-length updates (overtyping); deletions
+    // always shrink the string and stay allowed.
+    if (code.length === 6 && value.length === 6) {
+      return;
+    }
+    setCode(value);
+  }
+
   return (
     <main>
       <Paper withBorder shadow="sm" p="xl" radius="md">
@@ -63,7 +74,7 @@ export function LoginForm() {
           <CodeStep
             email={email}
             code={code}
-            onCodeChange={setCode}
+            onCodeChange={handleCodeChange}
             onSubmit={handleConfirmCode}
             submitting={submitting}
           />
@@ -134,6 +145,7 @@ function CodeStep({
           length={6}
           type="number"
           placeholder=""
+          autoFocus
           value={code}
           onChange={onCodeChange}
         />
