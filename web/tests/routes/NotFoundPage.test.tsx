@@ -22,17 +22,14 @@ describe("NotFoundPage", () => {
     renderNotFoundPage();
 
     expect(
-      screen.getByRole("heading", { name: /something is not right/i })
-        .textContent,
-    ).toBe("Something is not right...");
+      screen.getByRole("heading", { name: /404: page not found/i }).textContent,
+    ).toBe("404: Page not found");
   });
 
   it("navigates back home when the button is clicked", () => {
     renderNotFoundPage();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /get back to home page/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /go to home page/i }));
 
     expect(screen.getByText("Home").textContent).toBe("Home");
   });

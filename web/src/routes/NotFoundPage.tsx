@@ -6,13 +6,12 @@ export function NotFoundPage() {
 
   return (
     <Container ta="center" py="xl">
-      <Title>Something is not right...</Title>
+      <Title>404: Page not found</Title>
       <Text c="dimmed" size="lg" mt="md">
-        Page you are trying to open does not exist. You may have mistyped the
-        address, or the page has been moved to another URL.
+        The page you requested doesn't exist.
       </Text>
       <Button mt="xl" size="md" onClick={() => navigate("/")}>
-        Get back to home page
+        Go to Home Page
       </Button>
     </Container>
   );
