@@ -22,8 +22,8 @@ describe("NotFoundPage", () => {
     renderNotFoundPage();
 
     expect(
-      screen.getByRole("heading", { name: /404: page not found/i }).textContent,
-    ).toBe("404: Page not found");
+      screen.getByRole("heading", { name: /404: not found/i }).textContent,
+    ).toBe("404: Not Found");
   });
 
   it("navigates back home when the button is clicked", () => {

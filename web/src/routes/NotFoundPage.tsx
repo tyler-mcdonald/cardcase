@@ -6,7 +6,7 @@ export function NotFoundPage() {
 
   return (
     <Container ta="center" py="xl">
-      <Title>404: Page not found</Title>
+      <Title>404: Not Found</Title>
       <Text c="dimmed" size="lg" mt="md">
         The page you requested doesn't exist.
       </Text>
