@@ -133,6 +133,7 @@ function CodeStep({
           ariaLabel="Code"
           length={6}
           type="number"
+          placeholder=""
           value={code}
           onChange={onCodeChange}
         />
