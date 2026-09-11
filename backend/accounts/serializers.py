@@ -24,7 +24,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         read_only_fields: ClassVar[list[str]] = ["id", "created_at", "updated_at"]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        if self.instance is not None and "type" in self.initial_data:
+        if self.instance is not None and "type" in attrs:
             raise serializers.ValidationError(
                 {"type": "This field cannot be changed after creation."}
             )

@@ -1,7 +1,4 @@
-from collections.abc import Callable
-
 import pytest
-from django.http import HttpResponseBase
 from django.test import Client
 
 from accounts.models import Account
@@ -173,23 +170,36 @@ def test_delete_soft_deletes_and_hides_account(auth_client: Client, user: User) 
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "make_request",
-    [
-        lambda c, account_id: get(c, f"/accounts/{account_id}"),
-        lambda c, account_id: patch(c, f"/accounts/{account_id}", {"name": "Hijacked"}),
-        lambda c, account_id: delete(c, f"/accounts/{account_id}"),
-    ],
-    ids=["get", "patch", "delete"],
-)
-def test_other_users_account_is_not_found(
-    auth_client: Client,
-    other_user: User,
-    make_request: Callable[[Client, object], HttpResponseBase],
+def test_other_users_account_get_is_not_found(
+    auth_client: Client, other_user: User
 ) -> None:
     account = _create_account(other_user)
 
-    response = make_request(auth_client, account.id)
+    response = get(auth_client, f"/accounts/{account.id}")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_other_users_account_patch_is_not_found(
+    auth_client: Client, other_user: User
+) -> None:
+    account = _create_account(other_user)
+
+    response = patch(auth_client, f"/accounts/{account.id}", {"name": "Hijacked"})
+
+    assert response.status_code == 404
+    account.refresh_from_db()
+    assert account.name != "Hijacked"
+
+
+@pytest.mark.django_db
+def test_other_users_account_delete_is_not_found(
+    auth_client: Client, other_user: User
+) -> None:
+    account = _create_account(other_user)
+
+    response = delete(auth_client, f"/accounts/{account.id}")
 
     assert response.status_code == 404
     account.refresh_from_db()
