@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   Alert,
   Button,
@@ -46,12 +46,20 @@ export function LoginForm() {
   const handleConfirmCode = (event: FormEvent) =>
     submit(event, () => confirmLoginCode(code));
 
+  // Set on the paste-capture phase (fires before PinInput's own paste
+  // handling) so handleCodeChange can tell a pasted replacement apart
+  // from overtyping a filled box — both produce a same-length string.
+  const codeWasPasted = useRef(false);
+
   function handleCodeChange(value: string) {
+    const pasted = codeWasPasted.current;
+    codeWasPasted.current = false;
     // Once all 6 digits are filled, typing over the last box replaces it
     // in place rather than growing the string, so length alone can't cap
-    // entry — only block same-length updates (overtyping); deletions
-    // always shrink the string and stay allowed.
-    if (code.length === 6 && value.length === 6) {
+    // entry — only block same-length updates from typing (overtyping);
+    // deletions always shrink the string, and pasting a full replacement
+    // code stays allowed either way.
+    if (!pasted && code.length === 6 && value.length === 6) {
       return;
     }
     setCode(value);
@@ -75,6 +83,9 @@ export function LoginForm() {
             email={email}
             code={code}
             onCodeChange={handleCodeChange}
+            onCodePasteCapture={() => {
+              codeWasPasted.current = true;
+            }}
             onSubmit={handleConfirmCode}
             submitting={submitting}
           />
@@ -124,12 +135,14 @@ function CodeStep({
   email,
   code,
   onCodeChange,
+  onCodePasteCapture,
   onSubmit,
   submitting,
 }: {
   email: string;
   code: string;
   onCodeChange: (code: string) => void;
+  onCodePasteCapture: () => void;
   onSubmit: (event: FormEvent) => void;
   submitting: boolean;
 }) {
@@ -148,6 +161,7 @@ function CodeStep({
           autoFocus
           value={code}
           onChange={onCodeChange}
+          onPasteCapture={onCodePasteCapture}
         />
         <Button
           type="submit"
