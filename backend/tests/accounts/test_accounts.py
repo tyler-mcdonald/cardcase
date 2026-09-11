@@ -5,7 +5,7 @@ from django.test import Client
 
 from accounts.models import Account
 from tests.accounts.client import delete, get, patch, post
-from tests.client import as_json, csrf_token
+from tests.client import csrf_token
 from users.models import User
 
 
@@ -58,7 +58,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
     )
 
     assert response.status_code == 201
-    payload = as_json(response)
+    payload = response.json()
     assert payload["name"] == "Amazon"
     assert payload["description"] == "Birthday gift"
     assert payload["type"] == "gift_card"
@@ -76,7 +76,7 @@ def test_create_account_without_expiration_date_defaults_to_null(
     response = post(auth_client, "/accounts", {"name": "Delta", "type": "gift_card"})
 
     assert response.status_code == 201
-    assert as_json(response)["expiration_date"] is None
+    assert response.json()["expiration_date"] is None
 
 
 @pytest.mark.django_db
@@ -105,7 +105,7 @@ def test_list_only_returns_own_accounts(
     response = get(auth_client, "/accounts")
 
     assert response.status_code == 200
-    results = as_json(response)["results"]
+    results = response.json()["results"]
     assert [r["id"] for r in results] == [str(mine.id)]
 
 
@@ -116,7 +116,7 @@ def test_retrieve_own_account(auth_client: Client, user: User) -> None:
     response = get(auth_client, f"/accounts/{account.id}")
 
     assert response.status_code == 200
-    assert as_json(response)["id"] == str(account.id)
+    assert response.json()["id"] == str(account.id)
 
 
 @pytest.mark.django_db
@@ -141,7 +141,7 @@ def test_update_account_fields(
     response = patch(auth_client, f"/accounts/{account.id}", {field: api_value})
 
     assert response.status_code == 200
-    assert as_json(response)[field] == api_value
+    assert response.json()[field] == api_value
     account.refresh_from_db()
     assert getattr(account, model_attr) == model_value
 
@@ -197,7 +197,7 @@ def test_soft_deleted_account_excluded_from_list(
 
     response = get(auth_client, "/accounts")
 
-    assert as_json(response)["results"] == []
+    assert response.json()["results"] == []
 
 
 @pytest.mark.django_db
