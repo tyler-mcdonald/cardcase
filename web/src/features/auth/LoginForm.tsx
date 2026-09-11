@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth, type ActionResult } from "@/lib/use-auth";
+import { useAuth, PROCESS_EXPIRED, type ActionResult } from "@/lib/use-auth";
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth();
@@ -54,7 +54,7 @@ export function LoginForm() {
     submit(event, {
       action: () => confirmLoginCode(code),
       onFailure: (result) => {
-        if (result.expired) {
+        if (result.code === PROCESS_EXPIRED) {
           setStep("email");
           setCode("");
           setError(

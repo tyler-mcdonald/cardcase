@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth, NETWORK_ERROR, PROCESS_EXPIRED } from "@/lib/use-auth";
 import { apiRequest, type ApiResponse } from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
@@ -70,14 +70,32 @@ describe("when the session starts unauthenticated", () => {
   it("returns error for an incorrect login code", async () => {
     mockedApiRequest.mockResolvedValueOnce({
       status: 400,
-      errors: [{ message: "Incorrect code." }],
+      errors: [{ message: "Incorrect code.", code: "incorrect_code" }],
     });
 
     const actionResult = await runAction(() =>
       auth.current.confirmLoginCode("000000"),
     );
 
-    expect(actionResult).toEqual({ ok: false, error: "Incorrect code." });
+    expect(actionResult).toEqual({
+      ok: false,
+      error: "Incorrect code.",
+      code: "incorrect_code",
+    });
+  });
+
+  it("returns a process-expired error for a 409 with no error body", async () => {
+    mockedApiRequest.mockResolvedValueOnce({ status: 409 });
+
+    const actionResult = await runAction(() =>
+      auth.current.confirmLoginCode("000000"),
+    );
+
+    expect(actionResult).toEqual({
+      ok: false,
+      error: GENERIC_ERROR,
+      code: PROCESS_EXPIRED,
+    });
   });
 
   it("returns a generic error when the request throws", async () => {
@@ -87,7 +105,11 @@ describe("when the session starts unauthenticated", () => {
       auth.current.requestLoginCode(TEST_EMAIL),
     );
 
-    expect(actionResult).toEqual({ ok: false, error: GENERIC_ERROR });
+    expect(actionResult).toEqual({
+      ok: false,
+      error: GENERIC_ERROR,
+      code: NETWORK_ERROR,
+    });
   });
 });
 
