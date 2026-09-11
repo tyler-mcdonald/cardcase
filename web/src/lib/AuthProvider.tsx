@@ -15,7 +15,17 @@ type SessionData = { user?: User };
 
 function toActionResult(response: ApiResponse): ActionResult {
   const error = response.errors?.[0]?.message;
-  return error ? { ok: false, error } : { ok: true };
+  if (error) {
+    return { ok: false, error };
+  }
+  if (response.status === 409) {
+    return {
+      ok: false,
+      error: "That code is no longer valid. Please request a new one.",
+      mustRestart: true,
+    };
+  }
+  return { ok: true };
 }
 
 async function authAction(

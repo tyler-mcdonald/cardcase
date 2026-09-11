@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth, type ActionResult } from "@/lib/use-auth";
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth();
@@ -23,6 +23,7 @@ export function LoginForm() {
     event: FormEvent,
     action: () => ReturnType<typeof requestLoginCode>,
     onSuccess?: () => void,
+    onFailure?: (result: Extract<ActionResult, { ok: false }>) => void,
   ) {
     event.preventDefault();
     setSubmitting(true);
@@ -33,6 +34,7 @@ export function LoginForm() {
       onSuccess?.();
     } else {
       setError(result.error);
+      onFailure?.(result);
     }
   }
 
@@ -44,7 +46,17 @@ export function LoginForm() {
     );
 
   const handleConfirmCode = (event: FormEvent) =>
-    submit(event, () => confirmLoginCode(code));
+    submit(
+      event,
+      () => confirmLoginCode(code),
+      undefined,
+      (result) => {
+        if (result.mustRestart) {
+          setStep("email");
+          setCode("");
+        }
+      },
+    );
 
   return (
     <main>
