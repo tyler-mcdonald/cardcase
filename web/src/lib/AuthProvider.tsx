@@ -18,14 +18,9 @@ function toActionResult(response: ApiResponse): ActionResult {
   if (error) {
     return { ok: false, error };
   }
-  if (response.status === 409) {
-    return {
-      ok: false,
-      error: "That code is no longer valid. Please request a new one.",
-      mustRestart: true,
-    };
-  }
-  return { ok: true };
+  return response.status < 400
+    ? { ok: true }
+    : { ok: false, error: GENERIC_ERROR };
 }
 
 async function authAction(

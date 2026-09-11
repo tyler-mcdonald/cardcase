@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth, type ActionResult } from "@/lib/use-auth";
+import { useAuth } from "@/lib/use-auth";
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth();
@@ -21,9 +21,13 @@ export function LoginForm() {
 
   async function submit(
     event: FormEvent,
-    action: () => ReturnType<typeof requestLoginCode>,
-    onSuccess?: () => void,
-    onFailure?: (result: Extract<ActionResult, { ok: false }>) => void,
+    {
+      action,
+      onSuccess,
+    }: {
+      action: () => ReturnType<typeof requestLoginCode>;
+      onSuccess?: () => void;
+    },
   ) {
     event.preventDefault();
     setSubmitting(true);
@@ -34,29 +38,23 @@ export function LoginForm() {
       onSuccess?.();
     } else {
       setError(result.error);
-      onFailure?.(result);
     }
   }
 
   const handleRequestCode = (event: FormEvent) =>
-    submit(
-      event,
-      () => requestLoginCode(email),
-      () => setStep("code"),
-    );
+    submit(event, {
+      action: () => requestLoginCode(email),
+      onSuccess: () => setStep("code"),
+    });
 
   const handleConfirmCode = (event: FormEvent) =>
-    submit(
-      event,
-      () => confirmLoginCode(code),
-      undefined,
-      (result) => {
-        if (result.mustRestart) {
-          setStep("email");
-          setCode("");
-        }
-      },
-    );
+    submit(event, { action: () => confirmLoginCode(code) });
+
+  function handleStartOver() {
+    setStep("email");
+    setCode("");
+    setError(null);
+  }
 
   return (
     <main>
@@ -77,6 +75,7 @@ export function LoginForm() {
             code={code}
             onCodeChange={setCode}
             onSubmit={handleConfirmCode}
+            onStartOver={handleStartOver}
             submitting={submitting}
           />
         )}
@@ -126,12 +125,14 @@ function CodeStep({
   code,
   onCodeChange,
   onSubmit,
+  onStartOver,
   submitting,
 }: {
   email: string;
   code: string;
   onCodeChange: (code: string) => void;
   onSubmit: (event: FormEvent) => void;
+  onStartOver: () => void;
   submitting: boolean;
 }) {
   return (
@@ -156,6 +157,9 @@ function CodeStep({
           fullWidth
         >
           Confirm
+        </Button>
+        <Button type="button" variant="subtle" size="sm" onClick={onStartOver}>
+          Use a different email
         </Button>
       </Stack>
     </form>
