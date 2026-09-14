@@ -11,7 +11,8 @@ from django.http import HttpRequest, HttpResponseBase
 from django.test import Client
 from pytest_django import Settings
 
-from tests.client import delete, get, get_session, post
+from tests.client import get_session
+from tests.users.client import delete, get, post
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User

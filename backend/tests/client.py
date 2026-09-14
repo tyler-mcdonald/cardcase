@@ -14,19 +14,17 @@ else:
 BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
 
 
-def get(client: Client, path: str, base: str = BROWSER_CLIENT_BASE) -> TestResponse:
+def get(client: Client, path: str, base: str) -> TestResponse:
     return client.get(f"{base}{path}")
 
 
 def csrf_token(client: Client) -> str:
     if "csrftoken" not in client.cookies:
-        get(client, "/auth/session")
+        get_session(client)
     return client.cookies["csrftoken"].value
 
 
-def post(
-    client: Client, path: str, data: dict[str, Any], base: str = BROWSER_CLIENT_BASE
-) -> TestResponse:
+def post(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
     return client.post(
         f"{base}{path}",
         data=json.dumps(data),
@@ -35,9 +33,7 @@ def post(
     )
 
 
-def patch(
-    client: Client, path: str, data: dict[str, Any], base: str = BROWSER_CLIENT_BASE
-) -> TestResponse:
+def patch(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
     return client.patch(
         f"{base}{path}",
         data=json.dumps(data),
@@ -46,7 +42,7 @@ def patch(
     )
 
 
-def delete(client: Client, path: str, base: str = BROWSER_CLIENT_BASE) -> TestResponse:
+def delete(client: Client, path: str, base: str) -> TestResponse:
     return client.delete(
         f"{base}{path}",
         HTTP_X_CSRFTOKEN=csrf_token(client),
@@ -54,7 +50,7 @@ def delete(client: Client, path: str, base: str = BROWSER_CLIENT_BASE) -> TestRe
 
 
 def get_session(client: Client) -> TestResponse:
-    return get(client, "/auth/session")
+    return get(client, "/auth/session", base=BROWSER_CLIENT_BASE)
 
 
 @dataclass
