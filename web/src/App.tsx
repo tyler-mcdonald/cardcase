@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./routes/HomePage";
 import { LoginPage } from "./routes/LoginPage";
+import { NotFoundPage } from "./routes/NotFoundPage";
 import { ProtectedRoute } from "./lib/ProtectedRoute";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
