@@ -54,9 +54,6 @@ def get_session(client: Client) -> TestResponse:
 
 
 class ScopedClient:
-    # A real class, not a SimpleNamespace/dict of partials: mypy infers each
-    # self.x assignment's exact bound signature from get/post/patch/delete,
-    # whereas a namespace or dict would type every value as untyped Any.
     def __init__(self, base: str) -> None:
         self.get = partial(get, base=base)
         self.post = partial(post, base=base)
