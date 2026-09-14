@@ -259,7 +259,12 @@ def test_trailing_slash_urls_are_not_routed(client: Client) -> None:
 def test_list_pagination_covers_all_accounts_without_duplicates(
     auth_client: Client, user: User
 ) -> None:
-    accounts = [_create_account(user, name=f"Account {i}") for i in range(55)]
+    accounts = Account.objects.bulk_create(
+        [
+            Account(user=user, name=f"Account {i}", type=Account.Type.GIFT_CARD)
+            for i in range(55)
+        ]
+    )
     # Force identical created_at across every row so the list ordering has to
     # rely on the -id tiebreaker instead of natural timestamp variance.
     Account.objects.filter(id__in=[a.id for a in accounts]).update(
