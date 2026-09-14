@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from django.test import Client
@@ -53,21 +53,14 @@ def get_session(client: Client) -> TestResponse:
     return get(client, "/auth/session", base=BROWSER_CLIENT_BASE)
 
 
-@dataclass
 class ScopedClient:
-    base: str
-
-    def get(self, client: Client, path: str) -> TestResponse:
-        return get(client, path, base=self.base)
-
-    def post(self, client: Client, path: str, data: dict[str, Any]) -> TestResponse:
-        return post(client, path, data, base=self.base)
-
-    def patch(self, client: Client, path: str, data: dict[str, Any]) -> TestResponse:
-        return patch(client, path, data, base=self.base)
-
-    def delete(self, client: Client, path: str) -> TestResponse:
-        return delete(client, path, base=self.base)
+    # functools.partial rather than four forwarding methods -- mypy still
+    # checks the bound calls against get/post/patch/delete's real signatures.
+    def __init__(self, base: str) -> None:
+        self.get = partial(get, base=base)
+        self.post = partial(post, base=base)
+        self.patch = partial(patch, base=base)
+        self.delete = partial(delete, base=base)
 
 
 def scoped(base: str) -> ScopedClient:
