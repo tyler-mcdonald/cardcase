@@ -247,3 +247,8 @@ def test_post_without_csrf_token_is_rejected(client: Client, user: User) -> None
     )
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_trailing_slash_urls_are_not_routed(client: Client) -> None:
+    assert get(client, "/accounts/").status_code == 404
