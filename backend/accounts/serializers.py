@@ -6,10 +6,6 @@ from .models import Account
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
-    expiration_date = serializers.DateField(
-        source="expires_on", required=False, allow_null=True
-    )
-
     class Meta:
         model = Account
         fields: ClassVar[list[str]] = [
@@ -17,7 +13,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             "name",
             "description",
             "type",
-            "expiration_date",
+            "expires_on",
             "created_at",
             "updated_at",
         ]

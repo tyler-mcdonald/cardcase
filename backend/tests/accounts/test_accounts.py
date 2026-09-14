@@ -53,7 +53,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
             "name": "Amazon",
             "description": "Birthday gift",
             "type": "gift_card",
-            "expiration_date": "2027-01-01",
+            "expires_on": "2027-01-01",
         },
     )
 
@@ -62,7 +62,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
     assert payload["name"] == "Amazon"
     assert payload["description"] == "Birthday gift"
     assert payload["type"] == "gift_card"
-    assert payload["expiration_date"] == "2027-01-01"
+    assert payload["expires_on"] == "2027-01-01"
     assert payload["id"]
 
     account = Account.objects.get(id=payload["id"])
@@ -70,13 +70,13 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
-def test_create_account_without_expiration_date_defaults_to_null(
+def test_create_account_without_expires_on_defaults_to_null(
     auth_client: Client,
 ) -> None:
     response = post(auth_client, "/accounts", {"name": "Delta", "type": "gift_card"})
 
     assert response.status_code == 201
-    assert response.json()["expiration_date"] is None
+    assert response.json()["expires_on"] is None
 
 
 @pytest.mark.django_db
@@ -125,7 +125,7 @@ def test_retrieve_own_account(auth_client: Client, user: User) -> None:
     [
         ("name", "Amazon.com", "name", "Amazon.com"),
         ("description", "Updated description", "description", "Updated description"),
-        ("expiration_date", "2028-06-15", "expires_on", date(2028, 6, 15)),
+        ("expires_on", "2028-06-15", "expires_on", date(2028, 6, 15)),
     ],
 )
 def test_update_account_fields(

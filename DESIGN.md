@@ -51,11 +51,11 @@
   - Get session / end session (log out)
 - Accounts
   - POST /accounts
-    - { name, description?, type, expiration_date?, starting_balance }
+    - { name, description?, type, expires_on?, starting_balance }
   - GET /accounts
   - GET /accounts/{id}
   - PATCH /accounts/{id}
-    - { name?, description?, type?, expiration_date? }
+    - { name?, description?, type?, expires_on? }
   - DELETE /accounts/{id}
 - Transactions
   - POST /accounts/{id}/transactions
