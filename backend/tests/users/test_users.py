@@ -11,11 +11,12 @@ from django.http import HttpRequest, HttpResponseBase
 from django.test import Client
 from pytest_django import Settings
 
-from tests.client import get_session
-from tests.users.client import delete, get, post
+from tests.client import AUTH_BASE, get_session, scoped
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
+
+auth = scoped(AUTH_BASE)
 
 NEW_USER_EMAIL = "new@example.com"
 CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")
@@ -68,19 +69,19 @@ def test_check_passes_when_signup_disabled_or_frontend_url_configured(
 
 
 def _logout(client: Client) -> HttpResponseBase:
-    return delete(client, "/auth/session")
+    return auth.delete(client, "/auth/session")
 
 
 def _request_code(client: Client, email: str) -> HttpResponseBase:
-    return post(client, "/auth/code/request", {"email": email})
+    return auth.post(client, "/auth/code/request", {"email": email})
 
 
 def _resend_code(client: Client) -> HttpResponseBase:
-    return post(client, "/auth/code/resend", {})
+    return auth.post(client, "/auth/code/resend", {})
 
 
 def _confirm_code(client: Client, code: str) -> HttpResponseBase:
-    return post(client, "/auth/code/confirm", {"code": code})
+    return auth.post(client, "/auth/code/confirm", {"code": code})
 
 
 def _extract_code_from_email() -> str:
@@ -95,15 +96,15 @@ def _login(client: Client, email: str) -> HttpResponseBase:
 
 
 def _signup(client: Client, email: str, **extra: Any) -> HttpResponseBase:
-    return post(client, "/auth/signup", {"email": email, **extra})
+    return auth.post(client, "/auth/signup", {"email": email, **extra})
 
 
 def _verify_email(client: Client, key: str) -> HttpResponseBase:
-    return post(client, "/auth/email/verify", {"key": key})
+    return auth.post(client, "/auth/email/verify", {"key": key})
 
 
 def _resend_email_verification(client: Client) -> HttpResponseBase:
-    return post(client, "/auth/email/verify/resend", {})
+    return auth.post(client, "/auth/email/verify/resend", {})
 
 
 def _signup_and_verify(client: Client, email: str) -> HttpResponseBase:
@@ -341,7 +342,7 @@ def test_logout_invalidates_the_session(client: Client, existing_user: User) -> 
     ],
 )
 def test_unused_headless_routes_are_not_exposed(client: Client, path: str) -> None:
-    assert get(client, path).status_code == 404
+    assert auth.get(client, path).status_code == 404
 
 
 @pytest.mark.django_db
