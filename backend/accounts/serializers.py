@@ -1,4 +1,4 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from rest_framework import serializers
 
@@ -19,9 +19,9 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         ]
         read_only_fields: ClassVar[list[str]] = ["id", "created_at", "updated_at"]
 
-    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        if self.instance is not None and "type" in attrs:
+    def validate_type(self, value: str) -> str:
+        if self.instance is not None:
             raise serializers.ValidationError(
-                {"type": "This field cannot be changed after creation."}
+                "This field cannot be changed after creation."
             )
-        return attrs
+        return value
