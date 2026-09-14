@@ -15,7 +15,9 @@ class AccountViewSet(viewsets.ModelViewSet[Account]):
     @property
     def user(self) -> User:
         if not isinstance(self.request.user, User):
-            raise TypeError("Expected an authenticated request.")
+            raise TypeError(
+                f"Expected request.user to be a User, got {type(self.request.user).__name__}."
+            )
         return self.request.user
 
     def get_queryset(self) -> QuerySet[Account]:
