@@ -1,6 +1,6 @@
-from tests.client import BROWSER_CLIENT_BASE, scoped
+from tests.client import AUTH_BASE, scoped
 
-_client = scoped(BROWSER_CLIENT_BASE)
+_client = scoped(AUTH_BASE)
 
 get = _client.get
 post = _client.post

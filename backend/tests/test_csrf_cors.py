@@ -7,7 +7,7 @@ from django.http import HttpResponseBase
 from django.test import Client
 from pytest_django import Settings
 
-from tests.client import BROWSER_CLIENT_BASE, csrf_token, get_session
+from tests.client import AUTH_BASE, csrf_token, get_session
 
 MUTATING_ENDPOINT = "/auth/code/request"
 REQUEST_EMAIL = "new@example.com"
@@ -16,7 +16,7 @@ UNTRUSTED_ORIGIN = "https://malicious.example"
 
 def _post_with_origin(client: Client, origin: str, **headers: Any) -> HttpResponseBase:
     return client.post(
-        f"{BROWSER_CLIENT_BASE}{MUTATING_ENDPOINT}",
+        f"{AUTH_BASE}{MUTATING_ENDPOINT}",
         data=json.dumps({"email": REQUEST_EMAIL}),
         content_type="application/json",
         HTTP_ORIGIN=origin,
@@ -26,7 +26,7 @@ def _post_with_origin(client: Client, origin: str, **headers: Any) -> HttpRespon
 
 def _preflight(client: Client, origin: str) -> HttpResponseBase:
     return client.options(
-        f"{BROWSER_CLIENT_BASE}{MUTATING_ENDPOINT}",
+        f"{AUTH_BASE}{MUTATING_ENDPOINT}",
         HTTP_ORIGIN=origin,
         HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
         HTTP_ACCESS_CONTROL_REQUEST_HEADERS="x-csrftoken",
@@ -40,7 +40,7 @@ def test_post_without_valid_csrf_token_is_rejected(
     get_session(client)
 
     response = client.post(
-        f"{BROWSER_CLIENT_BASE}{MUTATING_ENDPOINT}",
+        f"{AUTH_BASE}{MUTATING_ENDPOINT}",
         data=json.dumps({"email": REQUEST_EMAIL}),
         content_type="application/json",
         **headers,

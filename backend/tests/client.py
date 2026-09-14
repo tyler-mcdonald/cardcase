@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 else:
     TestResponse = Any
 
-BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
+AUTH_BASE = "/_allauth/browser/v1"
 
 
-def get(client: Client, path: str, base: str) -> TestResponse:
+def _get(client: Client, path: str, base: str) -> TestResponse:
     return client.get(f"{base}{path}")
 
 
@@ -24,7 +24,7 @@ def csrf_token(client: Client) -> str:
     return client.cookies["csrftoken"].value
 
 
-def post(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
+def _post(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
     return client.post(
         f"{base}{path}",
         data=json.dumps(data),
@@ -33,7 +33,7 @@ def post(client: Client, path: str, data: dict[str, Any], base: str) -> TestResp
     )
 
 
-def patch(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
+def _patch(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
     return client.patch(
         f"{base}{path}",
         data=json.dumps(data),
@@ -42,7 +42,7 @@ def patch(client: Client, path: str, data: dict[str, Any], base: str) -> TestRes
     )
 
 
-def delete(client: Client, path: str, base: str) -> TestResponse:
+def _delete(client: Client, path: str, base: str) -> TestResponse:
     return client.delete(
         f"{base}{path}",
         HTTP_X_CSRFTOKEN=csrf_token(client),
@@ -50,15 +50,15 @@ def delete(client: Client, path: str, base: str) -> TestResponse:
 
 
 def get_session(client: Client) -> TestResponse:
-    return get(client, "/auth/session", base=BROWSER_CLIENT_BASE)
+    return _get(client, "/auth/session", base=AUTH_BASE)
 
 
 class ScopedClient:
     def __init__(self, base: str) -> None:
-        self.get = partial(get, base=base)
-        self.post = partial(post, base=base)
-        self.patch = partial(patch, base=base)
-        self.delete = partial(delete, base=base)
+        self.get = partial(_get, base=base)
+        self.post = partial(_post, base=base)
+        self.patch = partial(_patch, base=base)
+        self.delete = partial(_delete, base=base)
 
 
 def scoped(base: str) -> ScopedClient:
