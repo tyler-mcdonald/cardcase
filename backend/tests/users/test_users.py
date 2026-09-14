@@ -11,10 +11,15 @@ from django.http import HttpRequest, HttpResponseBase
 from django.test import Client
 from pytest_django import Settings
 
-from tests.client import delete, get, get_session, post
+from tests.client import AUTH_BASE, get_session, scoped
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
+
+_client = scoped(AUTH_BASE)
+get = _client.get
+post = _client.post
+delete = _client.delete
 
 NEW_USER_EMAIL = "new@example.com"
 CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")

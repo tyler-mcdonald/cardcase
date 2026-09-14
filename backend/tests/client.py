@@ -1,37 +1,65 @@
 import json
-from typing import Any
+from functools import partial
+from typing import TYPE_CHECKING, Any
 
-from django.http import HttpResponseBase
 from django.test import Client
 
-BROWSER_CLIENT_BASE = "/_allauth/browser/v1"
+if TYPE_CHECKING:
+    # The real object django.test.Client returns: a normal HttpResponse
+    # with .json() monkey-patched on by Django's test client.
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestResponse
+else:
+    TestResponse = Any
+
+AUTH_BASE = "/_allauth/browser/v1"
 
 
-def get(client: Client, path: str) -> HttpResponseBase:
-    return client.get(f"{BROWSER_CLIENT_BASE}{path}")
+def _get(client: Client, path: str, base: str) -> TestResponse:
+    return client.get(f"{base}{path}")
 
 
 def csrf_token(client: Client) -> str:
     if "csrftoken" not in client.cookies:
-        get(client, "/auth/session")
+        get_session(client)
     return client.cookies["csrftoken"].value
 
 
-def post(client: Client, path: str, data: dict[str, Any]) -> HttpResponseBase:
+def _post(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
     return client.post(
-        f"{BROWSER_CLIENT_BASE}{path}",
+        f"{base}{path}",
         data=json.dumps(data),
         content_type="application/json",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
 
 
-def delete(client: Client, path: str) -> HttpResponseBase:
-    return client.delete(
-        f"{BROWSER_CLIENT_BASE}{path}",
+def _patch(client: Client, path: str, data: dict[str, Any], base: str) -> TestResponse:
+    return client.patch(
+        f"{base}{path}",
+        data=json.dumps(data),
+        content_type="application/json",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
 
 
-def get_session(client: Client) -> HttpResponseBase:
-    return get(client, "/auth/session")
+def _delete(client: Client, path: str, base: str) -> TestResponse:
+    return client.delete(
+        f"{base}{path}",
+        HTTP_X_CSRFTOKEN=csrf_token(client),
+    )
+
+
+def get_session(client: Client) -> TestResponse:
+    return _get(client, "/auth/session", base=AUTH_BASE)
+
+
+class ScopedClient:
+    def __init__(self, base: str) -> None:
+        self.get = partial(_get, base=base)
+        self.post = partial(_post, base=base)
+        self.patch = partial(_patch, base=base)
+        self.delete = partial(_delete, base=base)
+
+
+def scoped(base: str) -> ScopedClient:
+    return ScopedClient(base)
