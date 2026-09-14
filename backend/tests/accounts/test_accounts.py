@@ -125,7 +125,7 @@ def test_retrieve_own_account(auth_client: Client, user: User) -> None:
     [
         ("name", "Amazon.com", "name", "Amazon.com"),
         ("description", "Updated description", "description", "Updated description"),
-        ("expiration_date", "2028-06-15", "expires_at", date(2028, 6, 15)),
+        ("expiration_date", "2028-06-15", "expires_on", date(2028, 6, 15)),
     ],
 )
 def test_update_account_fields(

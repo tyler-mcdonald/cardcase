@@ -7,7 +7,7 @@ from .models import Account
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
     expiration_date = serializers.DateField(
-        source="expires_at", required=False, allow_null=True
+        source="expires_on", required=False, allow_null=True
     )
 
     class Meta:

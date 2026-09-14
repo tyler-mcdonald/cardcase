@@ -27,7 +27,7 @@
   - name: string
   - description: string
   - type: enum("gift_card", "flight_credit")
-  - expires_at?: date
+  - expires_on?: date
   - created_at: datetime
   - updated_at: datetime
   - deleted_at: datetime
