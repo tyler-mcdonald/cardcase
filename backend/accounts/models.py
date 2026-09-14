@@ -33,9 +33,7 @@ class Account(models.Model):
 
     class Meta:
         ordering: ClassVar[list[str]] = ["-created_at", "-id"]
-        indexes: ClassVar[list[models.Index]] = [
-            models.Index(fields=["user", "deleted_at", "created_at"])
-        ]
+        base_manager_name = "all_objects"
 
     def __str__(self) -> str:
         return self.name
