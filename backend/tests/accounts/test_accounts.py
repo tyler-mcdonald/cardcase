@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from accounts.models import Account
 from tests.accounts.client import delete, get, patch, post
@@ -252,3 +253,58 @@ def test_post_without_csrf_token_is_rejected(client: Client, user: User) -> None
 @pytest.mark.django_db
 def test_trailing_slash_urls_are_not_routed(client: Client) -> None:
     assert get(client, "/accounts/").status_code == 404
+
+
+@pytest.mark.django_db
+def test_list_pagination_covers_all_accounts_without_duplicates(
+    auth_client: Client, user: User
+) -> None:
+    accounts = [_create_account(user, name=f"Account {i}") for i in range(55)]
+    # Force identical created_at across every row so the list ordering has to
+    # rely on the -id tiebreaker instead of natural timestamp variance.
+    Account.objects.filter(id__in=[a.id for a in accounts]).update(
+        created_at=timezone.now()
+    )
+
+    page_1 = get(auth_client, "/accounts").json()
+    assert page_1["count"] == 55
+    assert len(page_1["results"]) == 50
+    assert page_1["previous"] is None
+    assert page_1["next"] is not None
+
+    page_2 = get(auth_client, "/accounts?page=2").json()
+    assert len(page_2["results"]) == 5
+    assert page_2["next"] is None
+    assert page_2["previous"] is not None
+
+    seen_ids = [r["id"] for r in page_1["results"] + page_2["results"]]
+    assert len(seen_ids) == len(set(seen_ids)) == 55
+    assert set(seen_ids) == {str(a.id) for a in accounts}
+
+    expected_ids = [
+        str(a.id) for a in sorted(accounts, key=lambda a: a.id, reverse=True)
+    ]
+    assert seen_ids == expected_ids
+
+
+@pytest.mark.django_db
+def test_deleting_user_cascades_to_soft_deleted_accounts(user: User) -> None:
+    account = _create_account(user)
+    account.soft_delete()
+
+    user.delete()
+
+    assert not Account.all_objects.filter(id=account.id).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "malformed_id",
+    [
+        "not-a-uuid",
+        "12345",
+        "11111111-1111-1111-1111-11111111111",
+    ],
+)
+def test_malformed_id_returns_not_found(auth_client: Client, malformed_id: str) -> None:
+    assert get(auth_client, f"/accounts/{malformed_id}").status_code == 404
