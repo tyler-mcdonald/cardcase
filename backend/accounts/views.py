@@ -1,5 +1,3 @@
-from typing import cast
-
 from django.db.models import QuerySet
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
@@ -14,13 +12,17 @@ class AccountViewSet(viewsets.ModelViewSet[Account]):
     serializer_class = AccountSerializer
     http_method_names = ("get", "post", "patch", "delete", "head", "options")
 
+    @property
+    def user(self) -> User:
+        if not isinstance(self.request.user, User):
+            raise TypeError("Expected an authenticated request.")
+        return self.request.user
+
     def get_queryset(self) -> QuerySet[Account]:
-        user = cast(User, self.request.user)
-        return Account.objects.filter(user=user)
+        return Account.objects.filter(user=self.user)
 
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
-        user = cast(User, self.request.user)
-        serializer.save(user=user)
+        serializer.save(user=self.user)
 
     def perform_destroy(self, instance: Account) -> None:
         instance.soft_delete()
