@@ -10,10 +10,13 @@ export function isExpired(expiresOn: string): boolean {
   return expiresOn < today;
 }
 
-export function formatExpiry(expiresOn: string | null): string {
+export function formatExpiry(
+  expiresOn: string | null,
+  expired = expiresOn ? isExpired(expiresOn) : false,
+): string {
   if (!expiresOn) {
     return "No expiration";
   }
   const formatted = dateFormatter.format(new Date(`${expiresOn}T00:00:00Z`));
-  return isExpired(expiresOn) ? `Expired ${formatted}` : `Expires ${formatted}`;
+  return expired ? `Expired ${formatted}` : `Expires ${formatted}`;
 }

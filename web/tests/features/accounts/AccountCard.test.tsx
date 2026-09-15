@@ -3,6 +3,7 @@ import { MantineProvider } from "@mantine/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountCard } from "@/features/accounts/AccountCard";
 import type { Account } from "@/features/accounts/api";
+import { makeAccount } from "./factories";
 
 function renderCard(account: Account) {
   return render(
@@ -10,19 +11,6 @@ function renderCard(account: Account) {
       <AccountCard account={account} />
     </MantineProvider>,
   );
-}
-
-function makeAccount(overrides: Partial<Account> = {}): Account {
-  return {
-    id: "1",
-    name: "Amazon",
-    description: "",
-    type: "gift_card",
-    expires_on: null,
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-01T00:00:00Z",
-    ...overrides,
-  };
 }
 
 beforeEach(() => {

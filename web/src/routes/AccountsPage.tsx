@@ -26,25 +26,22 @@ export function AccountsPage() {
   const { user, logout } = useAuth();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [state, setState] = useState<LoadState>("loading");
-  const [reloadToken, setReloadToken] = useState(0);
+
+  async function load() {
+    setState("loading");
+    try {
+      const results = await listAccounts();
+      setAccounts(results);
+      setState("loaded");
+    } catch {
+      setState("error");
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      try {
-        const results = await listAccounts();
-        setAccounts(results);
-        setState("loaded");
-      } catch {
-        setState("error");
-      }
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     load();
-  }, [reloadToken]);
-
-  function retry() {
-    setState("loading");
-    setReloadToken((token) => token + 1);
-  }
+  }, []);
 
   return (
     <Container py="xl">
@@ -92,7 +89,7 @@ export function AccountsPage() {
                 variant="light"
                 color="red"
                 size="xs"
-                onClick={retry}
+                onClick={load}
                 style={{ alignSelf: "flex-start" }}
               >
                 Try again
