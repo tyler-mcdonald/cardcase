@@ -4,9 +4,9 @@ from decimal import Decimal
 import pytest
 from django.test import Client
 
-from accounts.models import Account, Transaction
+from accounts.models import Transaction
 from tests.accounts.client import delete, get, patch, post
-from tests.accounts.factories import create_account
+from tests.accounts.factories import create_account, create_transaction
 from tests.client import csrf_token
 from users.models import User
 
@@ -17,17 +17,11 @@ MALFORMED_IDS = [
 ]
 
 
-def _create_transaction(account: Account, **overrides: object) -> Transaction:
-    defaults: dict[str, object] = {"amount": "10.00", "occurred_on": "2026-01-01"}
-    defaults.update(overrides)
-    return Transaction.objects.create(account=account, **defaults)
-
-
 @pytest.mark.django_db
 @pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
 def test_requires_authentication(client: Client, user: User, case: str) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
     list_path = f"/accounts/{account.id}/transactions"
     detail_path = f"/accounts/{account.id}/transactions/{transaction.id}"
 
@@ -141,8 +135,8 @@ def test_list_only_returns_transactions_for_the_given_account(
 ) -> None:
     account = create_account(user, name="Mine")
     other_account = create_account(user, name="Also mine")
-    mine = _create_transaction(account, amount="10.00")
-    _create_transaction(other_account, amount="20.00")
+    mine = create_transaction(account, amount="10.00")
+    create_transaction(other_account, amount="20.00")
 
     response = get(auth_client, f"/accounts/{account.id}/transactions")
 
@@ -154,8 +148,8 @@ def test_list_only_returns_transactions_for_the_given_account(
 @pytest.mark.django_db
 def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) -> None:
     account = create_account(user)
-    older = _create_transaction(account, amount="1.00", occurred_on="2026-01-01")
-    newer = _create_transaction(account, amount="2.00", occurred_on="2026-02-01")
+    older = create_transaction(account, amount="1.00", occurred_on="2026-01-01")
+    newer = create_transaction(account, amount="2.00", occurred_on="2026-02-01")
 
     response = get(auth_client, f"/accounts/{account.id}/transactions")
 
@@ -168,7 +162,7 @@ def test_list_for_another_users_account_returns_404(
     auth_client: Client, other_user: User
 ) -> None:
     account = create_account(other_user)
-    _create_transaction(account)
+    create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions")
 
@@ -178,7 +172,7 @@ def test_list_for_another_users_account_returns_404(
 @pytest.mark.django_db
 def test_retrieve_own_transaction(auth_client: Client, user: User) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
 
@@ -191,7 +185,7 @@ def test_cannot_retrieve_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = create_account(other_user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
 
@@ -215,7 +209,7 @@ def test_update_transaction_fields(
     model_value: object,
 ) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = patch(
         auth_client, f"/accounts/{account.id}/transactions/{transaction.id}", {field: api_value}
@@ -232,7 +226,7 @@ def test_cannot_update_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = create_account(other_user)
-    transaction = _create_transaction(account, amount="10.00")
+    transaction = create_transaction(account, amount="10.00")
 
     response = patch(
         auth_client,
@@ -248,7 +242,7 @@ def test_cannot_update_transaction_on_another_users_account(
 @pytest.mark.django_db
 def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = auth_client.put(
         f"/v1/accounts/{account.id}/transactions/{transaction.id}",
@@ -263,7 +257,7 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
 @pytest.mark.django_db
 def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
 
@@ -276,7 +270,7 @@ def test_cannot_delete_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
     account = create_account(other_user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
 
@@ -287,7 +281,7 @@ def test_cannot_delete_transaction_on_another_users_account(
 @pytest.mark.django_db
 def test_deleting_account_cascades_to_transactions(user: User) -> None:
     account = create_account(user)
-    transaction = _create_transaction(account)
+    transaction = create_transaction(account)
 
     account.delete()
 

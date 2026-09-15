@@ -37,7 +37,6 @@ class AccountViewSet(UserScopedViewSet):
 
 class TransactionViewSet(UserScopedViewSet):
     serializer_class = TransactionSerializer
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
 
     def get_account(self) -> Account:
         return get_object_or_404(
