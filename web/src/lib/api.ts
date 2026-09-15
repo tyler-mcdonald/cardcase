@@ -15,12 +15,8 @@ export type ApiResponse<T = unknown> = {
   errors?: ApiError[];
 };
 
-export async function apiRequest<T = unknown>(
-  path: string,
-  options: RequestInit = {},
-): Promise<ApiResponse<T>> {
-  const method = options.method ?? "GET";
-  const headers = new Headers(options.headers);
+function buildHeaders(method: string, extra?: HeadersInit): Headers {
+  const headers = new Headers(extra);
 
   if (method !== "GET") {
     headers.set("Content-Type", "application/json");
@@ -30,12 +26,27 @@ export async function apiRequest<T = unknown>(
     }
   }
 
-  const response = await fetch(new URL(path, API_URL), {
+  return headers;
+}
+
+export async function apiFetch(
+  path: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const method = options.method ?? "GET";
+
+  return fetch(new URL(path, API_URL), {
     ...options,
     method,
-    headers,
+    headers: buildHeaders(method, options.headers),
     credentials: "include",
   });
+}
 
+export async function apiRequest<T = unknown>(
+  path: string,
+  options: RequestInit = {},
+): Promise<ApiResponse<T>> {
+  const response = await apiFetch(path, options);
   return (await response.json()) as ApiResponse<T>;
 }
