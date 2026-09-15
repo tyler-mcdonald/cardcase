@@ -25,6 +25,7 @@
   "dependencies": {
     "@mantine/core": "^9.6.1",
     "@mantine/hooks": "^9.6.1",
+    "@tanstack/react-query": "^5.102.8",
     "js-cookie": "^3.0.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
