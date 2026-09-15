@@ -34,12 +34,11 @@
 - Transaction
   - id(pk): string/uuid
   - account(fk): Account
-  - amount: numeric/decimal (always positive)
-  - transaction_date: date
-  - note: string
+  - amount: numeric/decimal (signed; positive = credit, negative = spend)
+  - occurred_on: date
+  - description: string
   - created_at: datetime
   - updated_at: datetime
-  - type: enum("starting_balance", "redemption", "refund", "adjustment")
 
 ##### API Surface
 
@@ -59,9 +58,9 @@
   - DELETE /accounts/{id}
 - Transactions
   - POST /accounts/{id}/transactions
-    - { amount, note?, date, type }
+    - { amount, description?, occurred_on }
   - GET /accounts/{id}/transactions
   - GET /accounts/{id}/transactions/{id}
   - PATCH /accounts/{id}/transactions/{id}
-    - { amount?, note?, date?, type? }
+    - { amount?, description?, occurred_on? }
   - DELETE /accounts/{id}/transactions/{id}
