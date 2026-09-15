@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, type ApiResponse } from "./api";
 import {
   AuthContext,
@@ -13,28 +14,33 @@ export const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 type SessionData = { user?: User };
 
+const SESSION_QUERY_KEY = ["session"] as const;
+
+function sessionUser(response: ApiResponse<SessionData>): User | null {
+  return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
+}
+
+async function loadSession(): Promise<User | null> {
+  try {
+    const response = await apiRequest<SessionData>(
+      `${AUTH_API_BASE}${SESSION_PATH}`,
+    );
+    return sessionUser(response);
+  } catch {
+    return null;
+  }
+}
+
 function toActionResult(response: ApiResponse): ActionResult {
   const error = response.errors?.[0]?.message;
   return error ? { ok: false, error } : { ok: true };
 }
 
-async function authAction(
-  method: "POST" | "DELETE",
-  path: string,
-  {
-    body,
-    onResponse,
-  }: {
-    body?: unknown;
-    onResponse?: (response: ApiResponse<SessionData>) => void;
-  } = {},
+async function runAction(
+  mutateAsync: () => Promise<ApiResponse<SessionData>>,
 ): Promise<ActionResult> {
   try {
-    const response = await apiRequest<SessionData>(`${AUTH_API_BASE}${path}`, {
-      method,
-      body: JSON.stringify(body),
-    });
-    onResponse?.(response);
+    const response = await mutateAsync();
     return toActionResult(response);
   } catch {
     return { ok: false, error: GENERIC_ERROR };
@@ -42,50 +48,69 @@ async function authAction(
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null | undefined>(undefined);
-  const status: AuthStatus =
-    user === undefined ? "loading" : user ? "authenticated" : "anonymous";
+  const queryClient = useQueryClient();
 
-  const applySession = useCallback((response: ApiResponse<SessionData>) => {
-    setUser(
-      response.meta?.is_authenticated ? (response.data?.user ?? null) : null,
-    );
-  }, []);
+  function applySession(response: ApiResponse<SessionData>) {
+    queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
+  }
 
-  useEffect(() => {
-    async function loadSession() {
-      try {
-        const response = await apiRequest<SessionData>(
-          `${AUTH_API_BASE}${SESSION_PATH}`,
-        );
-        applySession(response);
-      } catch {
-        setUser(null);
-      }
-    }
-    loadSession();
-  }, [applySession]);
+  const sessionQuery = useQuery({
+    queryKey: SESSION_QUERY_KEY,
+    queryFn: loadSession,
+    // The session is only ever updated in response to an explicit auth
+    // action below, never by a background refetch.
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+
+  const status: AuthStatus = sessionQuery.isPending
+    ? "loading"
+    : sessionQuery.data
+      ? "authenticated"
+      : "anonymous";
+
+  const requestLoginCodeMutation = useMutation({
+    mutationFn: (email: string) =>
+      apiRequest<SessionData>(`${AUTH_API_BASE}/auth/code/request`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }),
+  });
+
+  const confirmLoginCodeMutation = useMutation({
+    mutationFn: (code: string) =>
+      apiRequest<SessionData>(`${AUTH_API_BASE}/auth/code/confirm`, {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      }),
+    onSuccess: applySession,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: () =>
+      apiRequest<SessionData>(`${AUTH_API_BASE}${SESSION_PATH}`, {
+        method: "DELETE",
+      }),
+    onSuccess: applySession,
+  });
 
   function requestLoginCode(email: string) {
-    return authAction("POST", "/auth/code/request", { body: { email } });
+    return runAction(() => requestLoginCodeMutation.mutateAsync(email));
   }
 
   function confirmLoginCode(code: string) {
-    return authAction("POST", "/auth/code/confirm", {
-      body: { code },
-      onResponse: applySession,
-    });
+    return runAction(() => confirmLoginCodeMutation.mutateAsync(code));
   }
 
   function logout() {
-    return authAction("DELETE", SESSION_PATH, { onResponse: applySession });
+    return runAction(() => logoutMutation.mutateAsync());
   }
 
   return (
     <AuthContext.Provider
       value={{
         status,
-        user: user ?? null,
+        user: sessionQuery.data ?? null,
         requestLoginCode,
         confirmLoginCode,
         logout,

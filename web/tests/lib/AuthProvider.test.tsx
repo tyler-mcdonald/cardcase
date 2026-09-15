@@ -1,4 +1,6 @@
+import { useState, type ReactNode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/use-auth";
@@ -11,6 +13,20 @@ vi.mock("@/lib/api", () => ({
 const mockedApiRequest = vi.mocked(apiRequest);
 
 const TEST_EMAIL = "test@example.com";
+
+function Wrapper({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      }),
+  );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 function anonymousSessionResponse(): ApiResponse {
   return { status: 200, meta: { is_authenticated: false } };
@@ -26,7 +42,7 @@ function authenticatedSessionResponse(email: string): ApiResponse {
 
 async function renderAuthWithSession(initialSession: ApiResponse) {
   mockedApiRequest.mockResolvedValueOnce(initialSession);
-  const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+  const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
   await waitFor(() => expect(result.current.status).not.toBe("loading"));
   return result;
 }
@@ -63,7 +79,7 @@ describe("when the session starts unauthenticated", () => {
     );
 
     expect(actionResult).toEqual({ ok: true });
-    expect(auth.current.status).toBe("authenticated");
+    await waitFor(() => expect(auth.current.status).toBe("authenticated"));
     expect(auth.current.user?.email).toBe(TEST_EMAIL);
   });
 
@@ -110,7 +126,7 @@ describe("when the session starts authenticated", () => {
 
     await runAction(() => auth.current.logout());
 
-    expect(auth.current.status).toBe("anonymous");
+    await waitFor(() => expect(auth.current.status).toBe("anonymous"));
     expect(auth.current.user).toBeNull();
   });
 });
