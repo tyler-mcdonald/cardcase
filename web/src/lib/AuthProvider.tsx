@@ -50,6 +50,10 @@ async function runAction(
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
+  function applySession(response: ApiResponse<SessionData>) {
+    queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
+  }
+
   const sessionQuery = useQuery({
     queryKey: SESSION_QUERY_KEY,
     queryFn: loadSession,
@@ -79,9 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "POST",
         body: JSON.stringify({ code }),
       }),
-    onSuccess: (response) => {
-      queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
-    },
+    onSuccess: applySession,
   });
 
   const logoutMutation = useMutation({
@@ -89,9 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       apiRequest<SessionData>(`${AUTH_API_BASE}${SESSION_PATH}`, {
         method: "DELETE",
       }),
-    onSuccess: (response) => {
-      queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
-    },
+    onSuccess: applySession,
   });
 
   function requestLoginCode(email: string) {
