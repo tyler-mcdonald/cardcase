@@ -14,8 +14,6 @@ repos:
 - repo: local
   hooks:
     # Run the web frontend's own lint-staged config against staged web/ files.
-    # This is the sole hook manager for the repo (see docs/precommit-monorepo-research.md) —
-    # Husky was removed since git only supports one core.hooksPath.
     - id: web-lint-staged
       name: web lint-staged
       entry: pnpm --dir web exec lint-staged
