@@ -36,14 +36,6 @@ Start the Django server:
 uv run manage.py runserver
 ```
 
-#### Optional Dev Tools
-
-To install a pre-commit hook that lints and formats staged files on each commit:
-
-```
-uv run pre-commit install
-```
-
 ### Web Frontend
 
 #### Requires
@@ -76,5 +68,16 @@ Start the dev server (the backend must also be running for login to work):
 ```
 pnpm dev
 ```
+
+### Git Hooks
+
+To install a pre-commit hook that lints and formats staged files on each commit, for both the backend and the web frontend:
+
+```
+cd backend
+uv run pre-commit install
+```
+
+This is the repo's single hook manager — it runs `ruff` on staged backend files and `lint-staged` on staged web files. See [docs/precommit-monorepo-research.md](docs/precommit-monorepo-research.md) for why.
 
 See [DESIGN.md](DESIGN.md) for the project spec, and [docs/](docs/) for other documentation.
