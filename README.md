@@ -76,7 +76,3 @@ To install a pre-commit hook that lints and formats staged files on each commit,
 ```
 uv run --project backend pre-commit install
 ```
-
-This is the repo's single hook manager — it runs `ruff` on staged backend files and `lint-staged` on staged web files.
-
-See [DESIGN.md](DESIGN.md) for the project spec, and [docs/](docs/) for other documentation.
