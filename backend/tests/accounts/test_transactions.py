@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from django.test import Client
 
-from accounts.models import Transaction
+from accounts.models import Account, Transaction
 from tests.accounts.client import delete, get, patch, post
 from tests.accounts.factories import create_account, create_transaction
 from tests.client import csrf_token
@@ -17,13 +17,21 @@ MALFORMED_IDS = [
 ]
 
 
+def transaction_list_url(account: Account) -> str:
+    return f"/accounts/{account.id}/transactions"
+
+
+def transaction_detail_url(account: Account, transaction: Transaction) -> str:
+    return f"/accounts/{account.id}/transactions/{transaction.id}"
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
 def test_requires_authentication(client: Client, user: User, case: str) -> None:
     account = create_account(user)
     transaction = create_transaction(account)
-    list_path = f"/accounts/{account.id}/transactions"
-    detail_path = f"/accounts/{account.id}/transactions/{transaction.id}"
+    list_path = transaction_list_url(account)
+    detail_path = transaction_detail_url(account, transaction)
 
     responses = {
         "list": lambda: get(client, list_path),
@@ -44,7 +52,7 @@ def test_create_transaction_success(auth_client: Client, user: User) -> None:
 
     response = post(
         auth_client,
-        f"/accounts/{account.id}/transactions",
+        transaction_list_url(account),
         {
             "amount": "-12.50",
             "description": "Coffee",
@@ -72,7 +80,7 @@ def test_create_transaction_without_description_defaults_to_empty(
 
     response = post(
         auth_client,
-        f"/accounts/{account.id}/transactions",
+        transaction_list_url(account),
         {"amount": "10.00", "occurred_on": "2026-01-01"},
     )
 
@@ -95,7 +103,7 @@ def test_create_transaction_validation_errors(
 ) -> None:
     account = create_account(user)
 
-    response = post(auth_client, f"/accounts/{account.id}/transactions", payload)
+    response = post(auth_client, transaction_list_url(account), payload)
 
     assert response.status_code == 400
 
@@ -108,7 +116,7 @@ def test_create_transaction_for_another_users_account_returns_404(
 
     response = post(
         auth_client,
-        f"/accounts/{account.id}/transactions",
+        transaction_list_url(account),
         {"amount": "10.00", "occurred_on": "2026-01-01"},
     )
 
@@ -138,7 +146,7 @@ def test_list_only_returns_transactions_for_the_given_account(
     mine = create_transaction(account, amount="10.00")
     create_transaction(other_account, amount="20.00")
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions")
+    response = get(auth_client, transaction_list_url(account))
 
     assert response.status_code == 200
     results = response.json()["results"]
@@ -151,7 +159,7 @@ def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) 
     older = create_transaction(account, amount="1.00", occurred_on="2026-01-01")
     newer = create_transaction(account, amount="2.00", occurred_on="2026-02-01")
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions")
+    response = get(auth_client, transaction_list_url(account))
 
     results = response.json()["results"]
     assert [r["id"] for r in results] == [str(newer.id), str(older.id)]
@@ -164,7 +172,7 @@ def test_list_for_another_users_account_returns_404(
     account = create_account(other_user)
     create_transaction(account)
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions")
+    response = get(auth_client, transaction_list_url(account))
 
     assert response.status_code == 404
 
@@ -174,7 +182,7 @@ def test_retrieve_own_transaction(auth_client: Client, user: User) -> None:
     account = create_account(user)
     transaction = create_transaction(account)
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = get(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 200
     assert response.json()["id"] == str(transaction.id)
@@ -187,7 +195,7 @@ def test_cannot_retrieve_transaction_on_another_users_account(
     account = create_account(other_user)
     transaction = create_transaction(account)
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = get(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 404
 
@@ -200,7 +208,7 @@ def test_cannot_retrieve_transaction_via_a_different_owned_account(
     other_account = create_account(user, name="Also mine")
     transaction = create_transaction(other_account)
 
-    response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = get(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 404
 
@@ -225,7 +233,7 @@ def test_update_transaction_fields(
     transaction = create_transaction(account)
 
     response = patch(
-        auth_client, f"/accounts/{account.id}/transactions/{transaction.id}", {field: api_value}
+        auth_client, transaction_detail_url(account, transaction), {field: api_value}
     )
 
     assert response.status_code == 200
@@ -243,7 +251,7 @@ def test_cannot_update_transaction_on_another_users_account(
 
     response = patch(
         auth_client,
-        f"/accounts/{account.id}/transactions/{transaction.id}",
+        transaction_detail_url(account, transaction),
         {"amount": "999.00"},
     )
 
@@ -262,7 +270,7 @@ def test_cannot_update_transaction_via_a_different_owned_account(
 
     response = patch(
         auth_client,
-        f"/accounts/{account.id}/transactions/{transaction.id}",
+        transaction_detail_url(account, transaction),
         {"amount": "999.00"},
     )
 
@@ -277,7 +285,7 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
     transaction = create_transaction(account)
 
     response = auth_client.put(
-        f"/v1/accounts/{account.id}/transactions/{transaction.id}",
+        f"/v1{transaction_detail_url(account, transaction)}",
         data='{"amount": "1.00", "occurred_on": "2026-01-01"}',
         content_type="application/json",
         HTTP_X_CSRFTOKEN=csrf_token(auth_client),
@@ -291,7 +299,7 @@ def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> Non
     account = create_account(user)
     transaction = create_transaction(account)
 
-    response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = delete(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 204
     assert not Transaction.objects.filter(id=transaction.id).exists()
@@ -304,7 +312,7 @@ def test_cannot_delete_transaction_on_another_users_account(
     account = create_account(other_user)
     transaction = create_transaction(account)
 
-    response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = delete(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 404
     assert Transaction.objects.filter(id=transaction.id).exists()
@@ -318,7 +326,7 @@ def test_cannot_delete_transaction_via_a_different_owned_account(
     other_account = create_account(user, name="Also mine")
     transaction = create_transaction(other_account)
 
-    response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    response = delete(auth_client, transaction_detail_url(account, transaction))
 
     assert response.status_code == 404
     assert Transaction.objects.filter(id=transaction.id).exists()
@@ -342,8 +350,8 @@ def test_transaction_endpoints_404_after_account_soft_deleted(
     account = create_account(user)
     transaction = create_transaction(account)
     account.soft_delete()
-    list_path = f"/accounts/{account.id}/transactions"
-    detail_path = f"/accounts/{account.id}/transactions/{transaction.id}"
+    list_path = transaction_list_url(account)
+    detail_path = transaction_detail_url(account, transaction)
 
     responses = {
         "list": lambda: get(auth_client, list_path),
