@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.db.models import QuerySet
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
@@ -9,10 +11,7 @@ from .models import Account, Transaction
 from .serializers import AccountSerializer, TransactionSerializer
 
 
-class AccountViewSet(viewsets.ModelViewSet[Account]):
-    serializer_class = AccountSerializer
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
-
+class UserScopedViewSet(viewsets.ModelViewSet[Any]):
     @property
     def user(self) -> User:
         if not isinstance(self.request.user, User):
@@ -20,6 +19,11 @@ class AccountViewSet(viewsets.ModelViewSet[Account]):
                 f"Expected request.user to be a User, got {type(self.request.user).__name__}."
             )
         return self.request.user
+
+
+class AccountViewSet(UserScopedViewSet):
+    serializer_class = AccountSerializer
+    http_method_names = ("get", "post", "patch", "delete", "head", "options")
 
     def get_queryset(self) -> QuerySet[Account]:
         return Account.objects.filter(user=self.user)
@@ -31,17 +35,9 @@ class AccountViewSet(viewsets.ModelViewSet[Account]):
         instance.soft_delete()
 
 
-class TransactionViewSet(viewsets.ModelViewSet[Transaction]):
+class TransactionViewSet(UserScopedViewSet):
     serializer_class = TransactionSerializer
     http_method_names = ("get", "post", "patch", "delete", "head", "options")
-
-    @property
-    def user(self) -> User:
-        if not isinstance(self.request.user, User):
-            raise TypeError(
-                f"Expected request.user to be a User, got {type(self.request.user).__name__}."
-            )
-        return self.request.user
 
     def get_account(self) -> Account:
         return get_object_or_404(

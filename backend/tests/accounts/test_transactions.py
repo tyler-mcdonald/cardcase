@@ -6,14 +6,15 @@ from django.test import Client
 
 from accounts.models import Account, Transaction
 from tests.accounts.client import delete, get, patch, post
+from tests.accounts.factories import create_account
 from tests.client import csrf_token
 from users.models import User
 
-
-def _create_account(owner: User, **overrides: object) -> Account:
-    defaults: dict[str, object] = {"name": "Amazon", "type": Account.Type.GIFT_CARD}
-    defaults.update(overrides)
-    return Account.objects.create(user=owner, **defaults)
+MALFORMED_IDS = [
+    "not-a-uuid",
+    "12345",
+    "11111111-1111-1111-1111-11111111111",
+]
 
 
 def _create_transaction(account: Account, **overrides: object) -> Transaction:
@@ -23,59 +24,29 @@ def _create_transaction(account: Account, **overrides: object) -> Transaction:
 
 
 @pytest.mark.django_db
-def test_list_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
-    assert get(client, f"/accounts/{account.id}/transactions").status_code == 403
-
-
-@pytest.mark.django_db
-def test_create_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
-
-    response = post(
-        client,
-        f"/accounts/{account.id}/transactions",
-        {"amount": "10.00", "occurred_on": "2026-01-01"},
-    )
-
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
-def test_retrieve_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
+@pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
+def test_requires_authentication(client: Client, user: User, case: str) -> None:
+    account = create_account(user)
     transaction = _create_transaction(account)
+    list_path = f"/accounts/{account.id}/transactions"
+    detail_path = f"/accounts/{account.id}/transactions/{transaction.id}"
 
-    response = get(client, f"/accounts/{account.id}/transactions/{transaction.id}")
+    responses = {
+        "list": lambda: get(client, list_path),
+        "create": lambda: post(
+            client, list_path, {"amount": "10.00", "occurred_on": "2026-01-01"}
+        ),
+        "retrieve": lambda: get(client, detail_path),
+        "update": lambda: patch(client, detail_path, {"amount": "5.00"}),
+        "delete": lambda: delete(client, detail_path),
+    }
 
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
-def test_update_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
-    transaction = _create_transaction(account)
-
-    response = patch(
-        client, f"/accounts/{account.id}/transactions/{transaction.id}", {"amount": "5.00"}
-    )
-
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
-def test_delete_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
-    transaction = _create_transaction(account)
-
-    response = delete(client, f"/accounts/{account.id}/transactions/{transaction.id}")
-
-    assert response.status_code == 403
+    assert responses[case]().status_code == 403
 
 
 @pytest.mark.django_db
 def test_create_transaction_success(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = post(
         auth_client,
@@ -103,7 +74,7 @@ def test_create_transaction_success(auth_client: Client, user: User) -> None:
 def test_create_transaction_without_description_defaults_to_empty(
     auth_client: Client, user: User
 ) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = post(
         auth_client,
@@ -128,7 +99,7 @@ def test_create_transaction_without_description_defaults_to_empty(
 def test_create_transaction_validation_errors(
     auth_client: Client, user: User, payload: dict[str, str]
 ) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = post(auth_client, f"/accounts/{account.id}/transactions", payload)
 
@@ -139,7 +110,7 @@ def test_create_transaction_validation_errors(
 def test_create_transaction_for_another_users_account_returns_404(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
 
     response = post(
         auth_client,
@@ -168,8 +139,8 @@ def test_create_transaction_for_nonexistent_account_returns_404(
 def test_list_only_returns_transactions_for_the_given_account(
     auth_client: Client, user: User
 ) -> None:
-    account = _create_account(user, name="Mine")
-    other_account = _create_account(user, name="Also mine")
+    account = create_account(user, name="Mine")
+    other_account = create_account(user, name="Also mine")
     mine = _create_transaction(account, amount="10.00")
     _create_transaction(other_account, amount="20.00")
 
@@ -182,7 +153,7 @@ def test_list_only_returns_transactions_for_the_given_account(
 
 @pytest.mark.django_db
 def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     older = _create_transaction(account, amount="1.00", occurred_on="2026-01-01")
     newer = _create_transaction(account, amount="2.00", occurred_on="2026-02-01")
 
@@ -196,7 +167,7 @@ def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) 
 def test_list_for_another_users_account_returns_404(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
     _create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions")
@@ -206,7 +177,7 @@ def test_list_for_another_users_account_returns_404(
 
 @pytest.mark.django_db
 def test_retrieve_own_transaction(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     transaction = _create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
@@ -219,7 +190,7 @@ def test_retrieve_own_transaction(auth_client: Client, user: User) -> None:
 def test_cannot_retrieve_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
     transaction = _create_transaction(account)
 
     response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
@@ -229,11 +200,11 @@ def test_cannot_retrieve_transaction_on_another_users_account(
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    ("field", "api_value", "model_attr", "model_value"),
+    ("field", "api_value", "model_value"),
     [
-        ("amount", "42.50", "amount", Decimal("42.50")),
-        ("description", "Updated description", "description", "Updated description"),
-        ("occurred_on", "2026-03-01", "occurred_on", date(2026, 3, 1)),
+        ("amount", "42.50", Decimal("42.50")),
+        ("description", "Updated description", "Updated description"),
+        ("occurred_on", "2026-03-01", date(2026, 3, 1)),
     ],
 )
 def test_update_transaction_fields(
@@ -241,10 +212,9 @@ def test_update_transaction_fields(
     user: User,
     field: str,
     api_value: str,
-    model_attr: str,
     model_value: object,
 ) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     transaction = _create_transaction(account)
 
     response = patch(
@@ -254,14 +224,14 @@ def test_update_transaction_fields(
     assert response.status_code == 200
     assert response.json()[field] == api_value
     transaction.refresh_from_db()
-    assert getattr(transaction, model_attr) == model_value
+    assert getattr(transaction, field) == model_value
 
 
 @pytest.mark.django_db
 def test_cannot_update_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
     transaction = _create_transaction(account, amount="10.00")
 
     response = patch(
@@ -277,7 +247,7 @@ def test_cannot_update_transaction_on_another_users_account(
 
 @pytest.mark.django_db
 def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     transaction = _create_transaction(account)
 
     response = auth_client.put(
@@ -292,7 +262,7 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
 
 @pytest.mark.django_db
 def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     transaction = _create_transaction(account)
 
     response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
@@ -305,7 +275,7 @@ def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> Non
 def test_cannot_delete_transaction_on_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
     transaction = _create_transaction(account)
 
     response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
@@ -316,7 +286,7 @@ def test_cannot_delete_transaction_on_another_users_account(
 
 @pytest.mark.django_db
 def test_deleting_account_cascades_to_transactions(user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     transaction = _create_transaction(account)
 
     account.delete()
@@ -338,19 +308,12 @@ def test_post_without_csrf_token_is_rejected(client: Client, user: User) -> None
 
 @pytest.mark.django_db
 def test_trailing_slash_urls_are_not_routed(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     assert get(auth_client, f"/accounts/{account.id}/transactions/").status_code == 404
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "malformed_id",
-    [
-        "not-a-uuid",
-        "12345",
-        "11111111-1111-1111-1111-11111111111",
-    ],
-)
+@pytest.mark.parametrize("malformed_id", MALFORMED_IDS)
 def test_malformed_account_id_returns_not_found(
     auth_client: Client, malformed_id: str
 ) -> None:
@@ -358,17 +321,10 @@ def test_malformed_account_id_returns_not_found(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "malformed_id",
-    [
-        "not-a-uuid",
-        "12345",
-        "11111111-1111-1111-1111-11111111111",
-    ],
-)
+@pytest.mark.parametrize("malformed_id", MALFORMED_IDS)
 def test_malformed_transaction_id_returns_not_found(
     auth_client: Client, user: User, malformed_id: str
 ) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     response = get(auth_client, f"/accounts/{account.id}/transactions/{malformed_id}")
     assert response.status_code == 404
