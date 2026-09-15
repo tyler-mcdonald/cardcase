@@ -39,9 +39,7 @@ class TransactionViewSet(UserScopedViewSet):
     serializer_class = TransactionSerializer
 
     def get_account(self) -> Account:
-        return get_object_or_404(
-            Account, id=self.kwargs["account_id"], user=self.user
-        )
+        return get_object_or_404(Account, id=self.kwargs["account_id"], user=self.user)
 
     def get_queryset(self) -> QuerySet[Transaction]:
         return Transaction.objects.filter(account=self.get_account())
