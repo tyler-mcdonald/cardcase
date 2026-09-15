@@ -13,14 +13,9 @@ import {
 import { AccountCard } from "@/features/accounts/AccountCard";
 import { listAccounts, type Account } from "@/features/accounts/api";
 import { useAuth } from "@/lib/use-auth";
+import classes from "./AccountsPage.module.css";
 
 type LoadState = "loading" | "loaded" | "error";
-
-const GRID_STYLE = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 260px))",
-  gap: "var(--mantine-spacing-md)",
-} as const;
 
 export function AccountsPage() {
   const { user, logout } = useAuth();
@@ -78,13 +73,9 @@ export function AccountsPage() {
         </div>
 
         {state === "loading" && (
-          <Box style={GRID_STYLE}>
+          <Box className={classes.grid}>
             {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton
-                key={index}
-                radius="lg"
-                style={{ aspectRatio: "1.65 / 1" }}
-              />
+              <Skeleton key={index} radius="lg" className={classes.skeleton} />
             ))}
           </Box>
         )}
@@ -98,7 +89,7 @@ export function AccountsPage() {
                 color="red"
                 size="xs"
                 onClick={retry}
-                style={{ alignSelf: "flex-start" }}
+                className={classes.retryButton}
               >
                 Try again
               </Button>
@@ -111,7 +102,7 @@ export function AccountsPage() {
         )}
 
         {state === "loaded" && accounts.length > 0 && (
-          <Box style={GRID_STYLE}>
+          <Box className={classes.grid}>
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />
             ))}
