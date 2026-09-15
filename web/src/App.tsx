@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { HomePage } from "./routes/HomePage";
+import { AccountsPage } from "./routes/AccountsPage";
 import { LoginPage } from "./routes/LoginPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
 import { ProtectedRoute } from "./lib/ProtectedRoute";
@@ -12,7 +12,7 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <AccountsPage />
           </ProtectedRoute>
         }
       />
