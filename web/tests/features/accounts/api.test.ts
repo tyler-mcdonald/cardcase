@@ -37,4 +37,42 @@ describe("listAccounts", () => {
       "Failed to load accounts (403)",
     );
   });
+
+  it("follows pagination to collect every page", async () => {
+    mockedApiFetch
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            count: 2,
+            next: "http://localhost:8000/v1/accounts?page=2",
+            previous: null,
+            results: [makeAccount({ id: "1", name: "Starbucks" })],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            count: 2,
+            next: null,
+            previous: "http://localhost:8000/v1/accounts",
+            results: [makeAccount({ id: "2", name: "Amazon" })],
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const accounts = await listAccounts();
+
+    expect(accounts.map((account) => account.name)).toEqual([
+      "Starbucks",
+      "Amazon",
+    ]);
+    expect(mockedApiFetch).toHaveBeenNthCalledWith(1, "/v1/accounts");
+    expect(mockedApiFetch).toHaveBeenNthCalledWith(
+      2,
+      "http://localhost:8000/v1/accounts?page=2",
+    );
+  });
 });

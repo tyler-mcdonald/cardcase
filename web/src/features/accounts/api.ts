@@ -22,10 +22,18 @@ type Paginated<T> = {
 };
 
 export async function listAccounts(): Promise<Account[]> {
-  const response = await apiFetch(ACCOUNTS_PATH);
-  if (!response.ok) {
-    throw new Error(`Failed to load accounts (${response.status})`);
+  const accounts: Account[] = [];
+  let path: string | null = ACCOUNTS_PATH;
+
+  while (path) {
+    const response = await apiFetch(path);
+    if (!response.ok) {
+      throw new Error(`Failed to load accounts (${response.status})`);
+    }
+    const page = (await response.json()) as Paginated<Account>;
+    accounts.push(...page.results);
+    path = page.next;
   }
-  const page = (await response.json()) as Paginated<Account>;
-  return page.results;
+
+  return accounts;
 }
