@@ -11,3 +11,12 @@ repos:
       args: [ --fix ]
     # Run the formatter.
     - id: ruff-format
+- repo: local
+  hooks:
+    # Run the web frontend's own lint-staged config against staged web/ files.
+    - id: web-lint-staged
+      name: web lint-staged
+      entry: pnpm --dir web exec lint-staged
+      language: system
+      files: ^web/
+      pass_filenames: false
