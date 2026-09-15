@@ -193,6 +193,19 @@ def test_cannot_retrieve_transaction_on_another_users_account(
 
 
 @pytest.mark.django_db
+def test_cannot_retrieve_transaction_via_a_different_owned_account(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user, name="Mine")
+    other_account = create_account(user, name="Also mine")
+    transaction = create_transaction(other_account)
+
+    response = get(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("field", "api_value", "model_value"),
     [
@@ -227,6 +240,25 @@ def test_cannot_update_transaction_on_another_users_account(
 ) -> None:
     account = create_account(other_user)
     transaction = create_transaction(account, amount="10.00")
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}/transactions/{transaction.id}",
+        {"amount": "999.00"},
+    )
+
+    assert response.status_code == 404
+    transaction.refresh_from_db()
+    assert str(transaction.amount) == "10.00"
+
+
+@pytest.mark.django_db
+def test_cannot_update_transaction_via_a_different_owned_account(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user, name="Mine")
+    other_account = create_account(user, name="Also mine")
+    transaction = create_transaction(other_account, amount="10.00")
 
     response = patch(
         auth_client,
@@ -279,6 +311,20 @@ def test_cannot_delete_transaction_on_another_users_account(
 
 
 @pytest.mark.django_db
+def test_cannot_delete_transaction_via_a_different_owned_account(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user, name="Mine")
+    other_account = create_account(user, name="Also mine")
+    transaction = create_transaction(other_account)
+
+    response = delete(auth_client, f"/accounts/{account.id}/transactions/{transaction.id}")
+
+    assert response.status_code == 404
+    assert Transaction.objects.filter(id=transaction.id).exists()
+
+
+@pytest.mark.django_db
 def test_deleting_account_cascades_to_transactions(user: User) -> None:
     account = create_account(user)
     transaction = create_transaction(account)
@@ -286,6 +332,30 @@ def test_deleting_account_cascades_to_transactions(user: User) -> None:
     account.delete()
 
     assert not Transaction.objects.filter(id=transaction.id).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
+def test_transaction_endpoints_404_after_account_soft_deleted(
+    auth_client: Client, user: User, case: str
+) -> None:
+    account = create_account(user)
+    transaction = create_transaction(account)
+    account.soft_delete()
+    list_path = f"/accounts/{account.id}/transactions"
+    detail_path = f"/accounts/{account.id}/transactions/{transaction.id}"
+
+    responses = {
+        "list": lambda: get(auth_client, list_path),
+        "create": lambda: post(
+            auth_client, list_path, {"amount": "10.00", "occurred_on": "2026-01-01"}
+        ),
+        "retrieve": lambda: get(auth_client, detail_path),
+        "update": lambda: patch(auth_client, detail_path, {"amount": "5.00"}),
+        "delete": lambda: delete(auth_client, detail_path),
+    }
+
+    assert responses[case]().status_code == 404
 
 
 def test_post_without_csrf_token_is_rejected(client: Client, user: User) -> None:
