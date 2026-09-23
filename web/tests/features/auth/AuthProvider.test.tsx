@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -105,7 +105,7 @@ describe("AuthProvider", () => {
       expect(result.current.auth.user?.email).toBe("test@example.com"),
     );
 
-    await act(() => result.current.logout.mutateAsync());
+    result.current.logout.mutate();
 
     await waitFor(() => expect(result.current.auth.user).toBeNull());
   });
