@@ -1,4 +1,4 @@
-import { request, type ApiResponse } from "@/lib/api";
+import { ApiError, request, type ApiResponse } from "@/lib/api";
 import type { User } from "./types";
 
 const AUTH_API_BASE = "/_allauth/browser/v1";
@@ -18,7 +18,15 @@ export function requestLoginCode(email: string) {
     "POST",
     `${AUTH_API_BASE}/auth/code/request`,
     { body: JSON.stringify({ email }) },
-  );
+  ).catch((error) => {
+    // allauth always answers this endpoint with 401 (it never confirms
+    // whether the email exists), reserving other statuses for real
+    // failures like rate limiting.
+    if (error instanceof ApiError && error.status === 401 && error.body) {
+      return error.body as ApiResponse<SessionData>;
+    }
+    throw error;
+  });
 }
 
 export function confirmLoginCode(code: string) {
