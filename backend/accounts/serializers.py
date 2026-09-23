@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from rest_framework import serializers
 
-from .models import Account
+from .models import Account, Transaction
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
@@ -25,3 +25,17 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
                 "This field cannot be changed after creation."
             )
         return value
+
+
+class TransactionSerializer(serializers.ModelSerializer[Transaction]):
+    class Meta:
+        model = Transaction
+        fields: ClassVar[list[str]] = [
+            "id",
+            "amount",
+            "description",
+            "occurred_on",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields: ClassVar[list[str]] = ["id", "created_at", "updated_at"]

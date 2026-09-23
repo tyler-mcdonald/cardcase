@@ -40,3 +40,21 @@ class Account(models.Model):
     def soft_delete(self) -> None:
         self.deleted_at = timezone.now()
         self.save(update_fields=["deleted_at", "updated_at"])
+
+
+class Transaction(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="transactions"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.CharField(max_length=1000, blank=True, default="")
+    occurred_on = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering: ClassVar[list[str]] = ["-occurred_on", "-created_at", "-id"]
+
+    def __str__(self) -> str:
+        return f"{self.amount} on {self.account}"

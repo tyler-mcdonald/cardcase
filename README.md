@@ -36,14 +36,6 @@ Start the Django server:
 uv run manage.py runserver
 ```
 
-#### Optional Dev Tools
-
-To install a pre-commit hook that lints and formats staged files on each commit:
-
-```
-uv run pre-commit install
-```
-
 ### Web Frontend
 
 #### Requires
@@ -77,4 +69,10 @@ Start the dev server (the backend must also be running for login to work):
 pnpm dev
 ```
 
-See [DESIGN.md](DESIGN.md) for the project spec, and [docs/](docs/) for other documentation.
+### Git Hooks
+
+To install a pre-commit hook that lints and formats staged files on each commit, for both the backend and the web frontend, run from the repo root:
+
+```
+uv run --project backend pre-commit install
+```
