@@ -13,8 +13,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       : "anonymous";
 
   return (
-    <AuthContext.Provider value={{ status, user: session.data ?? null }}>
+    <AuthContext value={{ status, user: session.data ?? null }}>
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 }
