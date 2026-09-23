@@ -17,12 +17,17 @@ the Conventional Commit style.
 
 ## Frontend data fetching
 
-All backend calls go through `web/src/lib/api.ts`. Its `request` helper throws `ApiError`
-(`status`, `body`) on any non-2xx response or network failure — never swallow errors
-there. Components never call `fetch` or build URLs directly.
+Layered, left to right — each layer only calls the one directly to its right:
 
-```ts
-import { request, ApiError } from "@/lib/api";
-
-const account = await request<Account>("GET", `/v1/accounts/${id}`);
 ```
+component → feature queries.ts → feature api.ts → lib/api.ts (request)
+```
+
+- `lib/api.ts` — the HTTP client. `request` throws `ApiError` (`status`, `body`) on any
+  non-2xx response or network failure — never swallow errors here.
+- `features/<feature>/api.ts` — one function per endpoint, calling `request` with its
+  method/URL. No React or TanStack Query code.
+- `features/<feature>/queries.ts` — wraps `api.ts` functions in `queryOptions` /
+  `useMutation`. The only file in a feature that imports from its `api.ts`.
+- Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
+  `api.ts`, or `fetch` directly.
