@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { sessionQuery } from "./queries";
-import { AuthContext, type AuthStatus } from "./use-auth";
+import { AuthContext } from "./use-auth";
+import type { AuthStatus } from "./types";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const session = useQuery(sessionQuery());

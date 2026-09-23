@@ -1,5 +1,5 @@
 import { request, type ApiResponse } from "@/lib/api";
-import type { User } from "./use-auth";
+import type { User } from "./types";
 
 const AUTH_API_BASE = "/_allauth/browser/v1";
 const SESSION_PATH = "/auth/session";

@@ -11,7 +11,7 @@ import {
   logout,
   type SessionData,
 } from "./api";
-import type { User } from "./use-auth";
+import type { User } from "./types";
 
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
 

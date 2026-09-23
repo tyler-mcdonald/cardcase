@@ -1,13 +1,7 @@
 import { createContext, useContext } from "react";
+import type { AuthStatus, User } from "./types";
 
-export type AuthStatus = "loading" | "authenticated" | "anonymous";
-
-export type User = {
-  id: string;
-  email: string;
-};
-
-export type AuthContextValue = {
+type AuthContextValue = {
   status: AuthStatus;
   user: User | null;
 };
