@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { request, ApiError, type ApiResponse } from "./api";
+import { ApiError, type ApiResponse } from "@/lib/api";
+import {
+  getSession,
+  requestLoginCode as requestLoginCodeApi,
+  confirmLoginCode as confirmLoginCodeApi,
+  logout as logoutApi,
+  type SessionData,
+} from "./api";
 import {
   AuthContext,
   type AuthStatus,
@@ -8,11 +15,7 @@ import {
   type User,
 } from "./use-auth";
 
-const AUTH_API_BASE = "/_allauth/browser/v1";
-const SESSION_PATH = "/auth/session";
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
-
-type SessionData = { user?: User };
 
 const SESSION_QUERY_KEY = ["session"] as const;
 
@@ -22,10 +25,7 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
 
 async function loadSession(): Promise<User | null> {
   try {
-    const response = await request<ApiResponse<SessionData>>(
-      "GET",
-      `${AUTH_API_BASE}${SESSION_PATH}`,
-    );
+    const response = await getSession();
     return sessionUser(response);
   } catch {
     return null;
@@ -73,30 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       : "anonymous";
 
   const requestLoginCodeMutation = useMutation({
-    mutationFn: (email: string) =>
-      request<ApiResponse<SessionData>>(
-        "POST",
-        `${AUTH_API_BASE}/auth/code/request`,
-        { body: JSON.stringify({ email }) },
-      ),
+    mutationFn: requestLoginCodeApi,
   });
 
   const confirmLoginCodeMutation = useMutation({
-    mutationFn: (code: string) =>
-      request<ApiResponse<SessionData>>(
-        "POST",
-        `${AUTH_API_BASE}/auth/code/confirm`,
-        { body: JSON.stringify({ code }) },
-      ),
+    mutationFn: confirmLoginCodeApi,
     onSuccess: applySession,
   });
 
   const logoutMutation = useMutation({
-    mutationFn: () =>
-      request<ApiResponse<SessionData>>(
-        "DELETE",
-        `${AUTH_API_BASE}${SESSION_PATH}`,
-      ),
+    mutationFn: logoutApi,
     onSuccess: applySession,
   });
 

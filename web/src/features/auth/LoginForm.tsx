@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth } from "./use-auth";
 
 export function LoginForm() {
   const { requestLoginCode, confirmLoginCode } = useAuth();

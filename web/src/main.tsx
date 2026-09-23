@@ -5,7 +5,7 @@ import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@mantine/core/styles.css";
 import App from "./App.tsx";
-import { AuthProvider } from "@/lib/AuthProvider";
+import { AuthProvider } from "@/features/auth/AuthProvider";
 
 const queryClient = new QueryClient();
 

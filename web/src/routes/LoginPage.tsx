@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { Container } from "@mantine/core";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth } from "@/features/auth/use-auth";
 import { LoginForm } from "@/features/auth/LoginForm";
 
 export function LoginPage() {

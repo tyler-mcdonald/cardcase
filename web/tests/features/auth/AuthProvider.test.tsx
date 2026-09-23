@@ -2,19 +2,28 @@ import { useState, type ReactNode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
-import { useAuth } from "@/lib/use-auth";
-import { request, ApiError, type ApiResponse } from "@/lib/api";
+import { AuthProvider, GENERIC_ERROR } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/use-auth";
+import {
+  getSession,
+  requestLoginCode,
+  confirmLoginCode,
+  logout,
+  type SessionData,
+} from "@/features/auth/api";
+import { ApiError, type ApiResponse } from "@/lib/api";
 
-vi.mock("@/lib/api", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/api")>();
-  return {
-    ...actual,
-    request: vi.fn(),
-  };
-});
+vi.mock("@/features/auth/api", () => ({
+  getSession: vi.fn(),
+  requestLoginCode: vi.fn(),
+  confirmLoginCode: vi.fn(),
+  logout: vi.fn(),
+}));
 
-const mockedRequest = vi.mocked(request);
+const mockedGetSession = vi.mocked(getSession);
+const mockedRequestLoginCode = vi.mocked(requestLoginCode);
+const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
+const mockedLogout = vi.mocked(logout);
 
 const TEST_EMAIL = "test@example.com";
 
@@ -32,11 +41,11 @@ function Wrapper({ children }: { children: ReactNode }) {
   );
 }
 
-function anonymousSessionResponse(): ApiResponse {
+function anonymousSessionResponse(): ApiResponse<SessionData> {
   return { status: 200, meta: { is_authenticated: false } };
 }
 
-function authenticatedSessionResponse(email: string): ApiResponse {
+function authenticatedSessionResponse(email: string): ApiResponse<SessionData> {
   return {
     status: 200,
     meta: { is_authenticated: true },
@@ -44,8 +53,8 @@ function authenticatedSessionResponse(email: string): ApiResponse {
   };
 }
 
-async function renderAuthWithSession(initialSession: ApiResponse) {
-  mockedRequest.mockResolvedValueOnce(initialSession);
+async function renderAuthWithSession(initialSession: ApiResponse<SessionData>) {
+  mockedGetSession.mockResolvedValueOnce(initialSession);
   const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
   await waitFor(() => expect(result.current.status).not.toBe("loading"));
   return result;
@@ -74,7 +83,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns ok and correctly sets user context", async () => {
-    mockedRequest.mockResolvedValueOnce(
+    mockedConfirmLoginCode.mockResolvedValueOnce(
       authenticatedSessionResponse(TEST_EMAIL),
     );
 
@@ -88,7 +97,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns error for an incorrect login code", async () => {
-    mockedRequest.mockRejectedValueOnce(
+    mockedConfirmLoginCode.mockRejectedValueOnce(
       new ApiError("Bad Request", 400, {
         status: 400,
         errors: [{ message: "Incorrect code." }],
@@ -103,7 +112,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns a generic error when the request throws", async () => {
-    mockedRequest.mockRejectedValueOnce(new Error("network down"));
+    mockedRequestLoginCode.mockRejectedValueOnce(new Error("network down"));
 
     const actionResult = await runAction(() =>
       auth.current.requestLoginCode(TEST_EMAIL),
@@ -128,7 +137,7 @@ describe("when the session starts authenticated", () => {
   });
 
   it("logout resets the session to anonymous", async () => {
-    mockedRequest.mockResolvedValueOnce(anonymousSessionResponse());
+    mockedLogout.mockResolvedValueOnce(anonymousSessionResponse());
 
     await runAction(() => auth.current.logout());
 
