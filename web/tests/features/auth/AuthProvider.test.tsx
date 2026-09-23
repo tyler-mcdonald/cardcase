@@ -27,7 +27,7 @@ function Wrapper({ children }: { children: ReactNode }) {
 }
 
 describe("AuthProvider", () => {
-  it("reports anonymous status with no user when the session has no user", async () => {
+  it("reports undefined user while the session is loading", () => {
     mockedGetSession.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: false },
@@ -35,11 +35,21 @@ describe("AuthProvider", () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
-    await waitFor(() => expect(result.current.status).toBe("anonymous"));
-    expect(result.current.user).toBeNull();
+    expect(result.current.user).toBeUndefined();
   });
 
-  it("reports authenticated status with the session user", async () => {
+  it("reports null user when the session has no authenticated user", async () => {
+    mockedGetSession.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: false },
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.user).toBeNull());
+  });
+
+  it("reports the session user once authenticated", async () => {
     mockedGetSession.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: true },
@@ -48,16 +58,16 @@ describe("AuthProvider", () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
-    await waitFor(() => expect(result.current.status).toBe("authenticated"));
-    expect(result.current.user?.email).toBe("test@example.com");
+    await waitFor(() =>
+      expect(result.current.user?.email).toBe("test@example.com"),
+    );
   });
 
-  it("reports anonymous status when the session request fails", async () => {
+  it("reports null user when the session request fails", async () => {
     mockedGetSession.mockRejectedValueOnce(new Error("network down"));
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
-    await waitFor(() => expect(result.current.status).toBe("anonymous"));
-    expect(result.current.user).toBeNull();
+    await waitFor(() => expect(result.current.user).toBeNull());
   });
 });

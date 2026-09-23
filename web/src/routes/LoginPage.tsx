@@ -4,9 +4,9 @@ import { useAuth } from "@/features/auth/use-auth";
 import { LoginForm } from "@/features/auth/LoginForm";
 
 export function LoginPage() {
-  const { status } = useAuth();
+  const { user } = useAuth();
 
-  if (status === "authenticated") {
+  if (user) {
     return <Navigate to="/" replace />;
   }
 

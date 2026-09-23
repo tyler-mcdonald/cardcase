@@ -1,9 +1,10 @@
 import { createContext, useContext } from "react";
-import type { AuthStatus, User } from "./types";
+import type { User } from "./types";
 
 type AuthContextValue = {
-  status: AuthStatus;
-  user: User | null;
+  // undefined while the session is still loading; null once resolved
+  // with no authenticated user.
+  user: User | null | undefined;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(
