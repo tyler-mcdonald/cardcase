@@ -56,7 +56,7 @@ export async function request<T = unknown>(
     );
   }
 
-  const body = await response.json().catch(() => undefined);
+  const body = await response.json().catch(() => null);
 
   if (!response.ok) {
     throw new ApiError(

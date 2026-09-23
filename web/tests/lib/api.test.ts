@@ -22,7 +22,7 @@ describe("api client", () => {
     });
   });
 
-  it("resolves without a body on a 204 response", async () => {
+  it("resolves to null without a body on a 204 response", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
@@ -30,7 +30,7 @@ describe("api client", () => {
 
     await expect(
       request("DELETE", "https://api.test/things/1"),
-    ).resolves.toBeUndefined();
+    ).resolves.toBeNull();
   });
 
   it("throws ApiError with status and parsed body on a non-2xx response", async () => {
