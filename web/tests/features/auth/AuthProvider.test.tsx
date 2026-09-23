@@ -74,7 +74,7 @@ describe("AuthProvider", () => {
     await waitFor(() => expect(result.current.user).toBeNull());
   });
 
-  it("reports null user when authenticated but the session has no user", async () => {
+  it("falls back to null if an authenticated response is missing its user", async () => {
     mockedGetSession.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: true },
