@@ -17,12 +17,12 @@ the Conventional Commit style.
 
 ## Frontend data fetching
 
-All backend calls go through `web/src/lib/api.ts`. Its `api.get/post/delete` helpers throw
-`ApiError` (`status`, `body`) on any non-2xx response or network failure — never swallow errors
+All backend calls go through `web/src/lib/api.ts`. Its `request` helper throws `ApiError`
+(`status`, `body`) on any non-2xx response or network failure — never swallow errors
 there. Components never call `fetch` or build URLs directly.
 
 ```ts
-import { api, ApiError } from "@/lib/api";
+import { request, ApiError } from "@/lib/api";
 
-const account = await api.get<Account>(`/v1/accounts/${id}`);
+const account = await request<Account>("GET", `/v1/accounts/${id}`);
 ```

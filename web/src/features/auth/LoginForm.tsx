@@ -9,11 +9,8 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import {
-  authErrorMessage,
-  useConfirmLoginCode,
-  useRequestLoginCode,
-} from "./queries";
+import { apiErrorMessage } from "@/lib/api";
+import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
 
 export function LoginForm() {
   const requestLoginCode = useRequestLoginCode();
@@ -59,7 +56,7 @@ export function LoginForm() {
         )}
         {error && (
           <Alert color="red" mt="md" role="alert">
-            {authErrorMessage(error)}
+            {apiErrorMessage(error)}
           </Alert>
         )}
       </Paper>

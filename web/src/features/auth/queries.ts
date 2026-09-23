@@ -2,8 +2,9 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
-import { ApiError, type ApiResponse } from "@/lib/api";
+import type { ApiResponse } from "@/lib/api";
 import {
   getSession,
   requestLoginCode,
@@ -13,12 +14,17 @@ import {
 } from "./api";
 import type { User } from "./types";
 
-export const GENERIC_ERROR = "Something went wrong. Please try again.";
-
 const SESSION_QUERY_KEY = ["session"] as const;
 
 function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
+}
+
+function applySession(
+  queryClient: QueryClient,
+  response: ApiResponse<SessionData>,
+) {
+  queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
 }
 
 async function loadSession(): Promise<User | null> {
@@ -41,38 +47,22 @@ export function sessionQuery() {
   });
 }
 
-function useApplySession() {
-  const queryClient = useQueryClient();
-  return (response: ApiResponse<SessionData>) => {
-    queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
-  };
-}
-
 export function useRequestLoginCode() {
   return useMutation({ mutationFn: requestLoginCode });
 }
 
 export function useConfirmLoginCode() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: confirmLoginCode,
-    onSuccess: useApplySession(),
+    onSuccess: (response) => applySession(queryClient, response),
   });
 }
 
 export function useLogout() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: useApplySession(),
+    onSuccess: (response) => applySession(queryClient, response),
   });
-}
-
-export function authErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    const body = error.body as ApiResponse<SessionData> | undefined;
-    const message = body?.errors?.[0]?.message;
-    if (message) {
-      return message;
-    }
-  }
-  return GENERIC_ERROR;
 }
