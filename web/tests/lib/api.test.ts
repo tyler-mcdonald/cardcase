@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { api, ApiError } from "@/lib/api";
+import { request, ApiError } from "@/lib/api";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -16,7 +16,7 @@ describe("api client", () => {
       ),
     );
 
-    await expect(api.get("https://api.test/things/1")).resolves.toEqual({
+    await expect(request("GET", "https://api.test/things/1")).resolves.toEqual({
       id: 1,
       name: "Thing",
     });
@@ -29,7 +29,7 @@ describe("api client", () => {
     );
 
     await expect(
-      api.delete("https://api.test/things/1"),
+      request("DELETE", "https://api.test/things/1"),
     ).resolves.toBeUndefined();
   });
 
@@ -43,7 +43,9 @@ describe("api client", () => {
       ),
     );
 
-    await expect(api.get("https://api.test/things")).rejects.toMatchObject({
+    await expect(
+      request("GET", "https://api.test/things"),
+    ).rejects.toMatchObject({
       name: "ApiError",
       status: 404,
       body: { detail: "Not found" },
@@ -56,8 +58,8 @@ describe("api client", () => {
       vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
     );
 
-    await expect(api.get("https://api.test/things")).rejects.toBeInstanceOf(
-      ApiError,
-    );
+    await expect(
+      request("GET", "https://api.test/things"),
+    ).rejects.toBeInstanceOf(ApiError);
   });
 });

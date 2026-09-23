@@ -4,19 +4,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, GENERIC_ERROR } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/use-auth";
-import { api, ApiError, type ApiResponse } from "@/lib/api";
+import { request, ApiError, type ApiResponse } from "@/lib/api";
 
 vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    api: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
+    request: vi.fn(),
   };
 });
 
-const mockedApiGet = vi.mocked(api.get);
-const mockedApiPost = vi.mocked(api.post);
-const mockedApiDelete = vi.mocked(api.delete);
+const mockedRequest = vi.mocked(request);
 
 const TEST_EMAIL = "test@example.com";
 
@@ -47,7 +45,7 @@ function authenticatedSessionResponse(email: string): ApiResponse {
 }
 
 async function renderAuthWithSession(initialSession: ApiResponse) {
-  mockedApiGet.mockResolvedValueOnce(initialSession);
+  mockedRequest.mockResolvedValueOnce(initialSession);
   const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
   await waitFor(() => expect(result.current.status).not.toBe("loading"));
   return result;
@@ -76,7 +74,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns ok and correctly sets user context", async () => {
-    mockedApiPost.mockResolvedValueOnce(
+    mockedRequest.mockResolvedValueOnce(
       authenticatedSessionResponse(TEST_EMAIL),
     );
 
@@ -90,7 +88,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns error for an incorrect login code", async () => {
-    mockedApiPost.mockRejectedValueOnce(
+    mockedRequest.mockRejectedValueOnce(
       new ApiError("Bad Request", 400, {
         status: 400,
         errors: [{ message: "Incorrect code." }],
@@ -105,7 +103,7 @@ describe("when the session starts unauthenticated", () => {
   });
 
   it("returns a generic error when the request throws", async () => {
-    mockedApiPost.mockRejectedValueOnce(new Error("network down"));
+    mockedRequest.mockRejectedValueOnce(new Error("network down"));
 
     const actionResult = await runAction(() =>
       auth.current.requestLoginCode(TEST_EMAIL),
@@ -130,7 +128,7 @@ describe("when the session starts authenticated", () => {
   });
 
   it("logout resets the session to anonymous", async () => {
-    mockedApiDelete.mockResolvedValueOnce(anonymousSessionResponse());
+    mockedRequest.mockResolvedValueOnce(anonymousSessionResponse());
 
     await runAction(() => auth.current.logout());
 

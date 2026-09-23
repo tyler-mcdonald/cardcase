@@ -27,7 +27,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T = unknown>(
+export async function request<T = unknown>(
   method: string,
   path: string,
   options: RequestInit = {},
@@ -56,10 +56,7 @@ async function request<T = unknown>(
     );
   }
 
-  const body =
-    response.status === 204
-      ? undefined
-      : await response.json().catch(() => undefined);
+  const body = await response.json().catch(() => undefined);
 
   if (!response.ok) {
     throw new ApiError(
@@ -71,10 +68,3 @@ async function request<T = unknown>(
 
   return body as T;
 }
-
-export const api = {
-  get: <T = unknown>(path: string) => request<T>("GET", path),
-  post: <T = unknown>(path: string, body?: unknown) =>
-    request<T>("POST", path, { body: JSON.stringify(body) }),
-  delete: <T = unknown>(path: string) => request<T>("DELETE", path),
-};

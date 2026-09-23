@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, ApiError, type ApiResponse } from "./api";
+import { request, ApiError, type ApiResponse } from "./api";
 import {
   AuthContext,
   type AuthStatus,
@@ -22,7 +22,8 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
 
 async function loadSession(): Promise<User | null> {
   try {
-    const response = await api.get<ApiResponse<SessionData>>(
+    const response = await request<ApiResponse<SessionData>>(
+      "GET",
       `${AUTH_API_BASE}${SESSION_PATH}`,
     );
     return sessionUser(response);
@@ -73,22 +74,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const requestLoginCodeMutation = useMutation({
     mutationFn: (email: string) =>
-      api.post<ApiResponse<SessionData>>(`${AUTH_API_BASE}/auth/code/request`, {
-        email,
-      }),
+      request<ApiResponse<SessionData>>(
+        "POST",
+        `${AUTH_API_BASE}/auth/code/request`,
+        { body: JSON.stringify({ email }) },
+      ),
   });
 
   const confirmLoginCodeMutation = useMutation({
     mutationFn: (code: string) =>
-      api.post<ApiResponse<SessionData>>(`${AUTH_API_BASE}/auth/code/confirm`, {
-        code,
-      }),
+      request<ApiResponse<SessionData>>(
+        "POST",
+        `${AUTH_API_BASE}/auth/code/confirm`,
+        { body: JSON.stringify({ code }) },
+      ),
     onSuccess: applySession,
   });
 
   const logoutMutation = useMutation({
     mutationFn: () =>
-      api.delete<ApiResponse<SessionData>>(`${AUTH_API_BASE}${SESSION_PATH}`),
+      request<ApiResponse<SessionData>>(
+        "DELETE",
+        `${AUTH_API_BASE}${SESSION_PATH}`,
+      ),
     onSuccess: applySession,
   });
 
