@@ -1,16 +1,19 @@
 import { useState, type ReactNode } from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
-import { getSession } from "@/features/auth/api";
+import { useLogout } from "@/features/auth/queries";
+import { getSession, logout } from "@/features/auth/api";
 
 vi.mock("@/features/auth/api", () => ({
   getSession: vi.fn(),
+  logout: vi.fn(),
 }));
 
 const mockedGetSession = vi.mocked(getSession);
+const mockedLogout = vi.mocked(logout);
 
 function Wrapper({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -69,5 +72,41 @@ describe("AuthProvider", () => {
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
     await waitFor(() => expect(result.current.user).toBeNull());
+  });
+
+  it("reports null user when authenticated but the session has no user", async () => {
+    mockedGetSession.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: true },
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.user).toBeNull());
+  });
+
+  it("updates the session to null after a logout mutation succeeds", async () => {
+    mockedGetSession.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: true },
+      data: { user: { id: "1", email: "test@example.com" } },
+    });
+    mockedLogout.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: false },
+    });
+
+    const { result } = renderHook(
+      () => ({ auth: useAuth(), logout: useLogout() }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() =>
+      expect(result.current.auth.user?.email).toBe("test@example.com"),
+    );
+
+    await act(() => result.current.logout.mutateAsync());
+
+    await waitFor(() => expect(result.current.auth.user).toBeNull());
   });
 });
