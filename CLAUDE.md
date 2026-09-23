@@ -14,3 +14,15 @@ the Conventional Commit style.
     - `docs: update claude instructions for PR titles`
 - Do not add a desciption other than "Closes #x" to reference the issue, unless explicitly requested by the user.
 - PR Titles should not exceed 50 characters.
+
+## Frontend data fetching
+
+All backend calls go through `web/src/lib/api.ts`. Its `api.get/post/delete` helpers throw
+`ApiError` (`status`, `body`) on any non-2xx response or network failure — never swallow errors
+there. Components never call `fetch` or build URLs directly.
+
+```ts
+import { api, ApiError } from "@/lib/api";
+
+const account = await api.get<Account>(`/v1/accounts/${id}`);
+```

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, type ApiResponse } from "./api";
+import { api, ApiError, type ApiResponse } from "./api";
 import {
   AuthContext,
   type AuthStatus,
@@ -22,7 +22,7 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
 
 async function loadSession(): Promise<User | null> {
   try {
-    const response = await apiRequest<SessionData>(
+    const response = await api.get<ApiResponse<SessionData>>(
       `${AUTH_API_BASE}${SESSION_PATH}`,
     );
     return sessionUser(response);
@@ -31,18 +31,20 @@ async function loadSession(): Promise<User | null> {
   }
 }
 
-function toActionResult(response: ApiResponse): ActionResult {
-  const error = response.errors?.[0]?.message;
-  return error ? { ok: false, error } : { ok: true };
-}
-
 async function runAction(
   mutateAsync: () => Promise<ApiResponse<SessionData>>,
 ): Promise<ActionResult> {
   try {
-    const response = await mutateAsync();
-    return toActionResult(response);
-  } catch {
+    await mutateAsync();
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      const body = err.body as ApiResponse<SessionData> | undefined;
+      const message = body?.errors?.[0]?.message;
+      if (message) {
+        return { ok: false, error: message };
+      }
+    }
     return { ok: false, error: GENERIC_ERROR };
   }
 }
@@ -71,26 +73,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const requestLoginCodeMutation = useMutation({
     mutationFn: (email: string) =>
-      apiRequest<SessionData>(`${AUTH_API_BASE}/auth/code/request`, {
-        method: "POST",
-        body: JSON.stringify({ email }),
+      api.post<ApiResponse<SessionData>>(`${AUTH_API_BASE}/auth/code/request`, {
+        email,
       }),
   });
 
   const confirmLoginCodeMutation = useMutation({
     mutationFn: (code: string) =>
-      apiRequest<SessionData>(`${AUTH_API_BASE}/auth/code/confirm`, {
-        method: "POST",
-        body: JSON.stringify({ code }),
+      api.post<ApiResponse<SessionData>>(`${AUTH_API_BASE}/auth/code/confirm`, {
+        code,
       }),
     onSuccess: applySession,
   });
 
   const logoutMutation = useMutation({
     mutationFn: () =>
-      apiRequest<SessionData>(`${AUTH_API_BASE}${SESSION_PATH}`, {
-        method: "DELETE",
-      }),
+      api.delete<ApiResponse<SessionData>>(`${AUTH_API_BASE}${SESSION_PATH}`),
     onSuccess: applySession,
   });
 
