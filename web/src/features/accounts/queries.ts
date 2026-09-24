@@ -1,4 +1,5 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
+import { ApiError } from "@/lib/api";
 import { listAccounts, type Account, type Paginated } from "./api";
 
 type AccountsResult = {
@@ -14,6 +15,10 @@ function toAccountsResult(
     ? Math.ceil(response.count / response.results.length)
     : page;
   return { accounts: response.results, totalPages };
+}
+
+export function isMissingPage(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404;
 }
 
 export function accountsQuery(page: number) {

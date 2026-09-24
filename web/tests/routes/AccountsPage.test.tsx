@@ -5,23 +5,14 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
 import { listAccounts, type Account } from "@/features/accounts/api";
-import { useAuth } from "@/features/auth/use-auth";
-import { useLogout } from "@/features/auth/queries";
+import { ApiError } from "@/lib/api";
 import { makeAccount } from "../features/accounts/factories";
 
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
 }));
-vi.mock("@/features/auth/use-auth", () => ({
-  useAuth: vi.fn(),
-}));
-vi.mock("@/features/auth/queries", () => ({
-  useLogout: vi.fn(),
-}));
 
 const mockedListAccounts = vi.mocked(listAccounts);
-const mockedUseAuth = vi.mocked(useAuth);
-const mockedUseLogout = vi.mocked(useLogout);
 
 function page(
   results: Account[],
@@ -52,12 +43,6 @@ function renderPage(initialEntry = "/") {
 
 beforeEach(() => {
   vi.stubGlobal("scrollTo", vi.fn());
-  mockedUseAuth.mockReturnValue({
-    user: { id: "1", email: "test@example.com" },
-  });
-  mockedUseLogout.mockReturnValue({
-    mutate: vi.fn(),
-  } as unknown as ReturnType<typeof useLogout>);
 });
 
 describe("AccountsPage", () => {
@@ -135,11 +120,16 @@ describe("AccountsPage", () => {
     expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
   });
 
-  it("shows the signed-in user's email", async () => {
-    mockedListAccounts.mockResolvedValueOnce(page([]));
+  it("falls back to the first page when the requested page doesn't exist", async () => {
+    mockedListAccounts
+      .mockRejectedValueOnce(new ApiError("Not found", 404))
+      .mockResolvedValueOnce(page([makeAccount({ name: "Starbucks" })]));
 
-    renderPage();
+    renderPage("/?page=9");
 
-    screen.getByText("test@example.com");
+    expect(await screen.findByText("Starbucks")).toBeTruthy();
+    expect(mockedListAccounts).toHaveBeenNthCalledWith(1, 9);
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+    expect(screen.queryByText("Couldn't load your accounts")).toBeNull();
   });
 });

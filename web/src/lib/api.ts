@@ -71,6 +71,15 @@ export async function request<T = unknown>(
   return body as T;
 }
 
+export function isClientError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    error.status !== undefined &&
+    error.status >= 400 &&
+    error.status < 500
+  );
+}
+
 export function apiErrorMessage(
   error: unknown,
   fallback: string = GENERIC_ERROR,

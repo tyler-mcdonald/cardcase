@@ -4,10 +4,6 @@
   gap: var(--mantine-spacing-md);
 }
 
-.skeleton {
-  aspect-ratio: 1.65 / 1;
-}
-
 .retryButton {
   align-self: flex-start;
 }

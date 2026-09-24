@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Badge, Card, Text } from "@mantine/core";
+import { Badge, Card, Skeleton, Text } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./api";
 import { formatExpiry, isExpired } from "./format";
@@ -69,6 +69,10 @@ export function AccountCard({ account }: { account: Account }) {
       </div>
     </Card>
   );
+}
+
+export function AccountCardSkeleton() {
+  return <Skeleton radius="lg" className={classes.card} />;
 }
 
 function FlightCreditIcon() {

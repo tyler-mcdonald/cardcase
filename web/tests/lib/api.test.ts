@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiErrorMessage, request, ApiError, GENERIC_ERROR } from "@/lib/api";
+import {
+  apiErrorMessage,
+  isClientError,
+  request,
+  ApiError,
+  GENERIC_ERROR,
+} from "@/lib/api";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -82,5 +88,23 @@ describe("apiErrorMessage", () => {
 
   it("falls back to a generic message for a non-ApiError", () => {
     expect(apiErrorMessage(new Error("network down"))).toBe(GENERIC_ERROR);
+  });
+});
+
+describe("isClientError", () => {
+  it("is true for a 4xx API error", () => {
+    expect(isClientError(new ApiError("Not found", 404))).toBe(true);
+  });
+
+  it("is false for a 5xx API error", () => {
+    expect(isClientError(new ApiError("Server error", 500))).toBe(false);
+  });
+
+  it("is false for a network failure", () => {
+    expect(isClientError(new ApiError("Network error"))).toBe(false);
+  });
+
+  it("is false for a non-API error", () => {
+    expect(isClientError(new Error("boom"))).toBe(false);
   });
 });
