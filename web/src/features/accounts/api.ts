@@ -12,22 +12,14 @@ export type Account = {
   updated_at: string;
 };
 
-type Paginated<T> = {
+export type Paginated<T> = {
   count: number;
   next: string | null;
   previous: string | null;
   results: T[];
 };
 
-export async function listAccounts(): Promise<Account[]> {
-  const accounts: Account[] = [];
-  let path: string | null = ACCOUNTS_PATH;
-
-  while (path) {
-    const page: Paginated<Account> = await request("GET", path);
-    accounts.push(...page.results);
-    path = page.next;
-  }
-
-  return accounts;
+export function listAccounts(page: number) {
+  const query = new URLSearchParams({ page: String(page) });
+  return request<Paginated<Account>>("GET", `${ACCOUNTS_PATH}?${query}`);
 }

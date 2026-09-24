@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import {
   Alert,
   Box,
   Button,
   Container,
   Group,
+  Pagination,
   Skeleton,
   Stack,
   Text,
@@ -16,16 +18,24 @@ import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
 import classes from "./AccountsPage.module.css";
 
+function parsePage(value: string | null): number {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
 export function AccountsPage() {
   const { user } = useAuth();
   const logout = useLogout();
-  const {
-    data: accounts,
-    isPending,
-    isError,
-    isFetching,
-    refetch,
-  } = useQuery(accountsQuery());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parsePage(searchParams.get("page"));
+  const { data, isPending, isError, isFetching, refetch } = useQuery(
+    accountsQuery(page),
+  );
+
+  function goToPage(nextPage: number) {
+    setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
+    window.scrollTo({ top: 0 });
+  }
 
   return (
     <Container py="xl">
@@ -79,14 +89,25 @@ export function AccountsPage() {
           </Alert>
         )}
 
-        {accounts?.length === 0 && <Text c="dimmed">No accounts yet.</Text>}
+        {data?.accounts.length === 0 && (
+          <Text c="dimmed">No accounts yet.</Text>
+        )}
 
-        {accounts && accounts.length > 0 && (
+        {data && data.accounts.length > 0 && (
           <Box className={classes.grid}>
-            {accounts.map((account) => (
+            {data.accounts.map((account) => (
               <AccountCard key={account.id} account={account} />
             ))}
           </Box>
+        )}
+
+        {data && data.totalPages > 1 && (
+          <Pagination
+            total={data.totalPages}
+            value={page}
+            onChange={goToPage}
+            className={classes.pagination}
+          />
         )}
       </Stack>
     </Container>
