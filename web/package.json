@@ -12,6 +12,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "typecheck": "tsc -b",
+    "depcruise": "depcruise --config .dependency-cruiser.cjs src",
     "preview": "vite preview"
   },
   "lint-staged": {
@@ -19,6 +20,7 @@
       "prettier --write",
       "pnpm run lint"
     ],
+    "src/**/*.{ts,tsx}": "depcruise --config .dependency-cruiser.cjs --output-type err-long",
     "*.{json,css,md}": "prettier --write"
   },
   "dependencies": {
@@ -37,6 +39,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
+    "dependency-cruiser": "^18.4.0",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.4.1",
     "oxlint": "^1.80.0",
