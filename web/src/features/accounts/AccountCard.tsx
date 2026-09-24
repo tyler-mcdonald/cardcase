@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Badge, Card, Skeleton, Text } from "@mantine/core";
 import classes from "./AccountCard.module.css";
-import type { Account } from "./api";
+import type { Account } from "./types";
 import { formatExpiry, isExpired } from "./format";
 
 type AccountStyle = {

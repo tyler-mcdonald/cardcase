@@ -1,4 +1,6 @@
-import { ApiError, request, type ApiResponse } from "@/lib/api";
+import { request } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/errors";
+import type { ApiResponse } from "@/lib/api/types";
 import type { User } from "./types";
 
 const AUTH_API_BASE = "/_allauth/browser/v1";

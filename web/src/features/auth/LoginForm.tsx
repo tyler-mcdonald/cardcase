@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { apiErrorMessage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
 
 export function LoginForm() {

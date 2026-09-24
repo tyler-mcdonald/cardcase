@@ -4,8 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
-import { listAccounts, type Account } from "@/features/accounts/api";
-import { ApiError } from "@/lib/api";
+import { listAccounts } from "@/features/accounts/api";
+import type { Account } from "@/features/accounts/types";
+import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
 
 vi.mock("@/features/accounts/api", () => ({

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@mantine/core/styles.css";
 import App from "./App.tsx";
 import { AuthProvider } from "@/features/auth/AuthProvider";
-import { isClientError } from "@/lib/api";
+import { isClientError } from "@/lib/api/errors";
 
 const MAX_QUERY_RETRIES = 3;
 

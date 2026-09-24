@@ -1,4 +1,4 @@
-import type { Account } from "@/features/accounts/api";
+import type { Account } from "@/features/accounts/types";
 
 export function makeAccount(overrides: Partial<Account> = {}): Account {
   return {

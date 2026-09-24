@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, request } from "@/lib/api";
+import { request } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/errors";
 import { listAccounts } from "@/features/accounts/api";
 import { makeAccount } from "./factories";
 
-vi.mock("@/lib/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/api")>()),
+vi.mock("@/lib/api/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api/client")>()),
   request: vi.fn(),
 }));
 

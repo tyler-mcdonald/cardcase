@@ -1,6 +1,7 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
-import { ApiError } from "@/lib/api";
-import { listAccounts, type Account, type Paginated } from "./api";
+import { ApiError } from "@/lib/api/errors";
+import { listAccounts } from "./api";
+import type { Account, Paginated } from "./types";
 
 type AccountsResult = {
   accounts: Account[];

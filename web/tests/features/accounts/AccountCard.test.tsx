@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MantineProvider } from "@mantine/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountCard } from "@/features/accounts/AccountCard";
-import type { Account } from "@/features/accounts/api";
+import type { Account } from "@/features/accounts/types";
 import { makeAccount } from "./factories";
 
 function renderCard(account: Account) {
