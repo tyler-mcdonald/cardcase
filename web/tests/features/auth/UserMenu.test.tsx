@@ -16,10 +16,6 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
 
-function renderUserMenu() {
-  return renderWithProviders(<UserMenu />);
-}
-
 beforeEach(() => {
   mockedUseAuth.mockReturnValue({
     user: { id: "1", email: "test@example.com" },
@@ -31,13 +27,13 @@ beforeEach(() => {
 
 describe("UserMenu", () => {
   it("shows the signed-in user's email", () => {
-    renderUserMenu();
+    renderWithProviders(<UserMenu />);
 
     screen.getByText("test@example.com");
   });
 
   it("logs out when the button is clicked", () => {
-    renderUserMenu();
+    renderWithProviders(<UserMenu />);
 
     fireEvent.click(screen.getByRole("button", { name: /log out/i }));
 

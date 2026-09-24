@@ -7,10 +7,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function renderLoginForm() {
-  return renderWithProviders(<LoginForm />);
-}
-
 describe("LoginForm", () => {
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
     vi.stubGlobal(
@@ -27,7 +23,7 @@ describe("LoginForm", () => {
       ),
     );
 
-    renderLoginForm();
+    renderWithProviders(<LoginForm />);
 
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "me@example.com" },
