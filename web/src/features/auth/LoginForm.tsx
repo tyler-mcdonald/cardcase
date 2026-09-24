@@ -9,42 +9,28 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useAuth } from "@/lib/use-auth";
+import { apiErrorMessage } from "@/lib/api";
+import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
 
 export function LoginForm() {
-  const { requestLoginCode, confirmLoginCode } = useAuth();
+  const requestLoginCode = useRequestLoginCode();
+  const confirmLoginCode = useConfirmLoginCode();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  async function submit(
-    event: FormEvent,
-    action: () => ReturnType<typeof requestLoginCode>,
-    onSuccess?: () => void,
-  ) {
+  function handleRequestCode(event: FormEvent) {
     event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    const result = await action();
-    setSubmitting(false);
-    if (result.ok) {
-      onSuccess?.();
-    } else {
-      setError(result.error);
-    }
+    requestLoginCode.mutate(email, { onSuccess: () => setStep("code") });
   }
 
-  const handleRequestCode = (event: FormEvent) =>
-    submit(
-      event,
-      () => requestLoginCode(email),
-      () => setStep("code"),
-    );
+  function handleConfirmCode(event: FormEvent) {
+    event.preventDefault();
+    confirmLoginCode.mutate(code);
+  }
 
-  const handleConfirmCode = (event: FormEvent) =>
-    submit(event, () => confirmLoginCode(code));
+  const submitting = requestLoginCode.isPending || confirmLoginCode.isPending;
+  const error = requestLoginCode.error ?? confirmLoginCode.error;
 
   return (
     <main>
@@ -70,7 +56,7 @@ export function LoginForm() {
         )}
         {error && (
           <Alert color="red" mt="md" role="alert">
-            {error}
+            {apiErrorMessage(error)}
           </Alert>
         )}
       </Paper>

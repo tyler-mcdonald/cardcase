@@ -27,3 +27,20 @@ naming *how* the other side implements that contract is not.
 - Good: a frontend test named `"resolves on the API's expected 401 response"`.
 - Fine either way: `const AUTH_API_BASE = "/_allauth/browser/v1"` — this is the
   contract's URL, not a description of backend internals.
+
+## Frontend data fetching
+
+Layered, left to right — each layer only calls the one directly to its right:
+
+```
+component → feature queries.ts → feature api.ts → lib/api.ts (request)
+```
+
+- `lib/api.ts` — the HTTP client. `request` throws `ApiError` (`status`, `body`) on any
+  non-2xx response or network failure — never swallow errors here.
+- `features/<feature>/api.ts` — one function per endpoint, calling `request` with its
+  method/URL. No React or TanStack Query code.
+- `features/<feature>/queries.ts` — wraps `api.ts` functions in `queryOptions` /
+  `useMutation`. The only file in a feature that imports from its `api.ts`.
+- Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
+  `api.ts`, or `fetch` directly.
