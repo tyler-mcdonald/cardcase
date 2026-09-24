@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
+import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
+import { renderWithProviders } from "../../render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),
@@ -17,11 +17,7 @@ const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
 
 function renderUserMenu() {
-  return render(
-    <MantineProvider>
-      <UserMenu />
-    </MantineProvider>,
-  );
+  return renderWithProviders(<UserMenu />);
 }
 
 beforeEach(() => {

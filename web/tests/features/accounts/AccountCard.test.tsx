@@ -1,16 +1,12 @@
-import { render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
+import { screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountCard } from "@/features/accounts/AccountCard";
 import type { Account } from "@/features/accounts/api";
 import { makeAccount } from "./factories";
+import { renderWithProviders } from "../../render";
 
 function renderCard(account: Account) {
-  return render(
-    <MantineProvider>
-      <AccountCard account={account} />
-    </MantineProvider>,
-  );
+  return renderWithProviders(<AccountCard account={account} />);
 }
 
 beforeEach(() => {
