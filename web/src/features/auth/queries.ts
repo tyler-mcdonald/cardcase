@@ -4,7 +4,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import type { ApiResponse } from "@/lib/api";
+import type { ApiResponse } from "@/lib/api/types";
 import {
   getSession,
   requestLoginCode,
