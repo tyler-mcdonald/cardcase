@@ -1,37 +1,47 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MantineProvider } from "@mantine/core";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
 import { listAccounts } from "@/features/accounts/api";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth } from "@/features/auth/use-auth";
+import { useLogout } from "@/features/auth/queries";
 import { makeAccount } from "../features/accounts/factories";
 
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
 }));
-vi.mock("@/lib/use-auth", () => ({
+vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),
+}));
+vi.mock("@/features/auth/queries", () => ({
+  useLogout: vi.fn(),
 }));
 
 const mockedListAccounts = vi.mocked(listAccounts);
 const mockedUseAuth = vi.mocked(useAuth);
+const mockedUseLogout = vi.mocked(useLogout);
 
 function renderPage() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   return render(
     <MantineProvider>
-      <AccountsPage />
+      <QueryClientProvider client={queryClient}>
+        <AccountsPage />
+      </QueryClientProvider>
     </MantineProvider>,
   );
 }
 
 beforeEach(() => {
   mockedUseAuth.mockReturnValue({
-    status: "authenticated",
     user: { id: "1", email: "test@example.com" },
-    requestLoginCode: vi.fn(),
-    confirmLoginCode: vi.fn(),
-    logout: vi.fn(),
   });
+  mockedUseLogout.mockReturnValue({
+    mutate: vi.fn(),
+  } as unknown as ReturnType<typeof useLogout>);
 });
 
 describe("AccountsPage", () => {

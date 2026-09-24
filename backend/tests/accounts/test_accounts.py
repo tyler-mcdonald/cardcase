@@ -6,14 +6,9 @@ from django.utils import timezone
 
 from accounts.models import Account
 from tests.accounts.client import delete, get, patch, post
+from tests.accounts.factories import create_account
 from tests.client import csrf_token
 from users.models import User
-
-
-def _create_account(owner: User, **overrides: object) -> Account:
-    defaults: dict[str, object] = {"name": "Amazon", "type": Account.Type.GIFT_CARD}
-    defaults.update(overrides)
-    return Account.objects.create(user=owner, **defaults)
 
 
 @pytest.mark.django_db
@@ -29,7 +24,7 @@ def test_create_requires_authentication(client: Client) -> None:
 
 @pytest.mark.django_db
 def test_update_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = patch(client, f"/accounts/{account.id}", {"name": "Hijacked"})
 
@@ -38,7 +33,7 @@ def test_update_requires_authentication(client: Client, user: User) -> None:
 
 @pytest.mark.django_db
 def test_delete_requires_authentication(client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = delete(client, f"/accounts/{account.id}")
 
@@ -100,8 +95,8 @@ def test_create_account_validation_errors(
 def test_list_only_returns_own_accounts(
     auth_client: Client, user: User, other_user: User
 ) -> None:
-    mine = _create_account(user, name="Mine")
-    _create_account(other_user, name="Not mine")
+    mine = create_account(user, name="Mine")
+    create_account(other_user, name="Not mine")
 
     response = get(auth_client, "/accounts")
 
@@ -112,7 +107,7 @@ def test_list_only_returns_own_accounts(
 
 @pytest.mark.django_db
 def test_retrieve_own_account(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = get(auth_client, f"/accounts/{account.id}")
 
@@ -137,7 +132,7 @@ def test_update_account_fields(
     model_attr: str,
     model_value: object,
 ) -> None:
-    account = _create_account(user, name="Amazon")
+    account = create_account(user, name="Amazon")
 
     response = patch(auth_client, f"/accounts/{account.id}", {field: api_value})
 
@@ -152,7 +147,7 @@ def test_update_account_fields(
 def test_update_rejects_type_field(
     auth_client: Client, user: User, new_type: str
 ) -> None:
-    account = _create_account(user, type=Account.Type.GIFT_CARD)
+    account = create_account(user, type=Account.Type.GIFT_CARD)
 
     response = patch(auth_client, f"/accounts/{account.id}", {"type": new_type})
 
@@ -163,7 +158,7 @@ def test_update_rejects_type_field(
 
 @pytest.mark.django_db
 def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = auth_client.put(
         f"/v1/accounts/{account.id}",
@@ -177,7 +172,7 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
 
 @pytest.mark.django_db
 def test_delete_soft_deletes_and_hides_account(auth_client: Client, user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
 
     response = delete(auth_client, f"/accounts/{account.id}")
 
@@ -193,7 +188,7 @@ def test_delete_soft_deletes_and_hides_account(auth_client: Client, user: User) 
 def test_soft_deleted_account_excluded_from_list(
     auth_client: Client, user: User
 ) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     account.soft_delete()
 
     response = get(auth_client, "/accounts")
@@ -205,7 +200,7 @@ def test_soft_deleted_account_excluded_from_list(
 def test_cannot_retrieve_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
 
     response = get(auth_client, f"/accounts/{account.id}")
 
@@ -216,7 +211,7 @@ def test_cannot_retrieve_another_users_account(
 def test_cannot_update_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
 
     response = patch(auth_client, f"/accounts/{account.id}", {"name": "Hijacked"})
 
@@ -229,7 +224,7 @@ def test_cannot_update_another_users_account(
 def test_cannot_delete_another_users_account(
     auth_client: Client, other_user: User
 ) -> None:
-    account = _create_account(other_user)
+    account = create_account(other_user)
 
     response = delete(auth_client, f"/accounts/{account.id}")
 
@@ -294,7 +289,7 @@ def test_list_pagination_covers_all_accounts_without_duplicates(
 
 @pytest.mark.django_db
 def test_deleting_user_cascades_to_soft_deleted_accounts(user: User) -> None:
-    account = _create_account(user)
+    account = create_account(user)
     account.soft_delete()
 
     user.delete()

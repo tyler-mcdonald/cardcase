@@ -12,13 +12,15 @@ import {
 } from "@mantine/core";
 import { AccountCard } from "@/features/accounts/AccountCard";
 import { listAccounts, type Account } from "@/features/accounts/api";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth } from "@/features/auth/use-auth";
+import { useLogout } from "@/features/auth/queries";
 import classes from "./AccountsPage.module.css";
 
 type LoadState = "loading" | "loaded" | "error";
 
 export function AccountsPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const logout = useLogout();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [state, setState] = useState<LoadState>("loading");
 
@@ -56,7 +58,7 @@ export function AccountsPage() {
           <Text size="sm" c="dimmed">
             {user?.email}
           </Text>
-          <Button variant="default" size="xs" onClick={() => logout()}>
+          <Button variant="default" size="xs" onClick={() => logout.mutate()}>
             Log out
           </Button>
         </Group>
