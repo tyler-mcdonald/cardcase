@@ -42,6 +42,7 @@ uv run manage.py runserver
 
 - [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
 - [pnpm](https://pnpm.io/)
+- [Make](https://www.gnu.org/software/make/)
 
 #### Frontend Setup
 
@@ -51,16 +52,10 @@ Change into the `web` directory:
 cd web
 ```
 
-Copy the example env file:
+Setup the project environment. This will create a `.env` file and install dependencies:
 
 ```
-cp .env.example .env
-```
-
-Install dependencies:
-
-```
-pnpm install
+make setup
 ```
 
 Start the dev server (the backend must also be running for login to work):
