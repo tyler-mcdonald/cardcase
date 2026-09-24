@@ -26,30 +26,26 @@ describe("AccountCard", () => {
   it("renders the account name and type", () => {
     renderCard(makeAccount({ name: "Starbucks", type: "gift_card" }));
 
-    expect(screen.getByText("Starbucks").textContent).toBe("Starbucks");
-    expect(screen.getByText("Gift card").textContent).toBe("Gift card");
+    screen.getByText("Starbucks");
+    screen.getByText("Gift card");
   });
 
   it("shows the flight credit label", () => {
     renderCard(makeAccount({ type: "flight_credit" }));
 
-    expect(screen.getByText("Flight credit").textContent).toBe("Flight credit");
+    screen.getByText("Flight credit");
   });
 
   it("shows an expired badge for a past expiration date", () => {
     renderCard(makeAccount({ expires_on: "2026-01-01" }));
 
-    expect(screen.getByText("Expired Jan 1, 2026").textContent).toBe(
-      "Expired Jan 1, 2026",
-    );
+    screen.getByText("Expired Jan 1, 2026");
   });
 
   it("shows an upcoming expiration date without the expired label", () => {
     renderCard(makeAccount({ expires_on: "2027-01-01" }));
 
-    expect(screen.getByText("Expires Jan 1, 2027").textContent).toBe(
-      "Expires Jan 1, 2027",
-    );
+    screen.getByText("Expires Jan 1, 2027");
   });
 
   it("reserves space for the balance with a placeholder", () => {

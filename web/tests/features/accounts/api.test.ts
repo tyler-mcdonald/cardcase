@@ -1,67 +1,44 @@
 import { describe, expect, it, vi } from "vitest";
-import { apiFetch } from "@/lib/api";
-import { listAccounts } from "@/features/accounts/api";
+import { ApiError, request } from "@/lib/api";
+import { listAccounts, type Account } from "@/features/accounts/api";
 import { makeAccount } from "./factories";
 
-vi.mock("@/lib/api", () => ({
-  apiFetch: vi.fn(),
+vi.mock("@/lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api")>()),
+  request: vi.fn(),
 }));
 
-const mockedApiFetch = vi.mocked(apiFetch);
+const mockedRequest = vi.mocked(request);
+
+function page(results: Account[], next: string | null = null) {
+  return { count: results.length, next, previous: null, results };
+}
 
 describe("listAccounts", () => {
-  it("returns the results page from a successful response", async () => {
-    mockedApiFetch.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          count: 1,
-          next: null,
-          previous: null,
-          results: [makeAccount({ name: "Starbucks" })],
-        }),
-        { status: 200 },
-      ),
+  it("returns the results from a single page", async () => {
+    mockedRequest.mockResolvedValueOnce(
+      page([makeAccount({ name: "Starbucks" })]),
     );
 
     const accounts = await listAccounts();
 
-    expect(accounts).toHaveLength(1);
-    expect(accounts[0].name).toBe("Starbucks");
-    expect(mockedApiFetch).toHaveBeenCalledWith("/v1/accounts");
+    expect(accounts.map((account) => account.name)).toEqual(["Starbucks"]);
+    expect(mockedRequest).toHaveBeenCalledWith("GET", "/v1/accounts");
   });
 
-  it("throws when the response is not ok", async () => {
-    mockedApiFetch.mockResolvedValueOnce(new Response("", { status: 403 }));
+  it("propagates request failures", async () => {
+    mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
 
-    await expect(listAccounts()).rejects.toThrow(
-      "Failed to load accounts (403)",
-    );
+    await expect(listAccounts()).rejects.toMatchObject({ status: 403 });
   });
 
   it("follows pagination to collect every page", async () => {
-    mockedApiFetch
+    const nextPage = "http://localhost:8000/v1/accounts?page=2";
+    mockedRequest
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            count: 2,
-            next: "http://localhost:8000/v1/accounts?page=2",
-            previous: null,
-            results: [makeAccount({ id: "1", name: "Starbucks" })],
-          }),
-          { status: 200 },
-        ),
+        page([makeAccount({ id: "1", name: "Starbucks" })], nextPage),
       )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            count: 2,
-            next: null,
-            previous: "http://localhost:8000/v1/accounts",
-            results: [makeAccount({ id: "2", name: "Amazon" })],
-          }),
-          { status: 200 },
-        ),
-      );
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]));
 
     const accounts = await listAccounts();
 
@@ -69,10 +46,7 @@ describe("listAccounts", () => {
       "Starbucks",
       "Amazon",
     ]);
-    expect(mockedApiFetch).toHaveBeenNthCalledWith(1, "/v1/accounts");
-    expect(mockedApiFetch).toHaveBeenNthCalledWith(
-      2,
-      "http://localhost:8000/v1/accounts?page=2",
-    );
+    expect(mockedRequest).toHaveBeenNthCalledWith(1, "GET", "/v1/accounts");
+    expect(mockedRequest).toHaveBeenNthCalledWith(2, "GET", nextPage);
   });
 });

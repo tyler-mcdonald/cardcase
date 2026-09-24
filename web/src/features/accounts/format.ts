@@ -12,17 +12,14 @@ function localDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function isExpired(expiresOn: string): boolean {
-  return expiresOn < localDateString(new Date());
+export function isExpired(expiresOn: string | null): boolean {
+  return expiresOn !== null && expiresOn < localDateString(new Date());
 }
 
-export function formatExpiry(
-  expiresOn: string | null,
-  expired = expiresOn ? isExpired(expiresOn) : false,
-): string {
+export function formatExpiry(expiresOn: string | null): string {
   if (!expiresOn) {
     return "No expiration";
   }
   const formatted = dateFormatter.format(new Date(`${expiresOn}T00:00:00Z`));
-  return expired ? `Expired ${formatted}` : `Expires ${formatted}`;
+  return isExpired(expiresOn) ? `Expired ${formatted}` : `Expires ${formatted}`;
 }

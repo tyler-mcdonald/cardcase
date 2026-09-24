@@ -87,8 +87,6 @@ describe("AccountsPage", () => {
 
     renderPage();
 
-    expect(screen.getByText("test@example.com").textContent).toBe(
-      "test@example.com",
-    );
+    screen.getByText("test@example.com");
   });
 });

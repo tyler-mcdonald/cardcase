@@ -29,8 +29,12 @@ export class ApiError extends Error {
   }
 }
 
-function buildHeaders(method: string, extra?: HeadersInit): Headers {
-  const headers = new Headers(extra);
+export async function request<T = unknown>(
+  method: string,
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const headers = new Headers(options.headers);
 
   if (method !== "GET") {
     headers.set("Content-Type", "application/json");
@@ -39,38 +43,6 @@ function buildHeaders(method: string, extra?: HeadersInit): Headers {
       headers.set("X-CSRFToken", csrfToken);
     }
   }
-
-  return headers;
-}
-
-export async function apiFetch(
-  path: string,
-  options: RequestInit = {},
-): Promise<Response> {
-  const method = options.method ?? "GET";
-
-  return fetch(new URL(path, API_URL), {
-    ...options,
-    method,
-    headers: buildHeaders(method, options.headers),
-    credentials: "include",
-  });
-}
-
-export async function apiRequest<T = unknown>(
-  path: string,
-  options: RequestInit = {},
-): Promise<ApiResponse<T>> {
-  const response = await apiFetch(path, options);
-  return (await response.json()) as ApiResponse<T>;
-}
-
-export async function request<T = unknown>(
-  method: string,
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const headers = buildHeaders(method, options.headers);
 
   let response: Response;
   try {

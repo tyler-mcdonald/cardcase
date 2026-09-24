@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Alert,
   Box,
@@ -11,42 +11,21 @@ import {
   Title,
 } from "@mantine/core";
 import { AccountCard } from "@/features/accounts/AccountCard";
-import { listAccounts, type Account } from "@/features/accounts/api";
+import { accountsQuery } from "@/features/accounts/queries";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
 import classes from "./AccountsPage.module.css";
 
-type LoadState = "loading" | "loaded" | "error";
-
 export function AccountsPage() {
   const { user } = useAuth();
   const logout = useLogout();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [state, setState] = useState<LoadState>("loading");
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const results = await listAccounts();
-        setAccounts(results);
-        setState("loaded");
-      } catch {
-        setState("error");
-      }
-    }
-    load();
-  }, []);
-
-  async function retry() {
-    setState("loading");
-    try {
-      const results = await listAccounts();
-      setAccounts(results);
-      setState("loaded");
-    } catch {
-      setState("error");
-    }
-  }
+  const {
+    data: accounts,
+    isPending,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery(accountsQuery());
 
   return (
     <Container py="xl">
@@ -74,7 +53,7 @@ export function AccountsPage() {
           </Text>
         </div>
 
-        {state === "loading" && (
+        {isPending && (
           <Box className={classes.grid}>
             {Array.from({ length: 4 }, (_, index) => (
               <Skeleton key={index} radius="lg" className={classes.skeleton} />
@@ -82,7 +61,7 @@ export function AccountsPage() {
           </Box>
         )}
 
-        {state === "error" && (
+        {isError && (
           <Alert color="red" title="Couldn't load your accounts">
             <Stack gap="sm">
               <Text size="sm">Something went wrong. Please try again.</Text>
@@ -90,7 +69,8 @@ export function AccountsPage() {
                 variant="light"
                 color="red"
                 size="xs"
-                onClick={retry}
+                loading={isFetching}
+                onClick={() => refetch()}
                 className={classes.retryButton}
               >
                 Try again
@@ -99,11 +79,9 @@ export function AccountsPage() {
           </Alert>
         )}
 
-        {state === "loaded" && accounts.length === 0 && (
-          <Text c="dimmed">No accounts yet.</Text>
-        )}
+        {accounts?.length === 0 && <Text c="dimmed">No accounts yet.</Text>}
 
-        {state === "loaded" && accounts.length > 0 && (
+        {accounts && accounts.length > 0 && (
           <Box className={classes.grid}>
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />

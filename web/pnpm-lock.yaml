@@ -17,9 +17,6 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.102.8
         version: 5.102.8(react@19.2.8)
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
       js-cookie:
         specifier: ^3.0.8
         version: 3.0.8

@@ -1,22 +1,39 @@
+import type { ReactNode } from "react";
 import { Badge, Card, Text } from "@mantine/core";
-import clsx from "clsx";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./api";
 import { formatExpiry, isExpired } from "./format";
 
-type AccountStyle = { label: string; artClass: string };
+type AccountStyle = {
+  label: string;
+  artClass: string;
+  renderArt: (account: Account) => ReactNode;
+};
 
 const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
-  gift_card: { label: "Gift card", artClass: classes.artGiftCard },
-  flight_credit: { label: "Flight credit", artClass: classes.artFlightCredit },
+  gift_card: {
+    label: "Gift card",
+    artClass: classes.artGiftCard,
+    renderArt: (account) => (
+      <Monogram letter={account.name.charAt(0).toUpperCase()} />
+    ),
+  },
+  flight_credit: {
+    label: "Flight credit",
+    artClass: classes.artFlightCredit,
+    renderArt: () => <FlightCreditIcon />,
+  },
 };
 
 export function AccountCard({ account }: { account: Account }) {
-  const expired = account.expires_on ? isExpired(account.expires_on) : false;
+  const style = ACCOUNT_STYLE[account.type];
+  const expiry = formatExpiry(account.expires_on);
 
   return (
     <Card radius="lg" p="md" withBorder className={classes.card}>
-      <AccountArt account={account} />
+      <div aria-hidden className={`${classes.art} ${style.artClass}`}>
+        {style.renderArt(account)}
+      </div>
       <div aria-hidden className={classes.scrim} />
       <Badge
         variant="light"
@@ -24,20 +41,20 @@ export function AccountCard({ account }: { account: Account }) {
         size="sm"
         className={classes.typeBadge}
       >
-        {ACCOUNT_STYLE[account.type].label}
+        {style.label}
       </Badge>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>
           <Text fw={700} size="sm" truncate c="white">
             {account.name}
           </Text>
-          {expired ? (
+          {isExpired(account.expires_on) ? (
             <Badge color="red" variant="filled" size="xs" radius="xl" mt={4}>
-              {formatExpiry(account.expires_on, expired)}
+              {expiry}
             </Badge>
           ) : (
             <Text size="xs" c="rgba(255,255,255,0.78)">
-              {formatExpiry(account.expires_on, expired)}
+              {expiry}
             </Text>
           )}
         </div>
@@ -51,21 +68,6 @@ export function AccountCard({ account }: { account: Account }) {
         </Text>
       </div>
     </Card>
-  );
-}
-
-function AccountArt({ account }: { account: Account }) {
-  return (
-    <div
-      aria-hidden
-      className={clsx(classes.art, ACCOUNT_STYLE[account.type].artClass)}
-    >
-      {account.type === "flight_credit" ? (
-        <FlightCreditIcon />
-      ) : (
-        <Monogram letter={account.name.charAt(0).toUpperCase()} />
-      )}
-    </div>
   );
 }
 
