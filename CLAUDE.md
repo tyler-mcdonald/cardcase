@@ -14,3 +14,20 @@ the Conventional Commit style.
     - `docs: update claude instructions for PR titles`
 - Do not add a desciption other than "Closes #x" to reference the issue, unless explicitly requested by the user.
 - PR Titles should not exceed 50 characters.
+
+## Frontend data fetching
+
+Layered, left to right — each layer only calls the one directly to its right:
+
+```
+component → feature queries.ts → feature api.ts → lib/api.ts (request)
+```
+
+- `lib/api.ts` — the HTTP client. `request` throws `ApiError` (`status`, `body`) on any
+  non-2xx response or network failure — never swallow errors here.
+- `features/<feature>/api.ts` — one function per endpoint, calling `request` with its
+  method/URL. No React or TanStack Query code.
+- `features/<feature>/queries.ts` — wraps `api.ts` functions in `queryOptions` /
+  `useMutation`. The only file in a feature that imports from its `api.ts`.
+- Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
+  `api.ts`, or `fetch` directly.

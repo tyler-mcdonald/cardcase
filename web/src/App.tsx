@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./routes/HomePage";
 import { LoginPage } from "./routes/LoginPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
-import { ProtectedRoute } from "./lib/ProtectedRoute";
+import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 
 function App() {
   return (
