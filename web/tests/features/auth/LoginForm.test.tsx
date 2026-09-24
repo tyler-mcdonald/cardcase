@@ -22,7 +22,7 @@ function renderLoginForm() {
 }
 
 describe("LoginForm", () => {
-  it("advances to the code step on allauth's real 401 pending-flow response", async () => {
+  it("advances to the code step on the API's real 401 pending-flow response", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(

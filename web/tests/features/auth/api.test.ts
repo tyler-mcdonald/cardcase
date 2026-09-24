@@ -13,7 +13,7 @@ function stubFetchResponse(status: number, body: unknown) {
 }
 
 describe("requestLoginCode", () => {
-  it("resolves on allauth's expected 401 pending-flow response", async () => {
+  it("resolves on the API's expected 401 pending-flow response", async () => {
     const body = {
       status: 401,
       data: { flows: [{ id: "login_by_code", is_pending: true }] },
@@ -35,7 +35,7 @@ describe("requestLoginCode", () => {
 });
 
 describe("logout", () => {
-  it("resolves on allauth's expected 401 logged-out response", async () => {
+  it("resolves on the API's expected 401 logged-out response", async () => {
     const body = { status: 401, meta: { is_authenticated: false } };
     stubFetchResponse(401, body);
 
