@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge, Card, Skeleton, Text } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
-import { formatExpiry, isExpired } from "./format";
+import { describeExpiry } from "./format";
 
 type AccountStyle = {
   label: string;
@@ -27,7 +27,7 @@ const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
 
 export function AccountCard({ account }: { account: Account }) {
   const style = ACCOUNT_STYLE[account.type];
-  const expiry = formatExpiry(account.expires_on);
+  const expiry = describeExpiry(account.expires_on);
 
   return (
     <Card radius="lg" p="md" withBorder className={classes.card}>
@@ -48,13 +48,13 @@ export function AccountCard({ account }: { account: Account }) {
           <Text fw={700} size="sm" truncate c="white">
             {account.name}
           </Text>
-          {isExpired(account.expires_on) ? (
+          {expiry.expired ? (
             <Badge color="red" variant="filled" size="xs" radius="xl" mt={4}>
-              {expiry}
+              {expiry.label}
             </Badge>
           ) : (
             <Text size="xs" c="rgba(255,255,255,0.78)">
-              {expiry}
+              {expiry.label}
             </Text>
           )}
         </div>

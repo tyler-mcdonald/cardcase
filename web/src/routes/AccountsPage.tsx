@@ -14,6 +14,7 @@ import {
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
 import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
 
 function parsePage(value: string | null): number {
@@ -59,7 +60,7 @@ export function AccountsPage() {
       {isError && (
         <Alert color="red" title="Couldn't load your accounts">
           <Stack gap="sm">
-            <Text size="sm">Something went wrong. Please try again.</Text>
+            <Text size="sm">{apiErrorMessage(error)}</Text>
             <Button
               variant="light"
               color="red"

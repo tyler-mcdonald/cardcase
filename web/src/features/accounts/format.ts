@@ -16,10 +16,17 @@ export function isExpired(expiresOn: string | null): boolean {
   return expiresOn !== null && expiresOn < localDateString(new Date());
 }
 
-export function formatExpiry(expiresOn: string | null): string {
+export function describeExpiry(expiresOn: string | null): {
+  label: string;
+  expired: boolean;
+} {
   if (!expiresOn) {
-    return "No expiration";
+    return { label: "No expiration", expired: false };
   }
   const formatted = dateFormatter.format(new Date(`${expiresOn}T00:00:00Z`));
-  return isExpired(expiresOn) ? `Expired ${formatted}` : `Expires ${formatted}`;
+  const expired = isExpired(expiresOn);
+  return {
+    label: expired ? `Expired ${formatted}` : `Expires ${formatted}`,
+    expired,
+  };
 }

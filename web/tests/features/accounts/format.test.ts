@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { formatExpiry, isExpired } from "@/features/accounts/format";
+import { describeExpiry, isExpired } from "@/features/accounts/format";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -24,16 +24,25 @@ describe("isExpired", () => {
   });
 });
 
-describe("formatExpiry", () => {
+describe("describeExpiry", () => {
   it("reports no expiration when there is no date", () => {
-    expect(formatExpiry(null)).toBe("No expiration");
+    expect(describeExpiry(null)).toEqual({
+      label: "No expiration",
+      expired: false,
+    });
   });
 
   it("formats a future date as expiring", () => {
-    expect(formatExpiry("2027-01-01")).toBe("Expires Jan 1, 2027");
+    expect(describeExpiry("2027-01-01")).toEqual({
+      label: "Expires Jan 1, 2027",
+      expired: false,
+    });
   });
 
   it("formats a past date as expired", () => {
-    expect(formatExpiry("2026-01-01")).toBe("Expired Jan 1, 2026");
+    expect(describeExpiry("2026-01-01")).toEqual({
+      label: "Expired Jan 1, 2026",
+      expired: true,
+    });
   });
 });
