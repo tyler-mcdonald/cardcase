@@ -34,7 +34,7 @@ lint-staged.
   these directly.
 - `features/<feature>/api.ts` — one function per endpoint, calling `request` with its
   method/URL. No React or TanStack Query code.
-- `features/<feature>/queries.ts` — wraps `api.ts` functions in `queryOptions` /
+- `features/<feature>/queries.ts` — wraps `api.ts` functions in `queryOptions` or
   `useMutation`. The only file in a feature that imports from its `api.ts`, and only its
   own feature's `api.ts` — never another feature's.
 - Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
