@@ -1,24 +1,14 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "@/features/auth/LoginForm";
+import { renderWithProviders } from "../../render";
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 function renderLoginForm() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  return render(
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <LoginForm />
-      </QueryClientProvider>
-    </MantineProvider>,
-  );
+  return renderWithProviders(<LoginForm />);
 }
 
 describe("LoginForm", () => {
