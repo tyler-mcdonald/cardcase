@@ -4,10 +4,9 @@ import classes from "./AccountCard.module.css";
 import type { Account } from "./api";
 import { formatExpiry, isExpired } from "./format";
 
-const ACCOUNT_TYPE: Record<
-  Account["type"],
-  { label: string; artClass: string }
-> = {
+type AccountStyle = { label: string; artClass: string };
+
+const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   gift_card: { label: "Gift card", artClass: classes.artGiftCard },
   flight_credit: { label: "Flight credit", artClass: classes.artFlightCredit },
 };
@@ -25,7 +24,7 @@ export function AccountCard({ account }: { account: Account }) {
         size="sm"
         className={classes.typeBadge}
       >
-        {ACCOUNT_TYPE[account.type].label}
+        {ACCOUNT_STYLE[account.type].label}
       </Badge>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>
@@ -59,7 +58,7 @@ function AccountArt({ account }: { account: Account }) {
   return (
     <div
       aria-hidden
-      className={clsx(classes.art, ACCOUNT_TYPE[account.type].artClass)}
+      className={clsx(classes.art, ACCOUNT_STYLE[account.type].artClass)}
     >
       {account.type === "flight_credit" ? (
         <FlightCreditIcon />
