@@ -1,25 +1,22 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { fireEvent, screen } from "@testing-library/react";
+import { Route, Routes } from "react-router-dom";
 import { describe, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
+import { renderWithProviders } from "./render";
 
 vi.mock("@/features/auth/UserMenu", () => ({
   UserMenu: () => <div>User menu</div>,
 }));
 
-function renderLayout(initialEntry: string) {
-  return render(
-    <MantineProvider>
-      <MemoryRouter initialEntries={[initialEntry]}>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<div>Home content</div>} />
-            <Route path="other" element={<div>Other content</div>} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
-    </MantineProvider>,
+function renderLayout(route: string) {
+  return renderWithProviders(
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<div>Home content</div>} />
+        <Route path="other" element={<div>Other content</div>} />
+      </Route>
+    </Routes>,
+    { route },
   );
 }
 

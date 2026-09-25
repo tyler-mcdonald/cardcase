@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
+import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
+import { renderWithProviders } from "../../render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),
@@ -16,14 +16,6 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
 
-function renderUserMenu() {
-  return render(
-    <MantineProvider>
-      <UserMenu />
-    </MantineProvider>,
-  );
-}
-
 beforeEach(() => {
   mockedUseAuth.mockReturnValue({
     user: { id: "1", email: "test@example.com" },
@@ -35,13 +27,13 @@ beforeEach(() => {
 
 describe("UserMenu", () => {
   it("shows the signed-in user's email", () => {
-    renderUserMenu();
+    renderWithProviders(<UserMenu />);
 
     screen.getByText("test@example.com");
   });
 
   it("logs out when the button is clicked", () => {
-    renderUserMenu();
+    renderWithProviders(<UserMenu />);
 
     fireEvent.click(screen.getByRole("button", { name: /log out/i }));
 

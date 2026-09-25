@@ -1,13 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
+import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
 import { listAccounts } from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
+import { renderWithProviders } from "../render";
 
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
@@ -27,19 +25,8 @@ function page(
   };
 }
 
-function renderPage(initialEntry = "/") {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  return render(
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <AccountsPage />
-        </MemoryRouter>
-      </QueryClientProvider>
-    </MantineProvider>,
-  );
+function renderPage(route = "/") {
+  return renderWithProviders(<AccountsPage />, { route });
 }
 
 beforeEach(() => {
