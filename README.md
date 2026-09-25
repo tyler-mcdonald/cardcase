@@ -33,6 +33,15 @@ make setup-web
 
 Backend setup creates a `.env` file, installs dependencies, starts local Postgres, and runs migrations. Web setup creates a `.env` file and installs dependencies.
 
+### Seed dev data
+
+Seed a user with sample accounts. Log in with that email; the login code is printed to the runserver console:
+
+```
+cd backend
+uv run manage.py seed_dev --email you@example.com
+```
+
 ### Running
 
 Start the Django server:

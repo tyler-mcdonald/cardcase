@@ -1,19 +1,16 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { fireEvent, screen } from "@testing-library/react";
+import { Route, Routes } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { NotFoundPage } from "@/routes/NotFoundPage";
+import { renderWithProviders } from "../render";
 
 function renderNotFoundPage() {
-  return render(
-    <MantineProvider>
-      <MemoryRouter initialEntries={["/does-not-exist"]}>
-        <Routes>
-          <Route path="/" element={<div>Home</div>} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </MemoryRouter>
-    </MantineProvider>,
+  return renderWithProviders(
+    <Routes>
+      <Route path="/" element={<div>Home</div>} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>,
+    { route: "/does-not-exist" },
   );
 }
 
