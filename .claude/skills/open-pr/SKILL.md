@@ -29,6 +29,11 @@ Reference: https://www.conventionalcommits.org/
 - `deps` — dependency updates
 - Omit the scope for repo-wide changes (e.g. root config, `CLAUDE.md`, workflows spanning both).
 
+If no scope clearly fits — the change spans several scopes, touches an area with no scope
+(e.g. `render.yaml`, `docs/`, `.github/`), or omitting the scope would hide what changed — use
+the closest option above, open the PR anyway, and flag it in your response: the scope you
+chose, what you considered instead, and why. Never invent a new scope.
+
 ### Examples
 
 - `fix(backend): serve static assets with whitenoise`
