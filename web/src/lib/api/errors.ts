@@ -27,3 +27,12 @@ export function apiErrorMessage(
   }
   return fallback;
 }
+
+export function isClientError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    error.status !== undefined &&
+    error.status >= 400 &&
+    error.status < 500
+  );
+}

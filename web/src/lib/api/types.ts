@@ -10,3 +10,10 @@ export type ApiResponse<T = unknown> = {
   meta?: Record<string, unknown>;
   errors?: ApiErrorDetail[];
 };
+
+export type Paginated<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
