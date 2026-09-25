@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import Any
 
+from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.utils import timezone
@@ -20,9 +21,7 @@ class Command(BaseCommand):
             raise CommandError("seed_dev only runs with DEBUG enabled.")
 
         email = User.objects.normalize_email(options["email"])
-        user = User.objects.filter(email=email).first() or User.objects.create_user(
-            email
-        )
+        user = User.objects.filter(email=email).first() or self._create_user(email)
 
         created_count = 0
         for name, defaults in self._accounts().items():
@@ -34,6 +33,11 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"Seeded {created_count} new accounts for {email}.")
         )
+
+    def _create_user(self, email: str) -> User:
+        user = User.objects.create_user(email)
+        EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
+        return user
 
     def _accounts(self) -> dict[str, dict[str, Any]]:
         today = timezone.localdate()
