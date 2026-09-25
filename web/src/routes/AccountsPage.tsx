@@ -39,8 +39,7 @@ export function AccountsPage() {
     window.scrollTo({ top: 0 });
   }
 
-  function handleCreated() {
-    createModal.close();
+  function showNewestAccounts() {
     if (page !== 1) {
       goToPage(1);
     }
@@ -70,8 +69,8 @@ export function AccountsPage() {
         title="Add account"
       >
         <CreateAccountForm
-          onCreated={handleCreated}
-          onCancel={createModal.close}
+          onCreated={showNewestAccounts}
+          onClose={createModal.close}
         />
       </Modal>
 

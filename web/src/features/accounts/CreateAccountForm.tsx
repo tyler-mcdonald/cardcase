@@ -27,10 +27,10 @@ const INITIAL_VALUES: AccountInput = {
 
 export function CreateAccountForm({
   onCreated,
-  onCancel,
+  onClose,
 }: {
   onCreated: () => void;
-  onCancel: () => void;
+  onClose: () => void;
 }) {
   const createAccount = useCreateAccount({ onSuccess: onCreated });
   const form = useForm<AccountInput>({
@@ -40,7 +40,7 @@ export function CreateAccountForm({
   });
 
   const handleSubmit = form.onSubmit((values) => {
-    createAccount.mutate(values);
+    createAccount.mutate(values, { onSuccess: onClose });
   });
 
   return (
@@ -79,7 +79,7 @@ export function CreateAccountForm({
           </Alert>
         )}
         <Group justify="flex-end">
-          <Button variant="default" onClick={onCancel}>
+          <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
           <Button type="submit" loading={createAccount.isPending}>
