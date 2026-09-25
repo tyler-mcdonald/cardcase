@@ -5,9 +5,9 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api/errors";
-import { createAccount, listAccounts } from "./api";
+import { createAccount, listAccounts, updateAccount } from "./api";
 import type { Paginated } from "@/lib/api/types";
-import type { Account } from "./types";
+import type { Account, AccountInput } from "./types";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
 
@@ -38,13 +38,25 @@ export function accountsQuery(page: number) {
   });
 }
 
-export function useCreateAccount({ onSuccess }: { onSuccess: () => void }) {
+function useRefreshAccounts(then: () => void) {
   const queryClient = useQueryClient();
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+    then();
+  };
+}
+
+export function useCreateAccount({ onSuccess }: { onSuccess: () => void }) {
   return useMutation({
     mutationFn: createAccount,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-      onSuccess();
-    },
+    onSuccess: useRefreshAccounts(onSuccess),
+  });
+}
+
+export function useUpdateAccount({ onSuccess }: { onSuccess: () => void }) {
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: AccountInput }) =>
+      updateAccount(id, input),
+    onSuccess: useRefreshAccounts(onSuccess),
   });
 }

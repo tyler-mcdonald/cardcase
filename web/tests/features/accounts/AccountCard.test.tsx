@@ -6,7 +6,9 @@ import { makeAccount } from "./factories";
 import { renderWithProviders } from "../../render";
 
 function renderCard(account: Account) {
-  return renderWithProviders(<AccountCard account={account} />);
+  return renderWithProviders(
+    <AccountCard account={account} onEdit={() => {}} />,
+  );
 }
 
 beforeEach(() => {

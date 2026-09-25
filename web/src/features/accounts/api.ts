@@ -13,3 +13,9 @@ export function createAccount(input: AccountInput) {
     body: JSON.stringify(input),
   });
 }
+
+export function updateAccount(id: string, input: AccountInput) {
+  return request<Account>("PATCH", `${ACCOUNTS_PATH}/${id}`, {
+    body: JSON.stringify(input),
+  });
+}

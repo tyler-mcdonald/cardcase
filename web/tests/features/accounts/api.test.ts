@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { request } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
-import { createAccount, listAccounts } from "@/features/accounts/api";
+import {
+  createAccount,
+  listAccounts,
+  updateAccount,
+} from "@/features/accounts/api";
 import { makeAccount } from "./factories";
 
 vi.mock("@/lib/api/client", async (importOriginal) => ({
@@ -54,5 +58,32 @@ describe("createAccount", () => {
     mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
 
     await expect(createAccount(input)).rejects.toMatchObject({ status: 400 });
+  });
+});
+
+describe("updateAccount", () => {
+  const input = {
+    name: "Starbucks Reserve",
+    type: "gift_card" as const,
+    description: "Birthday gift",
+    expires_on: null,
+  };
+
+  it("patches the given account", async () => {
+    const account = makeAccount({ id: "42", ...input });
+    mockedRequest.mockResolvedValueOnce(account);
+
+    await expect(updateAccount("42", input)).resolves.toEqual(account);
+    expect(mockedRequest).toHaveBeenCalledWith("PATCH", "/v1/accounts/42", {
+      body: JSON.stringify(input),
+    });
+  });
+
+  it("propagates request failures", async () => {
+    mockedRequest.mockRejectedValueOnce(new ApiError("Not found", 404));
+
+    await expect(updateAccount("42", input)).rejects.toMatchObject({
+      status: 404,
+    });
   });
 });

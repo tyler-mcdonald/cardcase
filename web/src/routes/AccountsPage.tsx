@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useSearchParams } from "react-router-dom";
 import {
@@ -17,7 +18,9 @@ import {
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
 import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
+import { EditAccountForm } from "@/features/accounts/EditAccountForm";
 import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
 
@@ -33,6 +36,13 @@ export function AccountsPage() {
     accountsQuery(page),
   );
   const [createOpened, createModal] = useDisclosure(false);
+  const [editOpened, editModal] = useDisclosure(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
+  function openEdit(account: Account) {
+    setEditingAccount(account);
+    editModal.open();
+  }
 
   function goToPage(nextPage: number) {
     setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
@@ -75,6 +85,16 @@ export function AccountsPage() {
         />
       </Modal>
 
+      <Modal opened={editOpened} onClose={editModal.close} title="Edit account">
+        {editingAccount && (
+          <EditAccountForm
+            account={editingAccount}
+            onSaved={editModal.close}
+            onCancel={editModal.close}
+          />
+        )}
+      </Modal>
+
       {isPending && (
         <Box className={classes.grid}>
           {Array.from({ length: 4 }, (_, index) => (
@@ -113,7 +133,11 @@ export function AccountsPage() {
       {data && data.accounts.length > 0 && (
         <Box className={classes.grid}>
           {data.accounts.map((account) => (
-            <AccountCard key={account.id} account={account} />
+            <AccountCard
+              key={account.id}
+              account={account}
+              onEdit={() => openEdit(account)}
+            />
           ))}
         </Box>
       )}

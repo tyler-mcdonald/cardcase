@@ -1,7 +1,11 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
-import { createAccount, listAccounts } from "@/features/accounts/api";
+import {
+  createAccount,
+  listAccounts,
+  updateAccount,
+} from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
@@ -10,10 +14,12 @@ import { renderWithProviders } from "../render";
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
   createAccount: vi.fn(),
+  updateAccount: vi.fn(),
 }));
 
 const mockedListAccounts = vi.mocked(listAccounts);
 const mockedCreateAccount = vi.mocked(createAccount);
+const mockedUpdateAccount = vi.mocked(updateAccount);
 
 function page(
   results: Account[],
@@ -139,6 +145,35 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Starbucks")).toBeTruthy();
     expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+  });
+
+  it("edits an account and shows the change in place", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValueOnce(
+        page([makeAccount({ id: "2", name: "Amazon Prime" })]),
+      );
+    mockedUpdateAccount.mockResolvedValueOnce(
+      makeAccount({ id: "2", name: "Amazon Prime" }),
+    );
+
+    renderPage("/?page=2");
+    await screen.findByText("Amazon");
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Amazon" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    const dialog = await screen.findByRole("dialog", { name: "Edit account" });
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Amazon Prime" },
+    });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Save changes" }),
+    );
+
+    expect(await screen.findByText("Amazon Prime")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedUpdateAccount.mock.calls[0][0]).toBe("2");
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
   });
 
   it("shows an error state and can retry", async () => {
