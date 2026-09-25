@@ -39,10 +39,8 @@ def test_seed_dev_creates_user_and_accounts() -> None:
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("debug")
-def test_seed_dev_uses_existing_user() -> None:
-    user = User.objects.create_user(email=EMAIL)
-
-    call_command("seed_dev", email=EMAIL)
+def test_seed_dev_uses_existing_user(user: User) -> None:
+    call_command("seed_dev", email=user.email)
 
     assert User.objects.count() == 1
     assert Account.objects.filter(user=user).count() == 3
