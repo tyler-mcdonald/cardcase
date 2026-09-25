@@ -14,11 +14,11 @@ const mockedCreateAccount = vi.mocked(createAccount);
 
 function renderForm() {
   const onCreated = vi.fn();
-  const onClose = vi.fn();
+  const onCancel = vi.fn();
   renderWithProviders(
-    <CreateAccountForm onCreated={onCreated} onClose={onClose} />,
+    <CreateAccountForm onCreated={onCreated} onCancel={onCancel} />,
   );
-  return { onCreated, onClose };
+  return { onCreated, onCancel };
 }
 
 function fillName(value: string) {
@@ -34,7 +34,7 @@ function submit() {
 describe("CreateAccountForm", () => {
   it("creates the account from the entered values", async () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
-    const { onCreated, onClose } = renderForm();
+    const { onCreated } = renderForm();
 
     fillName("  Delta credit  ");
     fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
@@ -43,8 +43,7 @@ describe("CreateAccountForm", () => {
     });
     submit();
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(onCreated).toHaveBeenCalled();
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
     expect(mockedCreateAccount.mock.calls[0][0]).toEqual({
       name: "Delta credit",
       type: "flight_credit",
@@ -93,12 +92,12 @@ describe("CreateAccountForm", () => {
     expect(onCreated).not.toHaveBeenCalled();
   });
 
-  it("closes without creating", () => {
-    const { onClose } = renderForm();
+  it("cancels without creating", () => {
+    const { onCancel } = renderForm();
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(onClose).toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalled();
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
 });

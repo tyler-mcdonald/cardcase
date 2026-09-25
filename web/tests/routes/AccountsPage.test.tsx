@@ -40,30 +40,6 @@ async function createAccountNamed(name: string) {
   fireEvent.click(within(dialog).getByRole("button", { name: "Add account" }));
 }
 
-function mockStarbucksOnFirstPage() {
-  mockedListAccounts.mockImplementation(async (requestedPage) =>
-    requestedPage === 1
-      ? page([makeAccount({ name: "Starbucks" })])
-      : page([makeAccount({ id: "2", name: "Amazon" })]),
-  );
-}
-
-function mockPendingCreate() {
-  let resolve!: (account: Account) => void;
-  mockedCreateAccount.mockReturnValueOnce(
-    new Promise((resolvePromise) => {
-      resolve = resolvePromise;
-    }),
-  );
-  return resolve;
-}
-
-async function closeDialogWhileCreating() {
-  await waitFor(() => expect(mockedCreateAccount).toHaveBeenCalled());
-  fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-}
-
 beforeEach(() => {
   vi.stubGlobal("scrollTo", vi.fn());
 });
@@ -121,7 +97,11 @@ describe("AccountsPage", () => {
   });
 
   it("returns to the first page after creating an account", async () => {
-    mockStarbucksOnFirstPage();
+    mockedListAccounts.mockImplementation(async (requestedPage) =>
+      requestedPage === 1
+        ? page([makeAccount({ name: "Starbucks" })])
+        : page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
     mockedCreateAccount.mockResolvedValueOnce(
       makeAccount({ name: "Starbucks" }),
     );
@@ -135,44 +115,23 @@ describe("AccountsPage", () => {
     expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
   });
 
-  it("returns to the first page when the modal closes before creation finishes", async () => {
-    mockStarbucksOnFirstPage();
-    const resolveCreate = mockPendingCreate();
-
-    renderPage("/?page=2");
-    await screen.findByText("Amazon");
-
-    await createAccountNamed("Starbucks");
-    await closeDialogWhileCreating();
-    resolveCreate(makeAccount({ name: "Starbucks" }));
-
-    expect(await screen.findByText("Starbucks")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
-  });
-
-  it("keeps a reopened modal open when an earlier creation finishes", async () => {
-    mockedListAccounts
-      .mockResolvedValueOnce(page([]))
-      .mockResolvedValueOnce(page([makeAccount({ name: "Starbucks" })]));
-    const resolveCreate = mockPendingCreate();
+  it("keeps the modal open while the account is being created", async () => {
+    mockedListAccounts.mockResolvedValue(page([]));
+    mockedCreateAccount.mockReturnValueOnce(new Promise(() => {}));
 
     renderPage();
     await screen.findByText("No accounts yet.");
 
     await createAccountNamed("Starbucks");
-    await closeDialogWhileCreating();
-    fireEvent.click(screen.getByRole("button", { name: "Add account" }));
-    const nameInput = await screen.findByRole("textbox", { name: /^name/i });
-    fireEvent.change(nameInput, { target: { value: "Amazon" } });
-    resolveCreate(makeAccount({ name: "Starbucks" }));
+    const dialog = screen.getByRole("dialog");
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole("button", { name: "Cancel" }),
+      ).toHaveProperty("disabled", true),
+    );
+    fireEvent.keyDown(dialog, { key: "Escape" });
 
-    expect(await screen.findByText("Starbucks")).toBeTruthy();
-    await expect(
-      waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), {
-        timeout: 500,
-      }),
-    ).rejects.toThrow();
-    expect((nameInput as HTMLInputElement).value).toBe("Amazon");
+    expect(screen.queryByRole("dialog")).not.toBeNull();
   });
 
   it("shows an error state and can retry", async () => {

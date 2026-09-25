@@ -17,7 +17,11 @@ import {
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
 import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
-import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import {
+  accountsQuery,
+  isMissingPage,
+  useIsCreatingAccount,
+} from "@/features/accounts/queries";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
 
@@ -33,13 +37,15 @@ export function AccountsPage() {
     accountsQuery(page),
   );
   const [createOpened, createModal] = useDisclosure(false);
+  const creatingAccount = useIsCreatingAccount();
 
   function goToPage(nextPage: number) {
     setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
     window.scrollTo({ top: 0 });
   }
 
-  function showNewestAccounts() {
+  function handleCreated() {
+    createModal.close();
     if (page !== 1) {
       goToPage(1);
     }
@@ -65,12 +71,12 @@ export function AccountsPage() {
 
       <Modal
         opened={createOpened}
-        onClose={createModal.close}
+        onClose={creatingAccount ? () => {} : createModal.close}
         title="Add account"
       >
         <CreateAccountForm
-          onCreated={showNewestAccounts}
-          onClose={createModal.close}
+          onCreated={handleCreated}
+          onCancel={createModal.close}
         />
       </Modal>
 
