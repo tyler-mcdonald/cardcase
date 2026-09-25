@@ -4,15 +4,19 @@ import {
   Alert,
   Box,
   Button,
+  Group,
+  Modal,
   Pagination,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import {
   AccountCard,
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
+import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
 import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
@@ -28,10 +32,18 @@ export function AccountsPage() {
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     accountsQuery(page),
   );
+  const [createOpened, createModal] = useDisclosure(false);
 
   function goToPage(nextPage: number) {
     setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
     window.scrollTo({ top: 0 });
+  }
+
+  function handleCreated() {
+    createModal.close();
+    if (page !== 1) {
+      goToPage(1);
+    }
   }
 
   if (page > 1 && isMissingPage(error)) {
@@ -40,14 +52,28 @@ export function AccountsPage() {
 
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={1} size="h2">
-          Accounts
-        </Title>
-        <Text c="dimmed" size="sm">
-          Gift cards and flight credits you're tracking.
-        </Text>
-      </div>
+      <Group justify="space-between" align="flex-end">
+        <div>
+          <Title order={1} size="h2">
+            Accounts
+          </Title>
+          <Text c="dimmed" size="sm">
+            Gift cards and flight credits you're tracking.
+          </Text>
+        </div>
+        <Button onClick={createModal.open}>Add account</Button>
+      </Group>
+
+      <Modal
+        opened={createOpened}
+        onClose={createModal.close}
+        title="Add account"
+      >
+        <CreateAccountForm
+          onCreated={handleCreated}
+          onCancel={createModal.close}
+        />
+      </Modal>
 
       {isPending && (
         <Box className={classes.grid}>
@@ -75,7 +101,14 @@ export function AccountsPage() {
         </Alert>
       )}
 
-      {data?.accounts.length === 0 && <Text c="dimmed">No accounts yet.</Text>}
+      {data?.accounts.length === 0 && (
+        <div>
+          <Text fw={600}>No accounts yet.</Text>
+          <Text c="dimmed" size="sm">
+            Add a gift card or flight credit to start tracking it.
+          </Text>
+        </div>
+      )}
 
       {data && data.accounts.length > 0 && (
         <Box className={classes.grid}>

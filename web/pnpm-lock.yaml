@@ -11,12 +11,21 @@ importers:
       '@mantine/core':
         specifier: ^9.6.1
         version: 9.6.1(@mantine/hooks@9.6.1(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@mantine/dates':
+        specifier: ^9.6.1
+        version: 9.6.1(@mantine/core@9.6.1(@mantine/hooks@9.6.1(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.6.1(react@19.2.8))(dayjs@1.11.23)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@mantine/form':
+        specifier: ^9.6.1
+        version: 9.6.1(react@19.2.8)
       '@mantine/hooks':
         specifier: ^9.6.1
         version: 9.6.1(react@19.2.8)
       '@tanstack/react-query':
         specifier: ^5.102.8
         version: 5.102.8(react@19.2.8)
+      dayjs:
+        specifier: ^1.11.23
+        version: 1.11.23
       js-cookie:
         specifier: ^3.0.8
         version: 3.0.8
@@ -174,6 +183,20 @@ packages:
       '@mantine/hooks': 9.6.1
       react: ^19.2.0
       react-dom: ^19.2.0
+
+  '@mantine/dates@9.6.1':
+    resolution: {integrity: sha512-3NxfqrcwMuYB9wvxIhGhEhhazK3wcA2wG4AuNVFGJDd97ujWWAy+jGHqBF9jOusp/Mk4bn8u+3SuDICtLPDf5w==}
+    peerDependencies:
+      '@mantine/core': 9.6.1
+      '@mantine/hooks': 9.6.1
+      dayjs: '>=1.0.0'
+      react: ^19.2.0
+      react-dom: ^19.2.0
+
+  '@mantine/form@9.6.1':
+    resolution: {integrity: sha512-l9vs/TJ/ScVwbuQNIgc03yR+QewM7oUmkNfhB0/Wx6iuHP57sP6u1yTlCaXvrq6UBHc7PAk6DPoQKyAGcAWWpg==}
+    peerDependencies:
+      react: ^19.2.0
 
   '@mantine/hooks@9.6.1':
     resolution: {integrity: sha512-pfxM95WozngB0ZALw6h99QV1TQ0qniOkFhzi0+dmSnKpxkVSR0xeNsvPpGDj9Teu+M69fRoE4IkzyMnu5Xld3w==}
@@ -589,6 +612,9 @@ packages:
     resolution: {integrity: sha512-23XHcCF+coGYevirZceTVD7NdJOqVn+49IHyxgszm+JIiHLoB2TkmPtsYkNWT1pvRSGkc35L6NHs0yHkN2SumA==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
+  dayjs@1.11.23:
+    resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
+
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
@@ -632,6 +658,9 @@ packages:
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
+
+  fast-deep-equal@3.1.3:
+    resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -723,6 +752,10 @@ packages:
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
+
+  klona@2.0.6:
+    resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
+    engines: {node: '>= 8'}
 
   lightningcss-android-arm64@1.33.0:
     resolution: {integrity: sha512-gEpRTalKdosp4Bb8qWtc2iOgE5SeIHlpS1up9bFq2wAyYhl1UdTObYiHe98zEM9SQvSoqQZ1IQD0JNpg3Ml5pg==}
@@ -1330,6 +1363,22 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
+  '@mantine/dates@9.6.1(@mantine/core@9.6.1(@mantine/hooks@9.6.1(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.6.1(react@19.2.8))(dayjs@1.11.23)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      '@mantine/core': 9.6.1(@mantine/hooks@9.6.1(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@mantine/hooks': 9.6.1(react@19.2.8)
+      clsx: 2.1.1
+      dayjs: 1.11.23
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
+  '@mantine/form@9.6.1(react@19.2.8)':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      fast-deep-equal: 3.1.3
+      klona: 2.0.6
+      react: 19.2.8
+
   '@mantine/hooks@9.6.1(react@19.2.8)':
     dependencies:
       react: 19.2.8
@@ -1610,6 +1659,8 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
+  dayjs@1.11.23: {}
+
   decimal.js@10.6.0: {}
 
   dependency-cruiser@18.4.0:
@@ -1657,6 +1708,8 @@ snapshots:
       '@types/estree': 1.0.9
 
   expect-type@1.4.0: {}
+
+  fast-deep-equal@3.1.3: {}
 
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
@@ -1739,6 +1792,8 @@ snapshots:
   json5@2.2.3: {}
 
   kleur@3.0.3: {}
+
+  klona@2.0.6: {}
 
   lightningcss-android-arm64@1.33.0:
     optional: true

@@ -1,8 +1,15 @@
-import { keepPreviousData, queryOptions } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ApiError } from "@/lib/api/errors";
-import { listAccounts } from "./api";
+import { createAccount, listAccounts } from "./api";
 import type { Paginated } from "@/lib/api/types";
 import type { Account } from "./types";
+
+const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
 
 type AccountsResult = {
   accounts: Account[];
@@ -25,8 +32,17 @@ export function isMissingPage(error: unknown): boolean {
 
 export function accountsQuery(page: number) {
   return queryOptions({
-    queryKey: ["accounts", page],
+    queryKey: [...ACCOUNTS_QUERY_KEY, page],
     queryFn: async () => toAccountsResult(await listAccounts(page), page),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useCreateAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createAccount,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
   });
 }
