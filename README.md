@@ -8,13 +8,9 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 
 ## Development
 
-### Requires
-
-- [uv](https://docs.astral.sh/uv/)
-- [Docker](https://www.docker.com/)
-- [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
-- [pnpm](https://pnpm.io/)
-- [Make](https://www.gnu.org/software/make/)
+- This project uses [Make](https://www.gnu.org/software/make/) for local setup.
+- The backend uses [uv](https://docs.astral.sh/uv/) for package management and [Docker](https://www.docker.com/) for local Postgres.
+- The frontend uses the [pnpm](https://pnpm.io/) package manager. 
 
 ### Setup
 
