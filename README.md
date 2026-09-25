@@ -8,59 +8,44 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 
 ## Development
 
-### Backend
-
-#### Requires
+### Requires
 
 - [uv](https://docs.astral.sh/uv/)
 - [Docker](https://www.docker.com/)
-- [Make](https://www.gnu.org/software/make/)
-
-#### Backend Setup
-
-Change into the `backend` directory:
-
-```
-cd backend
-```
-
-Setup the project environment. This will install dependencies, create a `.env` file, start local Postgres, and run migrations:
-
-```
-make setup
-```
-
-Start the Django server:
-
-```
-uv run manage.py runserver
-```
-
-### Web Frontend
-
-#### Requires
-
 - [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
 - [pnpm](https://pnpm.io/)
 - [Make](https://www.gnu.org/software/make/)
 
-#### Frontend Setup
+### Setup
 
-Change into the `web` directory:
-
-```
-cd web
-```
-
-Setup the project environment. This will create a `.env` file and install dependencies:
+From the repo root, set up both the backend and the web frontend:
 
 ```
 make setup
 ```
 
-Start the dev server (the backend must also be running for login to work):
+Or set up just one:
 
 ```
+make setup-backend
+make setup-web
+```
+
+Backend setup creates a `.env` file, installs dependencies, starts local Postgres, and runs migrations. Web setup creates a `.env` file and installs dependencies.
+
+### Running
+
+Start the Django server:
+
+```
+cd backend
+uv run manage.py runserver
+```
+
+Start the web dev server (the backend must also be running for login to work):
+
+```
+cd web
 pnpm dev
 ```
 
