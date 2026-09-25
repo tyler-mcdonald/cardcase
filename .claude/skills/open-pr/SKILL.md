@@ -23,12 +23,11 @@ Reference: https://www.conventionalcommits.org/
 - `backend` — changes under `backend/`
 - `web` — changes under `web/`
 - `deps` — dependency updates
-- Omit the scope for repo-root changes (e.g. root config, `CLAUDE.md`).
+- Omit the scope for changes outside `backend/` and `web/` (e.g. `CLAUDE.md`, `render.yaml`, `docs/`, `.github/`).
 
-If no scope clearly fits — the change spans several scopes, touches an area with no scope
-(e.g. `render.yaml`, `docs/`, `.github/`), or omitting the scope would hide what changed — use
-the closest option above, open the PR anyway, and flag it in your response: the scope you
-chose, what you considered instead, and why. Never invent a new scope.
+If the change spans several scopes, use the closest option above (or omit the scope if none dominates),
+open the PR anyway, and flag it in your response: the scope you chose, what you considered instead,
+and why. Never invent a new scope.
 
 ### Examples
 
