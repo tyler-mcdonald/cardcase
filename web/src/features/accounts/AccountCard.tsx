@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge, Card, Skeleton, Text } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
-import { ACCOUNT_TYPES } from "./accountTypes";
+import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import { describeExpiry } from "./format";
 
 type AccountStyle = {
@@ -39,7 +39,7 @@ export function AccountCard({ account }: { account: Account }) {
         size="sm"
         className={classes.typeBadge}
       >
-        {ACCOUNT_TYPES[account.type].label}
+        {ACCOUNT_TYPE_DISPLAY[account.type].label}
       </Badge>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>
