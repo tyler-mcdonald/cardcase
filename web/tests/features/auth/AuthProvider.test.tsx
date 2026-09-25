@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
 import { getSession, logout } from "@/features/auth/api";
+import { TestProviders } from "../../TestProviders";
 
 vi.mock("@/features/auth/api", () => ({
   getSession: vi.fn(),
@@ -16,16 +16,10 @@ const mockedGetSession = vi.mocked(getSession);
 const mockedLogout = vi.mocked(logout);
 
 function Wrapper({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { retry: false } },
-      }),
-  );
   return (
-    <QueryClientProvider client={queryClient}>
+    <TestProviders>
       <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
+    </TestProviders>
   );
 }
 

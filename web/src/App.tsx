@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import { HomePage } from "./routes/HomePage";
+import { AppLayout } from "./AppLayout";
+import { AccountsPage } from "./routes/AccountsPage";
 import { LoginPage } from "./routes/LoginPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
@@ -9,14 +10,15 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
-      <Route path="*" element={<NotFoundPage />} />
+      >
+        <Route index element={<AccountsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 }

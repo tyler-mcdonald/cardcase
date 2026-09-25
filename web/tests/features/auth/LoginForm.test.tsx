@@ -1,25 +1,11 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "@/features/auth/LoginForm";
+import { renderWithProviders } from "../../render";
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-function renderLoginForm() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  return render(
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <LoginForm />
-      </QueryClientProvider>
-    </MantineProvider>,
-  );
-}
 
 describe("LoginForm", () => {
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
@@ -37,7 +23,7 @@ describe("LoginForm", () => {
       ),
     );
 
-    renderLoginForm();
+    renderWithProviders(<LoginForm />);
 
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "me@example.com" },
