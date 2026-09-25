@@ -12,9 +12,9 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 - The backend uses [uv](https://docs.astral.sh/uv/) for package management and [Docker](https://www.docker.com/) for local Postgres.
 - The frontend uses the [pnpm](https://pnpm.io/) package manager. 
 
-### Setup
+### Environment Setup
 
-From the repo root, set up both the backend and the web frontend:
+From the repo's root, set up both the backend and the web frontend:
 
 ```
 make setup
@@ -27,31 +27,22 @@ make setup-backend
 make setup-web
 ```
 
-Backend setup creates a `.env` file, installs dependencies, starts local Postgres, and runs migrations. Web setup creates a `.env` file and installs dependencies.
-
-### Seed dev data
-
-Seed a user with sample accounts. Log in with that email; the login code is printed to the runserver console:
+Seed the database
 
 ```
-cd backend
-uv run manage.py seed_dev --email you@example.com
+uv run --directory backend manage.py seed_dev --email you@example.com
 ```
 
-### Running
-
-Start the Django server:
+Start the Django server
 
 ```
-cd backend
-uv run manage.py runserver
+uv run --directory backend manage.py runserver
 ```
 
-Start the web dev server (the backend must also be running for login to work):
+Start the web dev server
 
 ```
-cd web
-pnpm dev
+pnpm --dir web dev
 ```
 
 ### Git Hooks
