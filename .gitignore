@@ -1,4 +1,5 @@
-.claude/
+.claude/*
+!.claude/skills/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
