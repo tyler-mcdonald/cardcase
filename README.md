@@ -8,68 +8,41 @@ A virtual case to store and track gift cards 🎁, flight credits ✈️, and ot
 
 ## Development
 
-### Backend
+- This project uses [Make](https://www.gnu.org/software/make/) for local setup.
+- The backend uses [uv](https://docs.astral.sh/uv/) for package management and [Docker](https://www.docker.com/) for local Postgres.
+- The frontend uses the [pnpm](https://pnpm.io/) package manager. 
 
-#### Requires
+### Environment Setup
 
-- [uv](https://docs.astral.sh/uv/)
-- [Docker](https://www.docker.com/)
-- [Make](https://www.gnu.org/software/make/)
-
-#### Backend Setup
-
-Change into the `backend` directory:
-
-```
-cd backend
-```
-
-Setup the project environment. This will install dependencies, create a `.env` file, start local Postgres, and run migrations:
+From the repo's root, set up both the backend and the web frontend:
 
 ```
 make setup
 ```
 
-#### Seed dev data
-
-Seed a user with sample accounts. Log in with that email; the login code is printed to the runserver console:
+Or set up just one:
 
 ```
-uv run manage.py seed_dev --email you@example.com
+make setup-backend
+make setup-web
 ```
 
-Start the Django server:
+Seed the database
 
 ```
-uv run manage.py runserver
+uv run --directory backend manage.py seed_dev --email you@example.com
 ```
 
-### Web Frontend
-
-#### Requires
-
-- [Node.js](https://nodejs.org/) (see `web/.nvmrc` for the version)
-- [pnpm](https://pnpm.io/)
-- [Make](https://www.gnu.org/software/make/)
-
-#### Frontend Setup
-
-Change into the `web` directory:
+Start the Django server
 
 ```
-cd web
+uv run --directory backend manage.py runserver
 ```
 
-Setup the project environment. This will create a `.env` file and install dependencies:
+Start the web dev server
 
 ```
-make setup
-```
-
-Start the dev server (the backend must also be running for login to work):
-
-```
-pnpm dev
+pnpm --dir web dev
 ```
 
 ### Git Hooks

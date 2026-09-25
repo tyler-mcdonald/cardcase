@@ -1,30 +1,22 @@
-.PHONY: setup check-node-installed check-pnpm-installed initialize-dot-env-file install-dependencies
+.PHONY: setup check-node-installed check-pnpm-installed install-dependencies
+.NOTPARALLEL:
 
-# Force `setup` to call each command in order, since `install-dependencies` is the last command.
-setup: install-dependencies
+require = $(1) >/dev/null 2>&1 || { echo "$(2)"; exit 1; }
+
+setup: check-node-installed check-pnpm-installed .env install-dependencies
 
 check-node-installed:
 	@echo "==> Checking if Node.js is installed"
-	@command -v node >/dev/null 2>&1 || { \
-		echo "Node.js is not installed: https://nodejs.org/"; \
-		exit 1; \
-	}
+	@$(call require,command -v node,Node.js is not installed: https://nodejs.org/)
 
-check-pnpm-installed: check-node-installed
+check-pnpm-installed:
 	@echo "==> Checking if pnpm is installed"
-	@command -v pnpm >/dev/null 2>&1 || { \
-		echo "pnpm is not installed: https://pnpm.io/"; \
-		exit 1; \
-	}
+	@$(call require,command -v pnpm,pnpm is not installed: https://pnpm.io/)
 
-initialize-dot-env-file: check-pnpm-installed
-	@if [ -f .env ]; then \
-		echo "==> .env already exists, skipping"; \
-	else \
-		echo "==> Copying .env.example to .env"; \
-		cp .env.example .env; \
-	fi
+.env: | .env.example
+	@echo "==> Copying .env.example to .env"
+	cp .env.example .env
 
-install-dependencies: initialize-dot-env-file
+install-dependencies:
 	@echo "==> Installing dependencies"
 	pnpm install

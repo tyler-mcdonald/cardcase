@@ -1,43 +1,32 @@
-.PHONY: setup check-uv-installed check-docker-installed initialize-dot-env-file install-dependencies docker-compose-up migrate-db
+.PHONY: setup check-uv-installed check-docker-installed install-dependencies docker-compose-up migrate-db
+.NOTPARALLEL:
 
-# Force `setup` to call each command in order, since `migrate-db` is the last command.
-setup: migrate-db
+require = $(1) >/dev/null 2>&1 || { echo "$(2)"; exit 1; }
+
+setup: check-uv-installed check-docker-installed .env install-dependencies docker-compose-up migrate-db
 
 check-uv-installed:
 	@echo "==> Checking if uv is installed"
-	@command -v uv >/dev/null 2>&1 || { \
-		echo "uv is not installed: https://docs.astral.sh/uv/getting-started/installation/"; \
-		exit 1; \
-	}
+	@$(call require,command -v uv,uv is not installed: https://docs.astral.sh/uv/getting-started/installation/)
 
-check-docker-installed: check-uv-installed
+check-docker-installed:
 	@echo "==> Checking if Docker is installed"
-	@command -v docker >/dev/null 2>&1 || { \
-		echo "docker is not installed: https://www.docker.com/"; \
-		exit 1; \
-	}
+	@$(call require,command -v docker,docker is not installed: https://www.docker.com/)
 	@echo "==> Checking if Docker is running"
-	@docker info >/dev/null 2>&1 || { \
-		echo "docker is installed but not running - start Docker Desktop and try again"; \
-		exit 1; \
-	}
+	@$(call require,docker info,docker is installed but not running - start Docker Desktop and try again)
 
-initialize-dot-env-file: check-docker-installed
-	@if [ -f .env ]; then \
-		echo "==> .env already exists, skipping"; \
-	else \
-		echo "==> Copying .env.example to .env"; \
-		cp .env.example .env; \
-	fi
+.env: | .env.example
+	@echo "==> Copying .env.example to .env"
+	cp .env.example .env
 
-install-dependencies: initialize-dot-env-file
+install-dependencies:
 	@echo "==> Installing dependencies"
 	uv sync --locked
 
-docker-compose-up: install-dependencies
+docker-compose-up:
 	@echo "==> Bringing up Docker containers"
 	docker compose up -d --wait
 
-migrate-db: docker-compose-up
+migrate-db:
 	@echo "==> Running Django migrations"
 	uv run manage.py migrate
