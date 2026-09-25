@@ -40,14 +40,22 @@ async function createAccountNamed(name: string) {
   fireEvent.click(within(dialog).getByRole("button", { name: "Add account" }));
 }
 
+function mockStarbucksOnFirstPage() {
+  mockedListAccounts.mockImplementation(async (requestedPage) =>
+    requestedPage === 1
+      ? page([makeAccount({ name: "Starbucks" })])
+      : page([makeAccount({ id: "2", name: "Amazon" })]),
+  );
+}
+
 function mockPendingCreate() {
-  let resolve: (account: Account) => void = () => {};
+  let resolve!: (account: Account) => void;
   mockedCreateAccount.mockReturnValueOnce(
     new Promise((resolvePromise) => {
       resolve = resolvePromise;
     }),
   );
-  return (account: Account) => resolve(account);
+  return resolve;
 }
 
 async function closeDialogWhileCreating() {
@@ -113,11 +121,7 @@ describe("AccountsPage", () => {
   });
 
   it("returns to the first page after creating an account", async () => {
-    mockedListAccounts.mockImplementation(async (requestedPage) =>
-      requestedPage === 1
-        ? page([makeAccount({ name: "Starbucks" })])
-        : page([makeAccount({ id: "2", name: "Amazon" })]),
-    );
+    mockStarbucksOnFirstPage();
     mockedCreateAccount.mockResolvedValueOnce(
       makeAccount({ name: "Starbucks" }),
     );
@@ -132,11 +136,7 @@ describe("AccountsPage", () => {
   });
 
   it("returns to the first page when the modal closes before creation finishes", async () => {
-    mockedListAccounts.mockImplementation(async (requestedPage) =>
-      requestedPage === 1
-        ? page([makeAccount({ name: "Starbucks" })])
-        : page([makeAccount({ id: "2", name: "Amazon" })]),
-    );
+    mockStarbucksOnFirstPage();
     const resolveCreate = mockPendingCreate();
 
     renderPage("/?page=2");
