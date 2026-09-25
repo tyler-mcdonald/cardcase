@@ -33,7 +33,7 @@ Reference: https://www.conventionalcommits.org/
 - `fix(backend): serve static assets with whitenoise`
 - `feat(backend): add user authentication`
 - `feat(web)!: rework auth provider API`
-- `chore(deps): update dependencies`
+- `chore(web): update dependencies`
 - `docs: update claude instructions for PR titles`
 
 ### Types
