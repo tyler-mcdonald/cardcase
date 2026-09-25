@@ -10,13 +10,13 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { ACCOUNT_TYPES } from "./accountTypes";
 import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
 
-const TYPE_OPTIONS: { value: AccountInput["type"]; label: string }[] = [
-  { value: "gift_card", label: "Gift card" },
-  { value: "flight_credit", label: "Flight credit" },
-];
+const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPES).map(
+  ([value, { label }]) => ({ value, label }),
+);
 
 const INITIAL_VALUES: AccountInput = {
   name: "",
@@ -40,12 +40,7 @@ export function CreateAccountForm({
   });
 
   const handleSubmit = form.onSubmit((values) => {
-    createAccount.mutate(values, {
-      onSuccess: () => {
-        form.reset();
-        onCreated();
-      },
-    });
+    createAccount.mutate(values, { onSuccess: onCreated });
   });
 
   return (
@@ -62,7 +57,7 @@ export function CreateAccountForm({
           <SegmentedControl
             fullWidth
             data={TYPE_OPTIONS}
-            color={form.values.type === "flight_credit" ? "violet" : undefined}
+            color={ACCOUNT_TYPES[form.values.type].color}
             {...form.getInputProps("type")}
           />
         </Input.Wrapper>
