@@ -30,6 +30,14 @@ Setup the project environment. This will install dependencies, create a `.env` f
 make setup
 ```
 
+#### Seed dev data
+
+Seed a user with sample accounts. Log in with that email; the login code is printed to the runserver console:
+
+```
+uv run manage.py seed_dev --email you@example.com
+```
+
 Start the Django server:
 
 ```
