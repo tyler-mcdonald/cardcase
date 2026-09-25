@@ -15,14 +15,14 @@ CODE_PATTERN = re.compile(r"\d{6}")
 
 auth = scoped(AUTH_BASE)
 
+pytestmark = pytest.mark.django_db
 
-@pytest.fixture
+
+@pytest.fixture(autouse=True)
 def debug(settings: Settings) -> None:
     settings.DEBUG = True
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures("debug")
 def test_seed_dev_creates_user_and_accounts() -> None:
     call_command("seed_dev", email=EMAIL)
 
@@ -30,8 +30,6 @@ def test_seed_dev_creates_user_and_accounts() -> None:
     assert Account.objects.filter(user=user).exists()
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures("debug")
 def test_seed_dev_uses_existing_user(user: User) -> None:
     call_command("seed_dev", email=user.email)
 
@@ -39,8 +37,6 @@ def test_seed_dev_uses_existing_user(user: User) -> None:
     assert Account.objects.filter(user=user).count() == 3
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures("debug")
 def test_seed_dev_is_idempotent() -> None:
     call_command("seed_dev", email=EMAIL)
     call_command("seed_dev", email=EMAIL)
@@ -49,7 +45,6 @@ def test_seed_dev_is_idempotent() -> None:
     assert Account.objects.count() == 3
 
 
-@pytest.mark.django_db
 def test_seed_dev_requires_debug(settings: Settings) -> None:
     settings.DEBUG = False
 
@@ -59,8 +54,6 @@ def test_seed_dev_requires_debug(settings: Settings) -> None:
     assert not User.objects.exists()
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures("debug")
 def test_seed_dev_user_can_log_in_by_code(client: Client) -> None:
     call_command("seed_dev", email=EMAIL)
 
