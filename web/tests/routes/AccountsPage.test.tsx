@@ -97,14 +97,15 @@ describe("AccountsPage", () => {
   });
 
   it("returns to the first page after creating an account", async () => {
+    const newAccount = makeAccount({ name: "Starbucks" });
+    const accountsByPage: Record<number, Account[]> = {
+      1: [newAccount],
+      2: [makeAccount({ id: "2", name: "Amazon" })],
+    };
     mockedListAccounts.mockImplementation(async (requestedPage) =>
-      requestedPage === 1
-        ? page([makeAccount({ name: "Starbucks" })])
-        : page([makeAccount({ id: "2", name: "Amazon" })]),
+      page(accountsByPage[requestedPage]),
     );
-    mockedCreateAccount.mockResolvedValueOnce(
-      makeAccount({ name: "Starbucks" }),
-    );
+    mockedCreateAccount.mockResolvedValueOnce(newAccount);
 
     renderPage("/?page=2");
     await screen.findByText("Amazon");
@@ -112,7 +113,7 @@ describe("AccountsPage", () => {
     await createAccountNamed("Starbucks");
 
     expect(await screen.findByText("Starbucks")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+    expect(screen.queryByText("Amazon")).toBeNull();
   });
 
   it("keeps the modal open while the account is being created", async () => {
