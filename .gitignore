@@ -1,5 +1,5 @@
-.claude/*
-!.claude/skills/
+.claude/settings.local.json
+.claude/worktrees/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
