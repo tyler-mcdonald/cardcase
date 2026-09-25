@@ -26,6 +26,7 @@ Reference: https://www.conventionalcommits.org/
 
 - `backend` — changes under `backend/`
 - `web` — changes under `web/`
+- `deps` — dependency updates
 - Omit the scope for repo-wide changes (e.g. root config, `CLAUDE.md`, workflows spanning both).
 
 ### Examples
