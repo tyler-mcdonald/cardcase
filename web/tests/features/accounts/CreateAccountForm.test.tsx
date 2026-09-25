@@ -52,6 +52,23 @@ describe("CreateAccountForm", () => {
     });
   });
 
+  it("submits the expiration date as a calendar date", async () => {
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+
+    fillName("Starbucks");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /expiration date/i }),
+      { target: { value: "Dec 31, 2026" } },
+    );
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(mockedCreateAccount.mock.calls[0][0]).toMatchObject({
+      expires_on: "2026-12-31",
+    });
+  });
+
   it("requires a name", async () => {
     renderForm();
 

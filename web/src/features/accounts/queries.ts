@@ -38,11 +38,13 @@ export function accountsQuery(page: number) {
   });
 }
 
-export function useCreateAccount() {
+export function useCreateAccount({ onSuccess }: { onSuccess: () => void }) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createAccount,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      onSuccess();
+    },
   });
 }

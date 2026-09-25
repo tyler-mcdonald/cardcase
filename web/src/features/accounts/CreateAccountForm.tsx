@@ -32,7 +32,7 @@ export function CreateAccountForm({
   onCreated: () => void;
   onCancel: () => void;
 }) {
-  const createAccount = useCreateAccount();
+  const createAccount = useCreateAccount({ onSuccess: onCreated });
   const form = useForm<AccountInput>({
     initialValues: INITIAL_VALUES,
     validate: { name: isNotEmpty("Name is required") },
@@ -40,7 +40,7 @@ export function CreateAccountForm({
   });
 
   const handleSubmit = form.onSubmit((values) => {
-    createAccount.mutate(values, { onSuccess: onCreated });
+    createAccount.mutate(values);
   });
 
   return (

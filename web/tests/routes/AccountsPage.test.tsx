@@ -115,6 +115,32 @@ describe("AccountsPage", () => {
     expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
   });
 
+  it("returns to the first page when the modal closes before creation finishes", async () => {
+    mockedListAccounts.mockImplementation(async (requestedPage) =>
+      requestedPage === 1
+        ? page([makeAccount({ name: "Starbucks" })])
+        : page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
+    let resolve: (account: Account) => void = () => {};
+    mockedCreateAccount.mockReturnValueOnce(
+      new Promise((resolvePromise) => {
+        resolve = resolvePromise;
+      }),
+    );
+
+    renderPage("/?page=2");
+    await screen.findByText("Amazon");
+
+    await createAccountNamed("Starbucks");
+    await waitFor(() => expect(mockedCreateAccount).toHaveBeenCalled());
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    resolve(makeAccount({ name: "Starbucks" }));
+
+    expect(await screen.findByText("Starbucks")).toBeTruthy();
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+  });
+
   it("shows an error state and can retry", async () => {
     mockedListAccounts.mockRejectedValueOnce(new Error("network down"));
 
