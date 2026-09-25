@@ -1,9 +1,12 @@
 ---
 name: open-pr
-description: Open a pull request in cardcase following the repo's PR conventions — draft only, Conventional Commit title scoped to the changed area, and a description limited to "Closes #x". Use whenever creating or opening a PR in this repo, including as the final step of other workflows.
+description: Use when opening all pull requests (PRs) yourself or as directed by the user.
 ---
 
 # Open PR
+
+Follow these conventions for every PR opened in this repo, including when a PR is opened as the final step of
+another workflow.
 
 PRs into `main` are squashed and merged, landing as a single commit. As such, the PR title should follow
 the Conventional Commit style.
