@@ -21,8 +21,8 @@ function renderForm() {
   return { onCreated, onCancel };
 }
 
-function fillName(value: string) {
-  fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+function fillField(label: RegExp, value: string) {
+  fireEvent.change(screen.getByRole("textbox", { name: label }), {
     target: { value },
   });
 }
@@ -31,20 +31,22 @@ function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Add account" }));
 }
 
+function submittedInput() {
+  return mockedCreateAccount.mock.calls[0][0];
+}
+
 describe("CreateAccountForm", () => {
   it("creates the account from the entered values", async () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillName("  Delta credit  ");
+    fillField(/^name/i, "  Delta credit  ");
     fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
-    fireEvent.change(screen.getByRole("textbox", { name: /description/i }), {
-      target: { value: "Cancelled flight" },
-    });
+    fillField(/description/i, "Cancelled flight");
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
-    expect(mockedCreateAccount.mock.calls[0][0]).toEqual({
+    expect(submittedInput()).toEqual({
       name: "Delta credit",
       type: "flight_credit",
       description: "Cancelled flight",
@@ -56,15 +58,12 @@ describe("CreateAccountForm", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillName("Starbucks");
-    fireEvent.change(
-      screen.getByRole("textbox", { name: /expiration date/i }),
-      { target: { value: "Dec 31, 2026" } },
-    );
+    fillField(/^name/i, "Starbucks");
+    fillField(/expiration date/i, "Dec 31, 2026");
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
-    expect(mockedCreateAccount.mock.calls[0][0]).toMatchObject({
+    expect(submittedInput()).toMatchObject({
       expires_on: "2026-12-31",
     });
   });
@@ -72,7 +71,7 @@ describe("CreateAccountForm", () => {
   it("requires a name", async () => {
     renderForm();
 
-    fillName("   ");
+    fillField(/^name/i, "   ");
     submit();
 
     expect(await screen.findByText("Name is required")).toBeTruthy();
@@ -85,7 +84,7 @@ describe("CreateAccountForm", () => {
     );
     const { onCreated } = renderForm();
 
-    fillName("Amazon");
+    fillField(/^name/i, "Amazon");
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);

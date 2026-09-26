@@ -18,7 +18,7 @@ export function TestProviders({
 }) {
   const [queryClient] = useState(createTestQueryClient);
   return (
-    <MantineProvider>
+    <MantineProvider env="test">
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
       </QueryClientProvider>

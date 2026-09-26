@@ -19,7 +19,12 @@ import {
 } from "@/features/accounts/AccountCard";
 import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
 import { EditAccountForm } from "@/features/accounts/EditAccountForm";
-import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import {
+  accountsQuery,
+  isMissingPage,
+  useIsCreatingAccount,
+  useIsUpdatingAccount,
+} from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
@@ -36,8 +41,10 @@ export function AccountsPage() {
     accountsQuery(page),
   );
   const [createOpened, createModal] = useDisclosure(false);
+  const creatingAccount = useIsCreatingAccount();
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const updatingAccount = useIsUpdatingAccount();
 
   function openEdit(account: Account) {
     setEditingAccount(account);
@@ -76,7 +83,7 @@ export function AccountsPage() {
 
       <Modal
         opened={createOpened}
-        onClose={createModal.close}
+        onClose={creatingAccount ? () => {} : createModal.close}
         title="Add account"
       >
         <CreateAccountForm
@@ -85,7 +92,11 @@ export function AccountsPage() {
         />
       </Modal>
 
-      <Modal opened={editOpened} onClose={editModal.close} title="Edit account">
+      <Modal
+        opened={editOpened}
+        onClose={updatingAccount ? () => {} : editModal.close}
+        title="Edit account"
+      >
         {editingAccount && (
           <EditAccountForm
             account={editingAccount}

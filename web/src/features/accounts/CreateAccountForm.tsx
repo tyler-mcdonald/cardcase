@@ -16,7 +16,7 @@ export function CreateAccountForm({
   onCreated: () => void;
   onCancel: () => void;
 }) {
-  const createAccount = useCreateAccount({ onSuccess: onCreated });
+  const createAccount = useCreateAccount();
 
   return (
     <AccountForm
@@ -24,7 +24,9 @@ export function CreateAccountForm({
       submitLabel="Add account"
       isPending={createAccount.isPending}
       error={createAccount.error}
-      onSubmit={(values) => createAccount.mutate(values)}
+      onSubmit={(values) =>
+        createAccount.mutate(values, { onSuccess: onCreated })
+      }
       onCancel={onCancel}
     />
   );

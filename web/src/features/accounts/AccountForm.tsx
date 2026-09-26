@@ -10,10 +10,10 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { ACCOUNT_TYPES } from "./accountTypes";
+import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
-const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPES).map(
+const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
@@ -52,7 +52,7 @@ export function AccountForm({
           <SegmentedControl
             fullWidth
             data={TYPE_OPTIONS}
-            color={ACCOUNT_TYPES[form.values.type].color}
+            color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
             {...form.getInputProps("type")}
           />
         </Input.Wrapper>
@@ -74,7 +74,7 @@ export function AccountForm({
           </Alert>
         )}
         <Group justify="flex-end">
-          <Button variant="default" onClick={onCancel}>
+          <Button variant="default" onClick={onCancel} disabled={isPending}>
             Cancel
           </Button>
           <Button type="submit" loading={isPending}>

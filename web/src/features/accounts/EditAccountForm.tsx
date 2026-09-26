@@ -20,7 +20,7 @@ export function EditAccountForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const updateAccount = useUpdateAccount({ onSuccess: onSaved });
+  const updateAccount = useUpdateAccount();
 
   return (
     <AccountForm
@@ -28,7 +28,9 @@ export function EditAccountForm({
       submitLabel="Save changes"
       isPending={updateAccount.isPending}
       error={updateAccount.error}
-      onSubmit={(input) => updateAccount.mutate({ id: account.id, input })}
+      onSubmit={(input) =>
+        updateAccount.mutate({ id: account.id, input }, { onSuccess: onSaved })
+      }
       onCancel={onCancel}
     />
   );
