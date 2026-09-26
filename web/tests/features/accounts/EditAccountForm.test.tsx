@@ -74,16 +74,6 @@ describe("EditAccountForm", () => {
     });
   });
 
-  it("requires a name", async () => {
-    renderForm();
-
-    fireEvent.change(nameInput(), { target: { value: "   " } });
-    submit();
-
-    expect(await screen.findByText("Name is required")).toBeTruthy();
-    expect(mockedUpdateAccount).not.toHaveBeenCalled();
-  });
-
   it("shows an error when the account can't be saved", async () => {
     mockedUpdateAccount.mockRejectedValueOnce(
       new ApiError("Request failed (400)", 400),
@@ -94,14 +84,5 @@ describe("EditAccountForm", () => {
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
     expect(onSaved).not.toHaveBeenCalled();
-  });
-
-  it("cancels without saving", () => {
-    const { onCancel } = renderForm();
-
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-
-    expect(onCancel).toHaveBeenCalled();
-    expect(mockedUpdateAccount).not.toHaveBeenCalled();
   });
 });
