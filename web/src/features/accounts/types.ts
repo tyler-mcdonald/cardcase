@@ -7,3 +7,8 @@ export type Account = {
   created_at: string;
   updated_at: string;
 };
+
+export type AccountInput = Pick<
+  Account,
+  "name" | "description" | "type" | "expires_on"
+>;

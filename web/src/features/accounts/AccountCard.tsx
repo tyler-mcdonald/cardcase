@@ -2,24 +2,22 @@ import type { ReactNode } from "react";
 import { Badge, Card, Skeleton, Text } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
+import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import { describeExpiry } from "./format";
 
 type AccountStyle = {
-  label: string;
   artClass: string;
   renderArt: (account: Account) => ReactNode;
 };
 
 const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   gift_card: {
-    label: "Gift card",
     artClass: classes.artGiftCard,
     renderArt: (account) => (
       <Monogram letter={account.name.charAt(0).toUpperCase()} />
     ),
   },
   flight_credit: {
-    label: "Flight credit",
     artClass: classes.artFlightCredit,
     renderArt: () => <FlightCreditIcon />,
   },
@@ -41,7 +39,7 @@ export function AccountCard({ account }: { account: Account }) {
         size="sm"
         className={classes.typeBadge}
       >
-        {style.label}
+        {ACCOUNT_TYPE_DISPLAY[account.type].label}
       </Badge>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>

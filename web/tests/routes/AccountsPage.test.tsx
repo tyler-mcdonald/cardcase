@@ -1,7 +1,7 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
-import { listAccounts } from "@/features/accounts/api";
+import { createAccount, listAccounts } from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
@@ -9,9 +9,11 @@ import { renderWithProviders } from "../render";
 
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
+  createAccount: vi.fn(),
 }));
 
 const mockedListAccounts = vi.mocked(listAccounts);
+const mockedCreateAccount = vi.mocked(createAccount);
 
 function page(
   results: Account[],
@@ -27,6 +29,15 @@ function page(
 
 function renderPage(route = "/") {
   return renderWithProviders(<AccountsPage />, { route });
+}
+
+async function createAccountNamed(name: string) {
+  fireEvent.click(screen.getByRole("button", { name: "Add account" }));
+  const dialog = await screen.findByRole("dialog");
+  fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+    target: { value: name },
+  });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Add account" }));
 }
 
 beforeEach(() => {
@@ -60,6 +71,68 @@ describe("AccountsPage", () => {
     renderPage();
 
     expect(await screen.findByText("No accounts yet.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Add a gift card or flight credit to start tracking it.",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("creates an account and shows it in the list", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(page([]))
+      .mockResolvedValueOnce(page([makeAccount({ name: "Starbucks" })]));
+    mockedCreateAccount.mockResolvedValueOnce(
+      makeAccount({ name: "Starbucks" }),
+    );
+
+    renderPage();
+    await screen.findByText("No accounts yet.");
+
+    await createAccountNamed("Starbucks");
+
+    expect(await screen.findByText("Starbucks")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedListAccounts).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns to the first page after creating an account", async () => {
+    const newAccount = makeAccount({ name: "Starbucks" });
+    const accountsByPage: Record<number, Account[]> = {
+      1: [newAccount],
+      2: [makeAccount({ id: "2", name: "Amazon" })],
+    };
+    mockedListAccounts.mockImplementation(async (requestedPage) =>
+      page(accountsByPage[requestedPage]),
+    );
+    mockedCreateAccount.mockResolvedValueOnce(newAccount);
+
+    renderPage("/?page=2");
+    await screen.findByText("Amazon");
+
+    await createAccountNamed("Starbucks");
+
+    expect(await screen.findByText("Starbucks")).toBeTruthy();
+    expect(screen.queryByText("Amazon")).toBeNull();
+  });
+
+  it("keeps the modal open while the account is being created", async () => {
+    mockedListAccounts.mockResolvedValue(page([]));
+    mockedCreateAccount.mockReturnValueOnce(new Promise(() => {}));
+
+    renderPage();
+    await screen.findByText("No accounts yet.");
+
+    await createAccountNamed("Starbucks");
+    const dialog = screen.getByRole("dialog");
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole("button", { name: "Cancel" }),
+      ).toHaveProperty("disabled", true),
+    );
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeNull();
   });
 
   it("shows an error state and can retry", async () => {
