@@ -154,11 +154,9 @@ describe("AccountsPage", () => {
   });
 
   it("edits an account and shows the change in place", async () => {
-    mockedListAccounts
-      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
-      .mockResolvedValueOnce(
-        page([makeAccount({ id: "2", name: "Amazon Prime" })]),
-      );
+    mockedListAccounts.mockResolvedValueOnce(
+      page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
     mockedUpdateAccount.mockResolvedValueOnce(
       makeAccount({ id: "2", name: "Amazon Prime" }),
     );
@@ -171,7 +169,7 @@ describe("AccountsPage", () => {
     expect(await screen.findByText("Amazon Prime")).toBeTruthy();
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(mockedUpdateAccount.mock.calls[0][0]).toBe("2");
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
+    expect(mockedListAccounts).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the modal open while the account is being saved", async () => {

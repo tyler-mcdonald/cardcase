@@ -62,12 +62,7 @@ describe("createAccount", () => {
 });
 
 describe("updateAccount", () => {
-  const input = {
-    name: "Starbucks Reserve",
-    type: "gift_card" as const,
-    description: "Birthday gift",
-    expires_on: null,
-  };
+  const input = { name: "Starbucks Reserve" };
 
   it("patches the given account", async () => {
     const account = makeAccount({ id: "42", ...input });

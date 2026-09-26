@@ -19,6 +19,7 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
 
 export function AccountForm({
   initialValues,
+  typeLocked = false,
   submitLabel,
   isPending,
   error,
@@ -26,6 +27,7 @@ export function AccountForm({
   onCancel,
 }: {
   initialValues: AccountInput;
+  typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
   error: Error | null;
@@ -48,9 +50,16 @@ export function AccountForm({
           data-autofocus
           {...form.getInputProps("name")}
         />
-        <Input.Wrapper label="Type" required>
+        <Input.Wrapper
+          label="Type"
+          required
+          description={
+            typeLocked ? "Type can't be changed after creation." : undefined
+          }
+        >
           <SegmentedControl
             fullWidth
+            disabled={typeLocked}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
             {...form.getInputProps("type")}

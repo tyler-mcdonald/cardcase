@@ -34,6 +34,10 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
+function closeUnlessBusy(busy: boolean, close: () => void): () => void {
+  return busy ? () => {} : close;
+}
+
 export function AccountsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
@@ -44,7 +48,7 @@ export function AccountsPage() {
   const creatingAccount = useIsCreatingAccount();
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const updatingAccount = useIsUpdatingAccount();
+  const updatingAccount = useIsUpdatingAccount(editingAccount?.id);
 
   function openEdit(account: Account) {
     setEditingAccount(account);
@@ -83,7 +87,7 @@ export function AccountsPage() {
 
       <Modal
         opened={createOpened}
-        onClose={creatingAccount ? () => {} : createModal.close}
+        onClose={closeUnlessBusy(creatingAccount, createModal.close)}
         title="Add account"
       >
         <CreateAccountForm
@@ -94,11 +98,12 @@ export function AccountsPage() {
 
       <Modal
         opened={editOpened}
-        onClose={updatingAccount ? () => {} : editModal.close}
+        onClose={closeUnlessBusy(updatingAccount, editModal.close)}
         title="Edit account"
       >
         {editingAccount && (
           <EditAccountForm
+            key={editingAccount.id}
             account={editingAccount}
             onSaved={editModal.close}
             onCancel={editModal.close}

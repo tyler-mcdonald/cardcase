@@ -1,6 +1,6 @@
 import { request } from "@/lib/api/client";
 import type { Paginated } from "@/lib/api/types";
-import type { Account, AccountInput } from "./types";
+import type { Account, AccountInput, AccountUpdate } from "./types";
 
 const ACCOUNTS_PATH = "/v1/accounts";
 
@@ -14,7 +14,7 @@ export function createAccount(input: AccountInput) {
   });
 }
 
-export function updateAccount(id: string, input: AccountInput) {
+export function updateAccount(id: string, input: AccountUpdate) {
   return request<Account>("PATCH", `${ACCOUNTS_PATH}/${id}`, {
     body: JSON.stringify(input),
   });

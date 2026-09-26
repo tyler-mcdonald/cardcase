@@ -57,21 +57,34 @@ describe("EditAccountForm", () => {
     ).toBe("Cancelled flight");
   });
 
-  it("saves the edited values to the account", async () => {
+  it("locks the account type", () => {
+    renderForm();
+
+    for (const radio of screen.getAllByRole<HTMLInputElement>("radio")) {
+      expect(radio.disabled).toBe(true);
+    }
+  });
+
+  it("saves only the changed values to the account", async () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onSaved } = renderForm();
 
     fireEvent.change(nameInput(), { target: { value: "  Delta voucher  " } });
-    fireEvent.click(screen.getByRole("radio", { name: "Gift card" }));
     submit();
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       name: "Delta voucher",
-      type: "gift_card",
-      expires_on: "2026-12-31",
-      description: "Cancelled flight",
     });
+  });
+
+  it("closes without saving when nothing changed", () => {
+    const { onSaved } = renderForm();
+
+    submit();
+
+    expect(onSaved).toHaveBeenCalled();
+    expect(mockedUpdateAccount).not.toHaveBeenCalled();
   });
 
   it("shows an error when the account can't be saved", async () => {
@@ -80,6 +93,7 @@ describe("EditAccountForm", () => {
     );
     const { onSaved } = renderForm();
 
+    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
