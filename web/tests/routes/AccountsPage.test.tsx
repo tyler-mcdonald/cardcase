@@ -50,11 +50,16 @@ async function createAccountNamed(name: string) {
   await submitNameInDialog(name, "Add account");
 }
 
-async function renameAccount(currentName: string, newName: string) {
+async function openEditDialog(accountName: string) {
   fireEvent.click(
-    screen.getByRole("button", { name: `Actions for ${currentName}` }),
+    screen.getByRole("button", { name: `Actions for ${accountName}` }),
   );
   fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+  return screen.findByRole("dialog");
+}
+
+async function renameAccount(currentName: string, newName: string) {
+  await openEditDialog(currentName);
   await submitNameInDialog(newName, "Save changes");
 }
 
@@ -204,12 +209,9 @@ describe("AccountsPage", () => {
     renderPage();
     await screen.findByText("Amazon");
 
-    fireEvent.click(screen.getByRole("button", { name: "Actions for Amazon" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    const dialog = await openEditDialog("Amazon");
     fireEvent.change(
-      within(await screen.findByRole("dialog")).getByRole("textbox", {
-        name: /description/i,
-      }),
+      within(dialog).getByRole("textbox", { name: /description/i }),
       { target: { value: "Birthday gift" } },
     );
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));

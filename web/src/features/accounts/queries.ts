@@ -6,7 +6,7 @@ import {
   useQueryClient,
   type MutationKey,
 } from "@tanstack/react-query";
-import { ApiError } from "@/lib/api/errors";
+import { hasApiStatus } from "@/lib/api/errors";
 import { createAccount, listAccounts, updateAccount } from "./api";
 import type { Paginated } from "@/lib/api/types";
 import type { Account, AccountUpdate } from "./types";
@@ -52,12 +52,8 @@ function useIsMutatingKey(mutationKey: MutationKey) {
   return useIsMutating({ mutationKey }) > 0;
 }
 
-function isValidationError(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 400;
-}
-
 export function isMissingPage(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 404;
+  return hasApiStatus(error, 404);
 }
 
 export function accountsQuery(page: number) {
@@ -95,7 +91,7 @@ export function useUpdateAccount(id: string) {
       );
     },
     onError: (error) => {
-      if (!isValidationError(error)) {
+      if (!hasApiStatus(error, 400)) {
         return queryClient.invalidateQueries({
           queryKey: ACCOUNT_LISTS_QUERY_KEY,
         });

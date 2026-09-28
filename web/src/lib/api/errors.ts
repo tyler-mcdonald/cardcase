@@ -58,3 +58,7 @@ export function isClientError(error: unknown): boolean {
     error.status < 500
   );
 }
+
+export function hasApiStatus(error: unknown, status: number): boolean {
+  return error instanceof ApiError && error.status === status;
+}

@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
 import { ACCOUNT_INPUT_FIELDS, ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -48,13 +48,16 @@ export function AccountForm({
     validate: { name: isNotEmpty("Name is required") },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
-  const hasFieldErrors = Object.keys(inputFieldErrors(error)).length > 0;
+  const fieldErrors = useMemo(() => inputFieldErrors(error), [error]);
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
 
   useEffect(() => {
-    setErrors(inputFieldErrors(error));
-  }, [error, setErrors]);
+    if (hasFieldErrors) {
+      setErrors(fieldErrors);
+    }
+  }, [fieldErrors, hasFieldErrors, setErrors]);
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
