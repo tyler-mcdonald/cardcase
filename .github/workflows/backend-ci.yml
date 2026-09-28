@@ -88,8 +88,11 @@ jobs:
       - run: uv run python manage.py collectstatic --noinput
       - run: uv run python manage.py migrate
       - run: uv run gunicorn config.wsgi:application --daemon
-      - run: >-
-          curl --fail --silent --show-error --output /dev/null
-          --retry 10 --retry-connrefused --retry-delay 1
-          -H "X-Forwarded-Proto: https"
-          http://localhost:8000/health/
+      - name: Check /health/ returns 200
+        run: |
+          status=$(curl --silent --show-error --output /dev/null --write-out "%{http_code}" \
+            --retry 10 --retry-connrefused --retry-delay 1 \
+            -H "X-Forwarded-Proto: https" \
+            http://localhost:8000/health/)
+          echo "GET /health/ -> $status"
+          test "$status" = 200
