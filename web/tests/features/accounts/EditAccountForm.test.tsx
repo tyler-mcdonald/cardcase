@@ -33,6 +33,12 @@ function nameInput() {
   return screen.getByRole<HTMLInputElement>("textbox", { name: /^name/i });
 }
 
+function expirationInput() {
+  return screen.getByRole<HTMLInputElement>("textbox", {
+    name: /expiration date/i,
+  });
+}
+
 function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 }
@@ -46,11 +52,7 @@ describe("EditAccountForm", () => {
       screen.getByRole<HTMLInputElement>("radio", { name: "Flight credit" })
         .checked,
     ).toBe(true);
-    expect(
-      screen.getByRole<HTMLInputElement>("textbox", {
-        name: /expiration date/i,
-      }).value,
-    ).toBe("Dec 31, 2026");
+    expect(expirationInput().value).toBe("Dec 31, 2026");
     expect(
       screen.getByRole<HTMLInputElement>("textbox", { name: /description/i })
         .value,
@@ -75,6 +77,32 @@ describe("EditAccountForm", () => {
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       name: "Delta voucher",
+    });
+  });
+
+  it("saves a new expiration date as a calendar date", async () => {
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    const { onSaved } = renderForm();
+
+    fireEvent.change(expirationInput(), { target: { value: "Jan 15, 2027" } });
+    submit();
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      expires_on: "2027-01-15",
+    });
+  });
+
+  it("saves a cleared expiration date as null", async () => {
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    const { onSaved } = renderForm();
+
+    fireEvent.change(expirationInput(), { target: { value: "" } });
+    submit();
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      expires_on: null,
     });
   });
 

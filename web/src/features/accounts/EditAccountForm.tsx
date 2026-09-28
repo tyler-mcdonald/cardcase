@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AccountForm } from "./AccountForm";
 import { EDITABLE_ACCOUNT_FIELDS } from "./constants";
 import { useUpdateAccount } from "./queries";
@@ -12,10 +13,13 @@ function toAccountInput({
   return { name, type, expires_on, description };
 }
 
-function changedFields(account: Account, values: AccountInput): AccountUpdate {
+function changedFields(
+  initialValues: AccountInput,
+  values: AccountInput,
+): AccountUpdate {
   return Object.fromEntries(
     EDITABLE_ACCOUNT_FIELDS.filter(
-      (field) => values[field] !== account[field],
+      (field) => values[field] !== initialValues[field],
     ).map((field) => [field, values[field]]),
   );
 }
@@ -30,9 +34,10 @@ export function EditAccountForm({
   onCancel: () => void;
 }) {
   const updateAccount = useUpdateAccount(account.id);
+  const [initialValues] = useState(() => toAccountInput(account));
 
   function save(values: AccountInput) {
-    const changes = changedFields(account, values);
+    const changes = changedFields(initialValues, values);
     if (Object.keys(changes).length === 0) {
       onSaved();
       return;
@@ -42,7 +47,7 @@ export function EditAccountForm({
 
   return (
     <AccountForm
-      initialValues={toAccountInput(account)}
+      initialValues={initialValues}
       typeLocked
       submitLabel="Save changes"
       isPending={updateAccount.isPending}

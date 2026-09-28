@@ -196,7 +196,7 @@ describe("AccountsPage", () => {
     await expectDialogLockedWhileSaving();
   });
 
-  it("refreshes the list after a failed save and saves what the form shows", async () => {
+  it("refreshes the list after a failed save and resends only the user's edits", async () => {
     mockedListAccounts
       .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
       .mockResolvedValueOnce(
@@ -221,7 +221,6 @@ describe("AccountsPage", () => {
 
     await waitFor(() => expect(mockedUpdateAccount).toHaveBeenCalledTimes(2));
     expect(mockedUpdateAccount).toHaveBeenLastCalledWith("2", {
-      name: "Amazon",
       description: "Birthday gift",
     });
   });
