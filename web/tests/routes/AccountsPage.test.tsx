@@ -224,6 +224,22 @@ describe("AccountsPage", () => {
     });
   });
 
+  it("doesn't refresh the list after a rejected save", async () => {
+    mockedListAccounts.mockResolvedValueOnce(
+      page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400, { name: ["Too long."] }),
+    );
+
+    renderPage();
+    await screen.findByText("Amazon");
+    await renameAccount("Amazon", "Amazon gift card");
+
+    expect(await screen.findByText("Too long.")).toBeTruthy();
+    expect(mockedListAccounts).toHaveBeenCalledTimes(1);
+  });
+
   it("shows an error state and can retry", async () => {
     mockedListAccounts.mockRejectedValueOnce(new Error("network down"));
 

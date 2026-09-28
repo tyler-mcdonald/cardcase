@@ -17,20 +17,6 @@ describe("apiErrorMessage", () => {
     expect(apiErrorMessage(error)).toBe("Incorrect code.");
   });
 
-  it("returns the detail message from an ApiError's body", () => {
-    const error = new ApiError("Not found", 404, { detail: "Not found." });
-
-    expect(apiErrorMessage(error)).toBe("Not found.");
-  });
-
-  it("returns the first field error from an ApiError's body", () => {
-    const error = new ApiError("Bad Request", 400, {
-      expires_on: ["Date has wrong format."],
-    });
-
-    expect(apiErrorMessage(error)).toBe("Date has wrong format.");
-  });
-
   it("falls back to a generic message for an ApiError with no body message", () => {
     const error = new ApiError("Server Error", 500);
 

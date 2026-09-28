@@ -119,4 +119,20 @@ describe("EditAccountForm", () => {
     expect(nameInput().getAttribute("aria-invalid")).toBe("true");
     expect(screen.queryByRole("alert")).toBeNull();
   });
+
+  it("shows the API's type error under the type field", async () => {
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400, {
+        type: ['"foo" is not a valid choice.'],
+      }),
+    );
+    renderForm();
+
+    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
+    submit();
+
+    expect(
+      await screen.findByText('"foo" is not a valid choice.'),
+    ).toBeTruthy();
+  });
 });

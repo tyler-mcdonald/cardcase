@@ -50,6 +50,7 @@ export function AccountForm({
   });
   const hasFieldErrors = Object.keys(inputFieldErrors(error)).length > 0;
   const { setErrors } = form;
+  const { error: typeError, ...typeInputProps } = form.getInputProps("type");
 
   useEffect(() => {
     setErrors(inputFieldErrors(error));
@@ -68,6 +69,7 @@ export function AccountForm({
         <Input.Wrapper
           label="Type"
           required
+          error={typeError}
           description={
             typeLocked ? "Type can't be changed after creation." : undefined
           }
@@ -77,7 +79,7 @@ export function AccountForm({
             disabled={typeLocked}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
-            {...form.getInputProps("type")}
+            {...typeInputProps}
           />
         </Input.Wrapper>
         <DateInput

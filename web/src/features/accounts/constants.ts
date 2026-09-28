@@ -8,11 +8,9 @@ export const ACCOUNT_INPUT_FIELDS = [
   "description",
 ] as const satisfies readonly AccountInputField[];
 
-export const EDITABLE_ACCOUNT_FIELDS = [
-  "name",
-  "expires_on",
-  "description",
-] as const satisfies readonly EditableAccountField[];
+export const EDITABLE_ACCOUNT_FIELDS = ACCOUNT_INPUT_FIELDS.filter(
+  (field): field is EditableAccountField => field !== "type",
+);
 
 type AccountTypeDisplay = {
   label: string;

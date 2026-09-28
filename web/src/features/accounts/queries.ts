@@ -52,6 +52,10 @@ function useIsMutatingKey(mutationKey: MutationKey) {
   return useIsMutating({ mutationKey }) > 0;
 }
 
+function isValidationError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 400;
+}
+
 export function isMissingPage(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404;
 }
@@ -83,13 +87,20 @@ export function useUpdateAccount(id: string) {
   return useMutation({
     mutationKey: updateAccountMutationKey(id),
     mutationFn: (input: AccountUpdate) => updateAccount(id, input),
-    onSuccess: (updated) =>
+    onSuccess: async (updated) => {
+      await queryClient.cancelQueries({ queryKey: ACCOUNT_LISTS_QUERY_KEY });
       queryClient.setQueriesData<AccountsResult>(
         { queryKey: ACCOUNT_LISTS_QUERY_KEY },
         (result) => replaceAccount(result, updated),
-      ),
-    onError: () =>
-      queryClient.invalidateQueries({ queryKey: ACCOUNT_LISTS_QUERY_KEY }),
+      );
+    },
+    onError: (error) => {
+      if (!isValidationError(error)) {
+        return queryClient.invalidateQueries({
+          queryKey: ACCOUNT_LISTS_QUERY_KEY,
+        });
+      }
+    },
   });
 }
 

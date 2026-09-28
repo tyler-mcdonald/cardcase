@@ -24,12 +24,6 @@ function firstMessage(messages: unknown): string | undefined {
     : undefined;
 }
 
-function detailMessage(body: unknown): string | undefined {
-  return isRecord(body) && typeof body.detail === "string"
-    ? body.detail
-    : undefined;
-}
-
 export function apiFieldErrors(error: unknown): Record<string, string> {
   if (!(error instanceof ApiError) || !isRecord(error.body)) {
     return {};
@@ -48,10 +42,7 @@ export function apiErrorMessage(
 ): string {
   if (error instanceof ApiError) {
     const body = error.body as ApiResponse | undefined;
-    const message =
-      body?.errors?.[0]?.message ??
-      detailMessage(error.body) ??
-      Object.values(apiFieldErrors(error))[0];
+    const message = body?.errors?.[0]?.message;
     if (message) {
       return message;
     }
