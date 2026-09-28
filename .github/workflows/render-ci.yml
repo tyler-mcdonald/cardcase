@@ -1,3 +1,8 @@
+# This job downloads the Render CLI, installs it, and then validates the Render
+# blueprint to catch deployment errors. We are manually downloading the CLI using
+# version and associated SHA256 because, at the time of writing this, Render
+# doesn't have a dedicated gh actions setup.
+
 name: Render CI
 
 on:
