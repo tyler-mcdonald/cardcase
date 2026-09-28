@@ -16,6 +16,10 @@ another workflow.
 
 Format: `type(scope): summary`, with `!` after the type/scope for breaking changes. Titles should not exceed 50 characters.
 
+Write the summary from what the branch actually changed, described at a very high level. Use the linked issue as a
+reference point for intent, but don't copy its title — the squashed commit should read as a record of what landed,
+which can differ from how the issue was framed.
+
 Reference: https://www.conventionalcommits.org/
 
 ### Scopes
