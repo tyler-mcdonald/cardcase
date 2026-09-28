@@ -12,6 +12,7 @@ import type { Paginated } from "@/lib/api/types";
 import type { Account, AccountUpdate } from "./types";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
+const ACCOUNT_LISTS_QUERY_KEY = [...ACCOUNTS_QUERY_KEY, "list"] as const;
 const CREATE_ACCOUNT_MUTATION_KEY = [...ACCOUNTS_QUERY_KEY, "create"] as const;
 
 function updateAccountMutationKey(id: string | undefined) {
@@ -57,7 +58,7 @@ export function isMissingPage(error: unknown): boolean {
 
 export function accountsQuery(page: number) {
   return queryOptions({
-    queryKey: [...ACCOUNTS_QUERY_KEY, page],
+    queryKey: [...ACCOUNT_LISTS_QUERY_KEY, page],
     queryFn: async () => toAccountsResult(await listAccounts(page), page),
     placeholderData: keepPreviousData,
   });
@@ -84,7 +85,7 @@ export function useUpdateAccount(id: string) {
     mutationFn: (input: AccountUpdate) => updateAccount(id, input),
     onSuccess: (updated) =>
       queryClient.setQueriesData<AccountsResult>(
-        { queryKey: ACCOUNTS_QUERY_KEY },
+        { queryKey: ACCOUNT_LISTS_QUERY_KEY },
         (result) => replaceAccount(result, updated),
       ),
   });

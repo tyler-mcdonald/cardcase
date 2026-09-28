@@ -1,5 +1,11 @@
 import type { MantineColor } from "@mantine/core";
-import type { Account } from "./types";
+import type { Account, AccountInput } from "./types";
+
+export const EDITABLE_ACCOUNT_FIELDS = [
+  "name",
+  "expires_on",
+  "description",
+] as const satisfies readonly (keyof AccountInput)[];
 
 type AccountTypeDisplay = {
   label: string;

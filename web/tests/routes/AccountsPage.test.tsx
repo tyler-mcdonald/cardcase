@@ -27,7 +27,7 @@ function page(
 ) {
   return {
     count,
-    next: hasNext ? "http://localhost:8000/v1/accounts?page=next" : null,
+    next: hasNext ? "http://api.test/v1/accounts?page=next" : null,
     previous: null,
     results,
   };
@@ -37,13 +37,17 @@ function renderPage(route = "/") {
   return renderWithProviders(<AccountsPage />, { route });
 }
 
-async function createAccountNamed(name: string) {
-  fireEvent.click(screen.getByRole("button", { name: "Add account" }));
+async function submitNameInDialog(name: string, submitLabel: string) {
   const dialog = await screen.findByRole("dialog");
-  fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+  fireEvent.change(within(dialog).getByRole("textbox", { name: /^name/i }), {
     target: { value: name },
   });
-  fireEvent.click(within(dialog).getByRole("button", { name: "Add account" }));
+  fireEvent.click(within(dialog).getByRole("button", { name: submitLabel }));
+}
+
+async function createAccountNamed(name: string) {
+  fireEvent.click(screen.getByRole("button", { name: "Add account" }));
+  await submitNameInDialog(name, "Add account");
 }
 
 async function renameAccount(currentName: string, newName: string) {
@@ -51,11 +55,19 @@ async function renameAccount(currentName: string, newName: string) {
     screen.getByRole("button", { name: `Actions for ${currentName}` }),
   );
   fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
-  const dialog = await screen.findByRole("dialog", { name: "Edit account" });
-  fireEvent.change(within(dialog).getByRole("textbox", { name: /^name/i }), {
-    target: { value: newName },
-  });
-  fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+  await submitNameInDialog(newName, "Save changes");
+}
+
+async function expectDialogLockedWhileSaving() {
+  const dialog = screen.getByRole("dialog");
+  await waitFor(() =>
+    expect(
+      within(dialog).getByRole("button", { name: "Cancel" }),
+    ).toHaveProperty("disabled", true),
+  );
+  fireEvent.keyDown(dialog, { key: "Escape" });
+
+  expect(screen.queryByRole("dialog")).not.toBeNull();
 }
 
 beforeEach(() => {
@@ -142,15 +154,8 @@ describe("AccountsPage", () => {
     await screen.findByText("No accounts yet.");
 
     await createAccountNamed("Starbucks");
-    const dialog = screen.getByRole("dialog");
-    await waitFor(() =>
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
-      ).toHaveProperty("disabled", true),
-    );
-    fireEvent.keyDown(dialog, { key: "Escape" });
 
-    expect(screen.queryByRole("dialog")).not.toBeNull();
+    await expectDialogLockedWhileSaving();
   });
 
   it("edits an account and shows the change in place", async () => {
@@ -182,15 +187,8 @@ describe("AccountsPage", () => {
     await screen.findByText("Amazon");
 
     await renameAccount("Amazon", "Amazon Prime");
-    const dialog = screen.getByRole("dialog");
-    await waitFor(() =>
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
-      ).toHaveProperty("disabled", true),
-    );
-    fireEvent.keyDown(dialog, { key: "Escape" });
 
-    expect(screen.queryByRole("dialog")).not.toBeNull();
+    await expectDialogLockedWhileSaving();
   });
 
   it("shows an error state and can retry", async () => {

@@ -1,8 +1,7 @@
 import { AccountForm } from "./AccountForm";
+import { EDITABLE_ACCOUNT_FIELDS } from "./constants";
 import { useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
-
-const EDITABLE_FIELDS = ["name", "expires_on", "description"] as const;
 
 function toAccountInput({
   name,
@@ -15,9 +14,9 @@ function toAccountInput({
 
 function changedFields(account: Account, values: AccountInput): AccountUpdate {
   return Object.fromEntries(
-    EDITABLE_FIELDS.filter((field) => values[field] !== account[field]).map(
-      (field) => [field, values[field]],
-    ),
+    EDITABLE_ACCOUNT_FIELDS.filter(
+      (field) => values[field] !== account[field],
+    ).map((field) => [field, values[field]]),
   );
 }
 
