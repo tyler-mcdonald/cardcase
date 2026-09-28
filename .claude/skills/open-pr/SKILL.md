@@ -20,6 +20,9 @@ Write the summary from what the branch actually changed, described at a very hig
 reference point for intent, but don't copy its title — the squashed commit should read as a record of what landed,
 which can differ from how the issue was framed.
 
+Judge what changed from the diff against the base branch (`git diff <base>...HEAD`), not the commit log. Commits
+from already squash-merged branches can still appear in the log even though their changes have already landed.
+
 Reference: https://www.conventionalcommits.org/
 
 ### Scopes
