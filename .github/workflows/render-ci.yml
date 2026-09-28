@@ -11,24 +11,23 @@ permissions:
 
 jobs:
   validate-blueprint:
-    if: >-
-      github.event_name == 'push' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]')
+    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     env:
       RENDER_CLI_VERSION: 2.28.0
       RENDER_CLI_SHA256: 00d1ca6f3c31b1f4bc7316837b8ee24acbeb11cf372b7593c7d2c3106a1987b4
     steps:
       - uses: actions/checkout@v7
-      - run: |
-          archive="cli_${RENDER_CLI_VERSION}_linux_amd64.zip"
-          curl -fsSL -o "$archive" "https://github.com/render-oss/cli/releases/download/v${RENDER_CLI_VERSION}/${archive}"
-          echo "${RENDER_CLI_SHA256}  ${archive}" | sha256sum --check --strict
-          unzip -q "$archive" "cli_v${RENDER_CLI_VERSION}" -d "$RUNNER_TEMP"
-          install -D "$RUNNER_TEMP/cli_v${RENDER_CLI_VERSION}" "$HOME/.local/bin/render"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - run: render blueprints validate render.yaml --workspace "$RENDER_WORKSPACE_ID" -o text
+      - name: Download Render CLI
+        run: curl -fsSL -o render.zip "https://github.com/render-oss/cli/releases/download/v${RENDER_CLI_VERSION}/cli_${RENDER_CLI_VERSION}_linux_amd64.zip"
+      - name: Verify Render CLI checksum
+        run: echo "${RENDER_CLI_SHA256}  render.zip" | sha256sum --check
+      - name: Install Render CLI
+        run: |
+          unzip -q render.zip "cli_v${RENDER_CLI_VERSION}"
+          sudo install "cli_v${RENDER_CLI_VERSION}" /usr/local/bin/render
+      - name: Validate Render blueprint
+        run: render blueprints validate render.yaml --workspace "$RENDER_WORKSPACE_ID" -o text
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_WORKSPACE_ID: ${{ vars.RENDER_WORKSPACE_ID }}
