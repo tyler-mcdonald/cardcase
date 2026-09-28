@@ -9,13 +9,22 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { ACCOUNT_TYPE_DISPLAY } from "./constants";
+import { useEffect } from "react";
+import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
+import { ACCOUNT_INPUT_FIELDS, ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
+
+function inputFieldErrors(error: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(apiFieldErrors(error)).filter(([field]) =>
+      (ACCOUNT_INPUT_FIELDS as readonly string[]).includes(field),
+    ),
+  );
+}
 
 export function AccountForm({
   initialValues,
@@ -39,6 +48,12 @@ export function AccountForm({
     validate: { name: isNotEmpty("Name is required") },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
+  const hasFieldErrors = Object.keys(inputFieldErrors(error)).length > 0;
+  const { setErrors } = form;
+
+  useEffect(() => {
+    setErrors(inputFieldErrors(error));
+  }, [error, setErrors]);
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
@@ -77,7 +92,7 @@ export function AccountForm({
           maxLength={1000}
           {...form.getInputProps("description")}
         />
-        {error && (
+        {error && !hasFieldErrors && (
           <Alert color="red" role="alert">
             {apiErrorMessage(error)}
           </Alert>

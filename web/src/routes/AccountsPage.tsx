@@ -48,10 +48,15 @@ export function AccountsPage() {
   const creatingAccount = useIsCreatingAccount();
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [editSession, setEditSession] = useState(0);
+  const latestEditingAccount =
+    data?.accounts.find((account) => account.id === editingAccount?.id) ??
+    editingAccount;
   const updatingAccount = useIsUpdatingAccount(editingAccount?.id);
 
   function openEdit(account: Account) {
     setEditingAccount(account);
+    setEditSession((session) => session + 1);
     editModal.open();
   }
 
@@ -101,10 +106,10 @@ export function AccountsPage() {
         onClose={closeUnlessBusy(updatingAccount, editModal.close)}
         title="Edit account"
       >
-        {editingAccount && (
+        {latestEditingAccount && (
           <EditAccountForm
-            key={editingAccount.id}
-            account={editingAccount}
+            key={editSession}
+            account={latestEditingAccount}
             onSaved={editModal.close}
             onCancel={editModal.close}
           />

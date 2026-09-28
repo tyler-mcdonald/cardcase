@@ -1,15 +1,12 @@
 import { AccountForm } from "./AccountForm";
-import { EDITABLE_ACCOUNT_FIELDS } from "./constants";
+import { ACCOUNT_INPUT_FIELDS, EDITABLE_ACCOUNT_FIELDS } from "./constants";
 import { useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 
-function toAccountInput({
-  name,
-  type,
-  expires_on,
-  description,
-}: Account): AccountInput {
-  return { name, type, expires_on, description };
+function toAccountInput(account: Account): AccountInput {
+  return Object.fromEntries(
+    ACCOUNT_INPUT_FIELDS.map((field) => [field, account[field]]),
+  ) as AccountInput;
 }
 
 function changedFields(account: Account, values: AccountInput): AccountUpdate {

@@ -191,6 +191,39 @@ describe("AccountsPage", () => {
     await expectDialogLockedWhileSaving();
   });
 
+  it("refreshes the list after a failed save and saves what the form shows", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValueOnce(
+        page([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
+      );
+    mockedUpdateAccount
+      .mockRejectedValueOnce(new ApiError("Server error", 500))
+      .mockResolvedValueOnce(makeAccount({ id: "2", name: "Amazon" }));
+
+    renderPage();
+    await screen.findByText("Amazon");
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Amazon" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    fireEvent.change(
+      within(await screen.findByRole("dialog")).getByRole("textbox", {
+        name: /description/i,
+      }),
+      { target: { value: "Birthday gift" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByText("Renamed elsewhere")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mockedUpdateAccount).toHaveBeenCalledTimes(2));
+    expect(mockedUpdateAccount).toHaveBeenLastCalledWith("2", {
+      name: "Amazon",
+      description: "Birthday gift",
+    });
+  });
+
   it("shows an error state and can retry", async () => {
     mockedListAccounts.mockRejectedValueOnce(new Error("network down"));
 

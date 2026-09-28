@@ -14,13 +14,44 @@ export class ApiError extends Error {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function firstMessage(messages: unknown): string | undefined {
+  return Array.isArray(messages) && typeof messages[0] === "string"
+    ? messages[0]
+    : undefined;
+}
+
+function detailMessage(body: unknown): string | undefined {
+  return isRecord(body) && typeof body.detail === "string"
+    ? body.detail
+    : undefined;
+}
+
+export function apiFieldErrors(error: unknown): Record<string, string> {
+  if (!(error instanceof ApiError) || !isRecord(error.body)) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(error.body).flatMap(([field, messages]) => {
+      const message = firstMessage(messages);
+      return message ? [[field, message]] : [];
+    }),
+  );
+}
+
 export function apiErrorMessage(
   error: unknown,
   fallback: string = GENERIC_ERROR,
 ): string {
   if (error instanceof ApiError) {
     const body = error.body as ApiResponse | undefined;
-    const message = body?.errors?.[0]?.message;
+    const message =
+      body?.errors?.[0]?.message ??
+      detailMessage(error.body) ??
+      Object.values(apiFieldErrors(error))[0];
     if (message) {
       return message;
     }

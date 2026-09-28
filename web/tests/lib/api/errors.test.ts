@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   apiErrorMessage,
+  apiFieldErrors,
   isClientError,
   ApiError,
   GENERIC_ERROR,
@@ -16,6 +17,20 @@ describe("apiErrorMessage", () => {
     expect(apiErrorMessage(error)).toBe("Incorrect code.");
   });
 
+  it("returns the detail message from an ApiError's body", () => {
+    const error = new ApiError("Not found", 404, { detail: "Not found." });
+
+    expect(apiErrorMessage(error)).toBe("Not found.");
+  });
+
+  it("returns the first field error from an ApiError's body", () => {
+    const error = new ApiError("Bad Request", 400, {
+      expires_on: ["Date has wrong format."],
+    });
+
+    expect(apiErrorMessage(error)).toBe("Date has wrong format.");
+  });
+
   it("falls back to a generic message for an ApiError with no body message", () => {
     const error = new ApiError("Server Error", 500);
 
@@ -24,6 +39,22 @@ describe("apiErrorMessage", () => {
 
   it("falls back to a generic message for a non-ApiError", () => {
     expect(apiErrorMessage(new Error("network down"))).toBe(GENERIC_ERROR);
+  });
+});
+
+describe("apiFieldErrors", () => {
+  it("maps each field to its first message", () => {
+    const error = new ApiError("Bad Request", 400, {
+      name: ["Too long.", "Invalid."],
+      detail: "Ignored.",
+      errors: [{ message: "Ignored." }],
+    });
+
+    expect(apiFieldErrors(error)).toEqual({ name: "Too long." });
+  });
+
+  it("is empty for a non-ApiError", () => {
+    expect(apiFieldErrors(new Error("boom"))).toEqual({});
   });
 });
 

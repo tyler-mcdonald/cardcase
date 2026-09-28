@@ -88,6 +88,8 @@ export function useUpdateAccount(id: string) {
         { queryKey: ACCOUNT_LISTS_QUERY_KEY },
         (result) => replaceAccount(result, updated),
       ),
+    onError: () =>
+      queryClient.invalidateQueries({ queryKey: ACCOUNT_LISTS_QUERY_KEY }),
   });
 }
 

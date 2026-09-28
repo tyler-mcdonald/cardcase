@@ -99,4 +99,24 @@ describe("EditAccountForm", () => {
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
     expect(onSaved).not.toHaveBeenCalled();
   });
+
+  it("shows the API's field errors on the matching field", async () => {
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400, {
+        name: ["Ensure this field has no more than 255 characters."],
+      }),
+    );
+    renderForm();
+
+    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
+    submit();
+
+    expect(
+      await screen.findByText(
+        "Ensure this field has no more than 255 characters.",
+      ),
+    ).toBeTruthy();
+    expect(nameInput().getAttribute("aria-invalid")).toBe("true");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
 });

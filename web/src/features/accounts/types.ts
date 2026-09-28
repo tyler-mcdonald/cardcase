@@ -1,5 +1,3 @@
-import type { EDITABLE_ACCOUNT_FIELDS } from "./constants";
-
 export type Account = {
   id: string;
   name: string;
@@ -10,11 +8,10 @@ export type Account = {
   updated_at: string;
 };
 
-export type AccountInput = Pick<
-  Account,
-  "name" | "description" | "type" | "expires_on"
->;
+export type AccountInputField = "name" | "description" | "type" | "expires_on";
 
-export type AccountUpdate = Partial<
-  Pick<AccountInput, (typeof EDITABLE_ACCOUNT_FIELDS)[number]>
->;
+export type AccountInput = Pick<Account, AccountInputField>;
+
+export type EditableAccountField = Exclude<AccountInputField, "type">;
+
+export type AccountUpdate = Partial<Pick<AccountInput, EditableAccountField>>;
