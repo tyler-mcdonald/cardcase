@@ -51,10 +51,7 @@ async function createAccountNamed(name: string) {
 }
 
 async function openEditDialog(accountName: string) {
-  fireEvent.click(
-    screen.getByRole("button", { name: `Actions for ${accountName}` }),
-  );
-  fireEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+  fireEvent.click(screen.getByRole("button", { name: `Edit ${accountName}` }));
   return screen.findByRole("dialog");
 }
 

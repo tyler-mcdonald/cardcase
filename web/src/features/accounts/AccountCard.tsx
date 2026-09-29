@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ActionIcon, Badge, Card, Menu, Skeleton, Text } from "@mantine/core";
+import { Badge, Card, Skeleton, Text, UnstyledButton } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
@@ -48,21 +48,6 @@ export function AccountCard({
         >
           {ACCOUNT_TYPE_DISPLAY[account.type].label}
         </Badge>
-        <Menu position="bottom-end">
-          <Menu.Target>
-            <ActionIcon
-              variant="transparent"
-              radius="xl"
-              aria-label={`Actions for ${account.name}`}
-              className={classes.menuButton}
-            >
-              <MoreIcon />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item onClick={onEdit}>Edit</Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
       </div>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>
@@ -88,6 +73,11 @@ export function AccountCard({
           —
         </Text>
       </div>
+      <UnstyledButton
+        aria-label={`Edit ${account.name}`}
+        className={classes.cardButton}
+        onClick={onEdit}
+      />
     </Card>
   );
 }
@@ -111,16 +101,6 @@ function FlightCreditIcon() {
     >
       <path d="M22 2 11 13" />
       <path d="M22 2 15 22l-4-9-9-4 20-7Z" />
-    </svg>
-  );
-}
-
-function MoreIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor">
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="12" r="2" />
     </svg>
   );
 }
