@@ -23,7 +23,7 @@ const account = makeAccount({
 function renderForm() {
   const onClose = vi.fn();
   renderWithProviders(
-    <EditAccountModal account={account} formKey={0} opened onClose={onClose} />,
+    <EditAccountModal account={account} opened onClose={onClose} />,
   );
   return { onClose };
 }

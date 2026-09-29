@@ -1,4 +1,5 @@
 import { Modal } from "@mantine/core";
+import { useState } from "react";
 import { AccountForm } from "./AccountForm";
 import { EDITABLE_ACCOUNT_FIELDS } from "./constants";
 import { useUpdateAccount } from "./queries";
@@ -27,15 +28,21 @@ function changedFields(
 
 export function EditAccountModal({
   account,
-  formKey,
   opened,
   onClose,
 }: {
   account: Account | null;
-  formKey: number;
   opened: boolean;
   onClose: () => void;
 }) {
+  const [wasOpened, setWasOpened] = useState(opened);
+  const [openCount, setOpenCount] = useState(0);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
+    if (opened) {
+      setOpenCount((count) => count + 1);
+    }
+  }
   const updateAccount = useUpdateAccount();
   const errors = useAccountFormErrors(updateAccount.error);
 
@@ -60,7 +67,7 @@ export function EditAccountModal({
     <Modal opened={opened} onClose={close} title="Edit account">
       {account && (
         <AccountForm
-          key={formKey}
+          key={openCount}
           initialValues={toAccountInput(account)}
           typeLocked
           submitLabel="Save changes"

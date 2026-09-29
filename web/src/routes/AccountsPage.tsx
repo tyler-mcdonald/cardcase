@@ -37,11 +37,9 @@ export function AccountsPage() {
   const [createOpened, createModal] = useDisclosure(false);
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const [editSession, setEditSession] = useState(0);
 
   function openEdit(account: Account) {
     setEditingAccount(account);
-    setEditSession((session) => session + 1);
     editModal.open();
   }
 
@@ -83,7 +81,6 @@ export function AccountsPage() {
 
       <EditAccountModal
         account={editingAccount}
-        formKey={editSession}
         opened={editOpened}
         onClose={editModal.close}
       />
