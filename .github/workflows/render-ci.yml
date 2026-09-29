@@ -1,0 +1,38 @@
+# This job downloads the Render CLI, installs it, and then validates the Render
+# blueprint to catch deployment errors. We are manually downloading the CLI using
+# version and associated SHA256 because, at the time of writing this, Render
+# doesn't have a dedicated gh actions setup.
+
+name: Render CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-blueprint:
+    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    env:
+      RENDER_CLI_VERSION: 2.28.0
+      RENDER_CLI_SHA256: 00d1ca6f3c31b1f4bc7316837b8ee24acbeb11cf372b7593c7d2c3106a1987b4
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download Render CLI
+        run: curl -fsSL -o render.zip "https://github.com/render-oss/cli/releases/download/v${RENDER_CLI_VERSION}/cli_${RENDER_CLI_VERSION}_linux_amd64.zip"
+      - name: Verify Render CLI checksum
+        run: echo "${RENDER_CLI_SHA256}  render.zip" | sha256sum --check
+      - name: Install Render CLI
+        run: |
+          unzip -q render.zip "cli_v${RENDER_CLI_VERSION}"
+          sudo install "cli_v${RENDER_CLI_VERSION}" /usr/local/bin/render
+      - name: Validate Render blueprint
+        run: render blueprints validate render.yaml --workspace "$RENDER_WORKSPACE_ID" -o text
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_WORKSPACE_ID: ${{ vars.RENDER_WORKSPACE_ID }}
