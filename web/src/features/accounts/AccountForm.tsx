@@ -9,29 +9,21 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect, useMemo } from "react";
-import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
-import { ACCOUNT_INPUT_FIELDS, ACCOUNT_TYPE_DISPLAY } from "./constants";
+import { useEffect } from "react";
+import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
-function inputFieldErrors(error: unknown): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(apiFieldErrors(error)).filter(([field]) =>
-      (ACCOUNT_INPUT_FIELDS as readonly string[]).includes(field),
-    ),
-  );
-}
-
 export function AccountForm({
   initialValues,
   typeLocked = false,
   submitLabel,
   isPending,
-  error,
+  fieldErrors,
+  formError,
   onSubmit,
   onCancel,
 }: {
@@ -39,7 +31,8 @@ export function AccountForm({
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
-  error: Error | null;
+  fieldErrors: Record<string, string>;
+  formError: string | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
 }) {
@@ -48,7 +41,6 @@ export function AccountForm({
     validate: { name: isNotEmpty("Name is required") },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
-  const fieldErrors = useMemo(() => inputFieldErrors(error), [error]);
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
@@ -97,9 +89,9 @@ export function AccountForm({
           maxLength={1000}
           {...form.getInputProps("description")}
         />
-        {error && !hasFieldErrors && (
+        {formError && (
           <Alert color="red" role="alert">
-            {apiErrorMessage(error)}
+            {formError}
           </Alert>
         )}
         <Group justify="flex-end">

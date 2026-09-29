@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { updateAccount } from "@/features/accounts/api";
-import { EditAccountForm } from "@/features/accounts/EditAccountForm";
+import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
@@ -21,12 +21,11 @@ const account = makeAccount({
 });
 
 function renderForm() {
-  const onSaved = vi.fn();
-  const onCancel = vi.fn();
+  const onClose = vi.fn();
   renderWithProviders(
-    <EditAccountForm account={account} onSaved={onSaved} onCancel={onCancel} />,
+    <EditAccountModal account={account} formKey={0} opened onClose={onClose} />,
   );
-  return { onSaved, onCancel };
+  return { onClose };
 }
 
 function nameInput() {
@@ -43,7 +42,7 @@ function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 }
 
-describe("EditAccountForm", () => {
+describe("EditAccountModal", () => {
   it("prefills the account's current values", () => {
     renderForm();
 
@@ -69,12 +68,12 @@ describe("EditAccountForm", () => {
 
   it("saves only the changed values to the account", async () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
-    const { onSaved } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.change(nameInput(), { target: { value: "  Delta voucher  " } });
     submit();
 
-    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       name: "Delta voucher",
     });
@@ -82,12 +81,12 @@ describe("EditAccountForm", () => {
 
   it("saves a new expiration date as a calendar date", async () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
-    const { onSaved } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.change(expirationInput(), { target: { value: "Jan 15, 2027" } });
     submit();
 
-    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       expires_on: "2027-01-15",
     });
@@ -95,23 +94,23 @@ describe("EditAccountForm", () => {
 
   it("saves a cleared expiration date as null", async () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
-    const { onSaved } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.change(expirationInput(), { target: { value: "" } });
     submit();
 
-    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       expires_on: null,
     });
   });
 
   it("closes without saving when nothing changed", () => {
-    const { onSaved } = renderForm();
+    const { onClose } = renderForm();
 
     submit();
 
-    expect(onSaved).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
     expect(mockedUpdateAccount).not.toHaveBeenCalled();
   });
 
@@ -119,13 +118,13 @@ describe("EditAccountForm", () => {
     mockedUpdateAccount.mockRejectedValueOnce(
       new ApiError("Request failed (400)", 400),
     );
-    const { onSaved } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
-    expect(onSaved).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("shows the API's field errors on the matching field", async () => {

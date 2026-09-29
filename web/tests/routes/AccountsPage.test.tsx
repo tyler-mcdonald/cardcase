@@ -238,6 +238,26 @@ describe("AccountsPage", () => {
     expect(mockedListAccounts).toHaveBeenCalledTimes(1);
   });
 
+  it("clears a failed save's error when the account is reopened", async () => {
+    mockedListAccounts.mockResolvedValueOnce(
+      page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400),
+    );
+
+    renderPage();
+    await screen.findByText("Amazon");
+    await renameAccount("Amazon", "Amazon gift card");
+    await screen.findByRole("alert");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    await openEditDialog("Amazon");
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
   it("shows an error state and can retry", async () => {
     mockedListAccounts.mockRejectedValueOnce(new Error("network down"));
 

@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
-import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
+import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
@@ -14,11 +14,11 @@ const mockedCreateAccount = vi.mocked(createAccount);
 
 function renderForm() {
   const onCreated = vi.fn();
-  const onCancel = vi.fn();
+  const onClose = vi.fn();
   renderWithProviders(
-    <CreateAccountForm onCreated={onCreated} onCancel={onCancel} />,
+    <CreateAccountModal opened onCreated={onCreated} onClose={onClose} />,
   );
-  return { onCreated, onCancel };
+  return { onCreated, onClose };
 }
 
 function fillField(label: RegExp, value: string) {
@@ -35,7 +35,7 @@ function submittedInput() {
   return mockedCreateAccount.mock.calls[0][0];
 }
 
-describe("CreateAccountForm", () => {
+describe("CreateAccountModal", () => {
   it("creates the account from the entered values", async () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
@@ -92,11 +92,11 @@ describe("CreateAccountForm", () => {
   });
 
   it("cancels without creating", () => {
-    const { onCancel } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(onCancel).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
 });

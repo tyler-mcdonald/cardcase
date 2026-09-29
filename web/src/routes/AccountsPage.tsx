@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Group,
-  Modal,
   Pagination,
   Stack,
   Text,
@@ -17,14 +16,9 @@ import {
   AccountCard,
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
-import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
-import { EditAccountForm } from "@/features/accounts/EditAccountForm";
-import {
-  accountsQuery,
-  isMissingPage,
-  useIsCreatingAccount,
-  useIsUpdatingAccount,
-} from "@/features/accounts/queries";
+import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
+import { EditAccountModal } from "@/features/accounts/EditAccountModal";
+import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
@@ -34,10 +28,6 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-function closeUnlessBusy(busy: boolean, close: () => void): () => void {
-  return busy ? () => {} : close;
-}
-
 export function AccountsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
@@ -45,14 +35,9 @@ export function AccountsPage() {
     accountsQuery(page),
   );
   const [createOpened, createModal] = useDisclosure(false);
-  const creatingAccount = useIsCreatingAccount();
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [editSession, setEditSession] = useState(0);
-  const latestEditingAccount =
-    data?.accounts.find((account) => account.id === editingAccount?.id) ??
-    editingAccount;
-  const updatingAccount = useIsUpdatingAccount(editingAccount?.id);
 
   function openEdit(account: Account) {
     setEditingAccount(account);
@@ -90,31 +75,18 @@ export function AccountsPage() {
         <Button onClick={createModal.open}>Add account</Button>
       </Group>
 
-      <Modal
+      <CreateAccountModal
         opened={createOpened}
-        onClose={closeUnlessBusy(creatingAccount, createModal.close)}
-        title="Add account"
-      >
-        <CreateAccountForm
-          onCreated={handleCreated}
-          onCancel={createModal.close}
-        />
-      </Modal>
+        onCreated={handleCreated}
+        onClose={createModal.close}
+      />
 
-      <Modal
+      <EditAccountModal
+        account={editingAccount}
+        formKey={editSession}
         opened={editOpened}
-        onClose={closeUnlessBusy(updatingAccount, editModal.close)}
-        title="Edit account"
-      >
-        {latestEditingAccount && (
-          <EditAccountForm
-            key={editSession}
-            account={latestEditingAccount}
-            onSaved={editModal.close}
-            onCancel={editModal.close}
-          />
-        )}
-      </Modal>
+        onClose={editModal.close}
+      />
 
       {isPending && (
         <Box className={classes.grid}>
