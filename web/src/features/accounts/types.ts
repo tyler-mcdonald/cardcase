@@ -10,10 +10,19 @@ export type Account = {
   updated_at: string;
 };
 
-export type AccountInputField = (typeof ACCOUNT_INPUT_FIELDS)[number];
+type KeysMatching<T, V> = {
+  [K in keyof T]: T[K] extends V ? K : never;
+}[keyof T];
+
+export type AccountInputFieldConfig = { editable: boolean };
+
+export type AccountInputField = keyof typeof ACCOUNT_INPUT_FIELDS;
 
 export type AccountInput = Pick<Account, AccountInputField>;
 
-export type EditableAccountField = Exclude<AccountInputField, "type">;
+export type EditableAccountField = KeysMatching<
+  typeof ACCOUNT_INPUT_FIELDS,
+  { editable: true }
+>;
 
 export type AccountUpdate = Partial<Pick<AccountInput, EditableAccountField>>;

@@ -35,6 +35,7 @@ export function CreateAccountModal({
     <Modal opened={opened} onClose={close} title="Add account">
       <AccountForm
         initialValues={INITIAL_VALUES}
+        mode="create"
         submitLabel="Add account"
         isPending={createAccount.isPending}
         {...errors}

@@ -5,7 +5,7 @@ import { ACCOUNT_INPUT_FIELDS } from "./constants";
 function inputFieldErrors(error: unknown): Record<string, string> {
   return Object.fromEntries(
     Object.entries(apiFieldErrors(error)).filter(([field]) =>
-      (ACCOUNT_INPUT_FIELDS as readonly string[]).includes(field),
+      Object.hasOwn(ACCOUNT_INPUT_FIELDS, field),
     ),
   );
 }

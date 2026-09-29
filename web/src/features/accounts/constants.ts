@@ -1,16 +1,12 @@
 import type { MantineColor } from "@mantine/core";
-import type { Account, EditableAccountField } from "./types";
+import type { Account, AccountInputFieldConfig } from "./types";
 
-export const ACCOUNT_INPUT_FIELDS = [
-  "name",
-  "type",
-  "expires_on",
-  "description",
-] as const;
-
-export const EDITABLE_ACCOUNT_FIELDS = ACCOUNT_INPUT_FIELDS.filter(
-  (field): field is EditableAccountField => field !== "type",
-);
+export const ACCOUNT_INPUT_FIELDS = {
+  name: { editable: true },
+  type: { editable: false },
+  expires_on: { editable: true },
+  description: { editable: true },
+} as const satisfies Partial<Record<keyof Account, AccountInputFieldConfig>>;
 
 type AccountTypeDisplay = {
   label: string;

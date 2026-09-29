@@ -10,8 +10,8 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { useEffect } from "react";
-import { ACCOUNT_TYPE_DISPLAY } from "./constants";
-import type { AccountInput } from "./types";
+import { ACCOUNT_INPUT_FIELDS, ACCOUNT_TYPE_DISPLAY } from "./constants";
+import type { AccountInput, AccountInputField } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
@@ -19,7 +19,7 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
 
 export function AccountForm({
   initialValues,
-  typeLocked = false,
+  mode,
   submitLabel,
   isPending,
   fieldErrors,
@@ -28,7 +28,7 @@ export function AccountForm({
   onCancel,
 }: {
   initialValues: AccountInput;
-  typeLocked?: boolean;
+  mode: "create" | "edit";
   submitLabel: string;
   isPending: boolean;
   fieldErrors: Record<string, string>;
@@ -44,6 +44,8 @@ export function AccountForm({
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
+  const isLocked = (field: AccountInputField) =>
+    mode === "edit" && !ACCOUNT_INPUT_FIELDS[field].editable;
 
   useEffect(() => {
     if (hasFieldErrors) {
@@ -59,6 +61,7 @@ export function AccountForm({
           required
           maxLength={255}
           data-autofocus
+          disabled={isLocked("name")}
           {...form.getInputProps("name")}
         />
         <Input.Wrapper
@@ -66,12 +69,14 @@ export function AccountForm({
           required
           error={typeError}
           description={
-            typeLocked ? "Type can't be changed after creation." : undefined
+            isLocked("type")
+              ? "Type can't be changed after creation."
+              : undefined
           }
         >
           <SegmentedControl
             fullWidth
-            disabled={typeLocked}
+            disabled={isLocked("type")}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
             {...typeInputProps}
@@ -82,11 +87,13 @@ export function AccountForm({
           description="Optional — leave blank if it doesn't expire."
           clearable
           valueFormat="MMM D, YYYY"
+          disabled={isLocked("expires_on")}
           {...form.getInputProps("expires_on")}
         />
         <TextInput
           label="Description"
           maxLength={1000}
+          disabled={isLocked("description")}
           {...form.getInputProps("description")}
         />
         {formError && (
