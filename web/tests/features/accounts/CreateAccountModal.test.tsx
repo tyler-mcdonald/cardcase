@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
+import { getTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -22,9 +23,7 @@ function renderForm() {
 }
 
 function fillField(label: RegExp, value: string) {
-  fireEvent.change(screen.getByRole("textbox", { name: label }), {
-    target: { value },
-  });
+  fireEvent.change(getTextbox(label), { target: { value } });
 }
 
 function submit() {

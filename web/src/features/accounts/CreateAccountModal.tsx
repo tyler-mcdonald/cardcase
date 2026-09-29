@@ -2,7 +2,6 @@ import { Modal } from "@mantine/core";
 import { AccountForm } from "./AccountForm";
 import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
-import { useAccountFormErrors } from "./use-account-form-errors";
 
 const INITIAL_VALUES: AccountInput = {
   name: "",
@@ -21,7 +20,6 @@ export function CreateAccountModal({
   onClose: () => void;
 }) {
   const createAccount = useCreateAccount();
-  const errors = useAccountFormErrors(createAccount.error);
 
   function close() {
     if (createAccount.isPending) {
@@ -38,7 +36,7 @@ export function CreateAccountModal({
         mode="create"
         submitLabel="Add account"
         isPending={createAccount.isPending}
-        {...errors}
+        error={createAccount.error}
         onSubmit={(values) =>
           createAccount.mutate(values, { onSuccess: onCreated })
         }

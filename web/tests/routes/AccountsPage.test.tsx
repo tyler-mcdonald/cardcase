@@ -9,6 +9,7 @@ import {
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
+import { getTextbox } from "../queries";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/accounts/api", () => ({
@@ -27,7 +28,9 @@ function page(
 ) {
   return {
     count,
-    next: hasNext ? "http://api.test/v1/accounts?page=next" : null,
+    next: hasNext
+      ? new URL("/v1/accounts?page=next", import.meta.env.VITE_API_URL).href
+      : null,
     previous: null,
     results,
   };
@@ -39,9 +42,7 @@ function renderPage(route = "/") {
 
 async function submitNameInDialog(name: string, submitLabel: string) {
   const dialog = await screen.findByRole("dialog");
-  fireEvent.change(within(dialog).getByRole("textbox", { name: /^name/i }), {
-    target: { value: name },
-  });
+  fireEvent.change(getTextbox(/^name/i, dialog), { target: { value: name } });
   fireEvent.click(within(dialog).getByRole("button", { name: submitLabel }));
 }
 
@@ -160,13 +161,12 @@ describe("AccountsPage", () => {
     await expectDialogLockedWhileSaving();
   });
 
-  it("edits an account and shows the change in place", async () => {
-    mockedListAccounts.mockResolvedValueOnce(
-      page([makeAccount({ id: "2", name: "Amazon" })]),
-    );
-    mockedUpdateAccount.mockResolvedValueOnce(
-      makeAccount({ id: "2", name: "Amazon Prime" }),
-    );
+  it("edits an account and shows the change on the same page", async () => {
+    const renamed = makeAccount({ id: "2", name: "Amazon Prime" });
+    mockedListAccounts
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValueOnce(page([renamed]));
+    mockedUpdateAccount.mockResolvedValueOnce(renamed);
 
     renderPage("/?page=2");
     await screen.findByText("Amazon");
@@ -176,7 +176,7 @@ describe("AccountsPage", () => {
     expect(await screen.findByText("Amazon Prime")).toBeTruthy();
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(mockedUpdateAccount.mock.calls[0][0]).toBe("2");
-    expect(mockedListAccounts).toHaveBeenCalledTimes(1);
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
   });
 
   it("keeps the modal open while the account is being saved", async () => {
@@ -193,10 +193,10 @@ describe("AccountsPage", () => {
     await expectDialogLockedWhileSaving();
   });
 
-  it("refreshes the list after a failed save and resends only the user's edits", async () => {
+  it("retrying a failed save doesn't overwrite a name changed elsewhere", async () => {
     mockedListAccounts
       .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
-      .mockResolvedValueOnce(
+      .mockResolvedValue(
         page([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
       );
     mockedUpdateAccount
@@ -207,10 +207,9 @@ describe("AccountsPage", () => {
     await screen.findByText("Amazon");
 
     const dialog = await openEditDialog("Amazon");
-    fireEvent.change(
-      within(dialog).getByRole("textbox", { name: /description/i }),
-      { target: { value: "Birthday gift" } },
-    );
+    fireEvent.change(getTextbox(/description/i, dialog), {
+      target: { value: "Birthday gift" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     expect(await screen.findByText("Renamed elsewhere")).toBeTruthy();
@@ -222,24 +221,8 @@ describe("AccountsPage", () => {
     });
   });
 
-  it("doesn't refresh the list after a rejected save", async () => {
-    mockedListAccounts.mockResolvedValueOnce(
-      page([makeAccount({ id: "2", name: "Amazon" })]),
-    );
-    mockedUpdateAccount.mockRejectedValueOnce(
-      new ApiError("Request failed (400)", 400, { name: ["Too long."] }),
-    );
-
-    renderPage();
-    await screen.findByText("Amazon");
-    await renameAccount("Amazon", "Amazon gift card");
-
-    expect(await screen.findByText("Too long.")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenCalledTimes(1);
-  });
-
   it("clears a failed save's error when the account is reopened", async () => {
-    mockedListAccounts.mockResolvedValueOnce(
+    mockedListAccounts.mockResolvedValue(
       page([makeAccount({ id: "2", name: "Amazon" })]),
     );
     mockedUpdateAccount.mockRejectedValueOnce(

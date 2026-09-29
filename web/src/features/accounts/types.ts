@@ -1,5 +1,3 @@
-import type { ACCOUNT_INPUT_FIELDS } from "./constants";
-
 export type Account = {
   id: string;
   name: string;
@@ -10,17 +8,9 @@ export type Account = {
   updated_at: string;
 };
 
-type KeysMatching<T, V> = {
-  [K in keyof T]: T[K] extends V ? K : never;
-}[keyof T];
-
-export type AccountInputField = keyof typeof ACCOUNT_INPUT_FIELDS;
-
-export type AccountInput = Pick<Account, AccountInputField>;
-
-export type EditableAccountField = KeysMatching<
-  typeof ACCOUNT_INPUT_FIELDS,
-  { editable: true }
+export type AccountInput = Pick<
+  Account,
+  "name" | "description" | "type" | "expires_on"
 >;
 
-export type AccountUpdate = Partial<Pick<AccountInput, EditableAccountField>>;
+export type AccountUpdate = Partial<Omit<AccountInput, "type">>;

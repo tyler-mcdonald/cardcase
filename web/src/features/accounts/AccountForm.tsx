@@ -10,20 +10,27 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { useEffect } from "react";
-import { ACCOUNT_INPUT_FIELDS, ACCOUNT_TYPE_DISPLAY } from "./constants";
-import type { AccountInput, AccountInputField } from "./types";
+import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
+import { ACCOUNT_TYPE_DISPLAY } from "./constants";
+import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
+
+const FORM_FIELDS = [
+  "name",
+  "type",
+  "expires_on",
+  "description",
+] as const satisfies readonly (keyof AccountInput)[];
 
 export function AccountForm({
   initialValues,
   mode,
   submitLabel,
   isPending,
-  fieldErrors,
-  formError,
+  error,
   onSubmit,
   onCancel,
 }: {
@@ -31,8 +38,7 @@ export function AccountForm({
   mode: "create" | "edit";
   submitLabel: string;
   isPending: boolean;
-  fieldErrors: Record<string, string>;
-  formError: string | null;
+  error: Error | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
 }) {
@@ -41,17 +47,16 @@ export function AccountForm({
     validate: { name: isNotEmpty("Name is required") },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
-  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
-  const isLocked = (field: AccountInputField) =>
-    mode === "edit" && !ACCOUNT_INPUT_FIELDS[field].editable;
+  const isTypeLocked = mode === "edit";
+  const hasFieldErrors =
+    Object.keys(apiFieldErrors(error, FORM_FIELDS)).length > 0;
+  const formError = error && !hasFieldErrors ? apiErrorMessage(error) : null;
 
   useEffect(() => {
-    if (hasFieldErrors) {
-      setErrors(fieldErrors);
-    }
-  }, [fieldErrors, hasFieldErrors, setErrors]);
+    setErrors(apiFieldErrors(error, FORM_FIELDS));
+  }, [error, setErrors]);
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
@@ -61,7 +66,6 @@ export function AccountForm({
           required
           maxLength={255}
           data-autofocus
-          disabled={isLocked("name")}
           {...form.getInputProps("name")}
         />
         <Input.Wrapper
@@ -69,14 +73,12 @@ export function AccountForm({
           required
           error={typeError}
           description={
-            isLocked("type")
-              ? "Type can't be changed after creation."
-              : undefined
+            isTypeLocked ? "Type can't be changed after creation." : undefined
           }
         >
           <SegmentedControl
             fullWidth
-            disabled={isLocked("type")}
+            disabled={isTypeLocked}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
             {...typeInputProps}
@@ -87,13 +89,11 @@ export function AccountForm({
           description="Optional — leave blank if it doesn't expire."
           clearable
           valueFormat="MMM D, YYYY"
-          disabled={isLocked("expires_on")}
           {...form.getInputProps("expires_on")}
         />
         <TextInput
           label="Description"
           maxLength={1000}
-          disabled={isLocked("description")}
           {...form.getInputProps("description")}
         />
         {formError && (

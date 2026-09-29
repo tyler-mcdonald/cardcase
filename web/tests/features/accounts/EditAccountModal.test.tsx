@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
+import { getTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -29,13 +30,11 @@ function renderForm() {
 }
 
 function nameInput() {
-  return screen.getByRole<HTMLInputElement>("textbox", { name: /^name/i });
+  return getTextbox(/^name/i);
 }
 
 function expirationInput() {
-  return screen.getByRole<HTMLInputElement>("textbox", {
-    name: /expiration date/i,
-  });
+  return getTextbox(/expiration date/i);
 }
 
 function submit() {
@@ -52,10 +51,7 @@ describe("EditAccountModal", () => {
         .checked,
     ).toBe(true);
     expect(expirationInput().value).toBe("Dec 31, 2026");
-    expect(
-      screen.getByRole<HTMLInputElement>("textbox", { name: /description/i })
-        .value,
-    ).toBe("Cancelled flight");
+    expect(getTextbox(/description/i).value).toBe("Cancelled flight");
   });
 
   it("locks the account type", () => {

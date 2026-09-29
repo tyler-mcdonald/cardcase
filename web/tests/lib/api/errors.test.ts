@@ -29,18 +29,31 @@ describe("apiErrorMessage", () => {
 });
 
 describe("apiFieldErrors", () => {
-  it("maps each field to its first message", () => {
+  it("maps each requested field to its first message", () => {
     const error = new ApiError("Bad Request", 400, {
       name: ["Too long.", "Invalid."],
-      detail: "Ignored.",
-      errors: [{ message: "Ignored." }],
+      non_field_errors: ["Ignored."],
     });
 
-    expect(apiFieldErrors(error)).toEqual({ name: "Too long." });
+    expect(apiFieldErrors(error, ["name", "type"])).toEqual({
+      name: "Too long.",
+    });
+  });
+
+  it("is empty for a 400 without a body", () => {
+    expect(apiFieldErrors(new ApiError("Bad Request", 400), ["name"])).toEqual(
+      {},
+    );
+  });
+
+  it("is empty for a non-400 API error", () => {
+    const error = new ApiError("Server Error", 500, { name: ["Too long."] });
+
+    expect(apiFieldErrors(error, ["name"])).toEqual({});
   });
 
   it("is empty for a non-ApiError", () => {
-    expect(apiFieldErrors(new Error("boom"))).toEqual({});
+    expect(apiFieldErrors(new Error("boom"), ["name"])).toEqual({});
   });
 });
 

@@ -14,23 +14,19 @@ export class ApiError extends Error {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+type FieldErrorsBody = Record<string, string[] | undefined>;
 
-function firstMessage(messages: unknown): string | undefined {
-  return Array.isArray(messages) && typeof messages[0] === "string"
-    ? messages[0]
-    : undefined;
-}
-
-export function apiFieldErrors(error: unknown): Record<string, string> {
-  if (!(error instanceof ApiError) || !isRecord(error.body)) {
+export function apiFieldErrors(
+  error: unknown,
+  fields: readonly string[],
+): Record<string, string> {
+  if (!hasApiStatus(error, 400)) {
     return {};
   }
+  const body = (error.body ?? {}) as FieldErrorsBody;
   return Object.fromEntries(
-    Object.entries(error.body).flatMap(([field, messages]) => {
-      const message = firstMessage(messages);
+    fields.flatMap((field) => {
+      const message = body[field]?.[0];
       return message ? [[field, message]] : [];
     }),
   );
@@ -59,6 +55,9 @@ export function isClientError(error: unknown): boolean {
   );
 }
 
-export function hasApiStatus(error: unknown, status: number): boolean {
+export function hasApiStatus(
+  error: unknown,
+  status: number,
+): error is ApiError {
   return error instanceof ApiError && error.status === status;
 }

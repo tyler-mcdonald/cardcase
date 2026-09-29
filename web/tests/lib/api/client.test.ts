@@ -8,19 +8,20 @@ afterEach(() => {
 
 describe("api client", () => {
   it("parses and returns the JSON body on success", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ id: 1, name: "Thing" }), {
-          status: 200,
-        }),
-      ),
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: 1, name: "Thing" }), {
+        status: 200,
+      }),
     );
+    vi.stubGlobal("fetch", fetchMock);
 
-    await expect(request("GET", "https://api.test/things/1")).resolves.toEqual({
+    await expect(request("GET", "/things/1")).resolves.toEqual({
       id: 1,
       name: "Thing",
     });
+    expect(fetchMock.mock.calls[0][0]).toEqual(
+      new URL("/things/1", import.meta.env.VITE_API_URL),
+    );
   });
 
   it("resolves to null without a body on a 204 response", async () => {
@@ -29,9 +30,7 @@ describe("api client", () => {
       vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
     );
 
-    await expect(
-      request("DELETE", "https://api.test/things/1"),
-    ).resolves.toBeNull();
+    await expect(request("DELETE", "/things/1")).resolves.toBeNull();
   });
 
   it("throws ApiError with status and parsed body on a non-2xx response", async () => {
@@ -44,9 +43,7 @@ describe("api client", () => {
       ),
     );
 
-    await expect(
-      request("GET", "https://api.test/things"),
-    ).rejects.toMatchObject({
+    await expect(request("GET", "/things")).rejects.toMatchObject({
       name: "ApiError",
       status: 404,
       body: { detail: "Not found" },
@@ -59,8 +56,6 @@ describe("api client", () => {
       vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
     );
 
-    await expect(
-      request("GET", "https://api.test/things"),
-    ).rejects.toBeInstanceOf(ApiError);
+    await expect(request("GET", "/things")).rejects.toBeInstanceOf(ApiError);
   });
 });
