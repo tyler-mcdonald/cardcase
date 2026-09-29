@@ -9,7 +9,7 @@ import {
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
-import { getTextbox } from "../queries";
+import { changeTextbox } from "../queries";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/accounts/api", () => ({
@@ -42,7 +42,7 @@ function renderPage(route = "/") {
 
 async function submitNameInDialog(name: string, submitLabel: string) {
   const dialog = await screen.findByRole("dialog");
-  fireEvent.change(getTextbox(/^name/i, dialog), { target: { value: name } });
+  changeTextbox(/^name/i, name, dialog);
   fireEvent.click(within(dialog).getByRole("button", { name: submitLabel }));
 }
 
@@ -207,9 +207,7 @@ describe("AccountsPage", () => {
     await screen.findByText("Amazon");
 
     const dialog = await openEditDialog("Amazon");
-    fireEvent.change(getTextbox(/description/i, dialog), {
-      target: { value: "Birthday gift" },
-    });
+    changeTextbox(/description/i, "Birthday gift", dialog);
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     expect(await screen.findByText("Renamed elsewhere")).toBeTruthy();

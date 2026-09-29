@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -27,7 +27,7 @@ const FORM_FIELDS = [
 
 export function AccountForm({
   initialValues,
-  mode,
+  typeLocked = false,
   submitLabel,
   isPending,
   error,
@@ -35,7 +35,7 @@ export function AccountForm({
   onCancel,
 }: {
   initialValues: AccountInput;
-  mode: "create" | "edit";
+  typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
   error: Error | null;
@@ -49,14 +49,16 @@ export function AccountForm({
   });
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
-  const isTypeLocked = mode === "edit";
-  const hasFieldErrors =
-    Object.keys(apiFieldErrors(error, FORM_FIELDS)).length > 0;
+  const fieldErrors = useMemo(
+    () => apiFieldErrors(error, FORM_FIELDS),
+    [error],
+  );
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const formError = error && !hasFieldErrors ? apiErrorMessage(error) : null;
 
   useEffect(() => {
-    setErrors(apiFieldErrors(error, FORM_FIELDS));
-  }, [error, setErrors]);
+    setErrors(fieldErrors);
+  }, [fieldErrors, setErrors]);
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
@@ -73,12 +75,12 @@ export function AccountForm({
           required
           error={typeError}
           description={
-            isTypeLocked ? "Type can't be changed after creation." : undefined
+            typeLocked ? "Type can't be changed after creation." : undefined
           }
         >
           <SegmentedControl
             fullWidth
-            disabled={isTypeLocked}
+            disabled={typeLocked}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
             {...typeInputProps}

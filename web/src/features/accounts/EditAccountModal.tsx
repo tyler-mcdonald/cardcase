@@ -1,5 +1,6 @@
 import { Modal } from "@mantine/core";
 import { AccountForm } from "./AccountForm";
+import { closeUnlessPending } from "./closeUnlessPending";
 import { useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 
@@ -28,11 +29,7 @@ export function EditAccountModal({
   const updateAccount = useUpdateAccount();
 
   function close() {
-    if (updateAccount.isPending) {
-      return;
-    }
-    updateAccount.reset();
-    onClose();
+    closeUnlessPending(updateAccount, onClose);
   }
 
   function save(account: Account, values: AccountInput) {
@@ -50,7 +47,7 @@ export function EditAccountModal({
         <AccountForm
           key={account.id}
           initialValues={account}
-          mode="edit"
+          typeLocked
           submitLabel="Save changes"
           isPending={updateAccount.isPending}
           error={updateAccount.error}

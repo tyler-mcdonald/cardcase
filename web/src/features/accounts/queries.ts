@@ -3,6 +3,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
 import { hasApiStatus } from "@/lib/api/errors";
 import { createAccount, listAccounts, updateAccount } from "./api";
@@ -26,6 +27,10 @@ function toAccountsResult(
   return { accounts: response.results, totalPages };
 }
 
+function invalidateAccounts(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+}
+
 export function isMissingPage(error: unknown): boolean {
   return hasApiStatus(error, 404);
 }
@@ -42,8 +47,7 @@ export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createAccount,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
+    onSuccess: () => invalidateAccounts(queryClient),
   });
 }
 
@@ -60,9 +64,8 @@ export function useUpdateAccount() {
     return updateAccount(id, changes);
   }
 
-  function refetchAccounts() {
-    return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-  }
-
-  return useMutation({ mutationFn: saveChanges, onSettled: refetchAccounts });
+  return useMutation({
+    mutationFn: saveChanges,
+    onSettled: () => invalidateAccounts(queryClient),
+  });
 }

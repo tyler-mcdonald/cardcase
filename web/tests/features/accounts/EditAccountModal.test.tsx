@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { getTextbox } from "../../queries";
+import { changeTextbox, getTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -66,7 +66,7 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    fireEvent.change(nameInput(), { target: { value: "  Delta voucher  " } });
+    changeTextbox(/^name/i, "  Delta voucher  ");
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -79,7 +79,7 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    fireEvent.change(expirationInput(), { target: { value: "Jan 15, 2027" } });
+    changeTextbox(/expiration date/i, "Jan 15, 2027");
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -92,7 +92,7 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    fireEvent.change(expirationInput(), { target: { value: "" } });
+    changeTextbox(/expiration date/i, "");
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -116,7 +116,7 @@ describe("EditAccountModal", () => {
     );
     const { onClose } = renderForm();
 
-    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
+    changeTextbox(/^name/i, "Delta voucher");
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
@@ -131,7 +131,7 @@ describe("EditAccountModal", () => {
     );
     renderForm();
 
-    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
+    changeTextbox(/^name/i, "Delta voucher");
     submit();
 
     expect(
@@ -151,7 +151,7 @@ describe("EditAccountModal", () => {
     );
     renderForm();
 
-    fireEvent.change(nameInput(), { target: { value: "Delta voucher" } });
+    changeTextbox(/^name/i, "Delta voucher");
     submit();
 
     expect(

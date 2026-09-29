@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { getTextbox } from "../../queries";
+import { changeTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -22,10 +22,6 @@ function renderForm() {
   return { onCreated, onClose };
 }
 
-function fillField(label: RegExp, value: string) {
-  fireEvent.change(getTextbox(label), { target: { value } });
-}
-
 function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Add account" }));
 }
@@ -39,9 +35,9 @@ describe("CreateAccountModal", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "  Delta credit  ");
+    changeTextbox(/^name/i, "  Delta credit  ");
     fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
-    fillField(/description/i, "Cancelled flight");
+    changeTextbox(/description/i, "Cancelled flight");
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -57,8 +53,8 @@ describe("CreateAccountModal", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "Starbucks");
-    fillField(/expiration date/i, "Dec 31, 2026");
+    changeTextbox(/^name/i, "Starbucks");
+    changeTextbox(/expiration date/i, "Dec 31, 2026");
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -70,7 +66,7 @@ describe("CreateAccountModal", () => {
   it("requires a name", async () => {
     renderForm();
 
-    fillField(/^name/i, "   ");
+    changeTextbox(/^name/i, "   ");
     submit();
 
     expect(await screen.findByText("Name is required")).toBeTruthy();
@@ -83,7 +79,7 @@ describe("CreateAccountModal", () => {
     );
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "Amazon");
+    changeTextbox(/^name/i, "Amazon");
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);

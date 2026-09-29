@@ -1,5 +1,6 @@
 import { Modal } from "@mantine/core";
 import { AccountForm } from "./AccountForm";
+import { closeUnlessPending } from "./closeUnlessPending";
 import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
 
@@ -22,18 +23,13 @@ export function CreateAccountModal({
   const createAccount = useCreateAccount();
 
   function close() {
-    if (createAccount.isPending) {
-      return;
-    }
-    createAccount.reset();
-    onClose();
+    closeUnlessPending(createAccount, onClose);
   }
 
   return (
     <Modal opened={opened} onClose={close} title="Add account">
       <AccountForm
         initialValues={INITIAL_VALUES}
-        mode="create"
         submitLabel="Add account"
         isPending={createAccount.isPending}
         error={createAccount.error}
