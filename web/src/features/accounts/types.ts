@@ -14,8 +14,6 @@ type KeysMatching<T, V> = {
   [K in keyof T]: T[K] extends V ? K : never;
 }[keyof T];
 
-export type AccountInputFieldConfig = { editable: boolean };
-
 export type AccountInputField = keyof typeof ACCOUNT_INPUT_FIELDS;
 
 export type AccountInput = Pick<Account, AccountInputField>;

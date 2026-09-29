@@ -1,5 +1,7 @@
 import type { MantineColor } from "@mantine/core";
-import type { Account, AccountInputFieldConfig } from "./types";
+import type { Account } from "./types";
+
+type AccountInputFieldConfig = { editable: boolean };
 
 export const ACCOUNT_INPUT_FIELDS = {
   name: { editable: true },

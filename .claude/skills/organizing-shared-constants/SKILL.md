@@ -1,6 +1,6 @@
 ---
 name: organizing-shared-constants
-description: Decides which file a frontend constant lives in. Use when adding or moving a constant in web/.
+description: Decides which file a frontend constant lives in. Use when adding, moving, or deriving a constant in web/.
 ---
 
 # Organizing Shared Constants
