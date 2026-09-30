@@ -65,11 +65,15 @@ export function useUpdateAccount() {
   });
 }
 
+function isAlreadyDeleted(error: unknown): boolean {
+  return hasApiStatus(error, 404) && Boolean(error.body);
+}
+
 async function deleteAccountIfPresent(id: string) {
   try {
     await deleteAccount(id);
   } catch (error) {
-    if (!hasApiStatus(error, 404)) {
+    if (!isAlreadyDeleted(error)) {
       throw error;
     }
   }
@@ -79,6 +83,8 @@ export function useDeleteAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteAccountIfPresent,
-    onSettled: () => invalidateAccounts(queryClient),
+    onSettled: () => {
+      void invalidateAccounts(queryClient);
+    },
   });
 }

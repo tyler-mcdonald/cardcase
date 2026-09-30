@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
@@ -198,6 +198,7 @@ describe("EditAccountModal", () => {
     startDelete();
 
     screen.getByRole("dialog", { name: "Delete Delta credit?" });
+    screen.getByText(/removes the account and its transaction history/i);
     expect(screen.queryByRole("textbox", { name: /^name/i })).toBeNull();
     expect(document.activeElement).toBe(
       screen.getByRole("button", { name: "Cancel" }),
@@ -217,6 +218,20 @@ describe("EditAccountModal", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it("keeps unsaved changes when deleting is cancelled", () => {
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
+    startDelete();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(
+      screen.getByRole<HTMLInputElement>("textbox", { name: /^name/i }).value,
+    ).toBe("Delta voucher");
+  });
+
   it("deletes the account once confirmed", async () => {
     mockedDeleteAccount.mockResolvedValueOnce(undefined);
     const { onClose } = renderForm();
@@ -229,7 +244,9 @@ describe("EditAccountModal", () => {
   });
 
   it("treats an account that's already gone as deleted", async () => {
-    mockedDeleteAccount.mockRejectedValueOnce(new ApiError("Not found", 404));
+    mockedDeleteAccount.mockRejectedValueOnce(
+      new ApiError("Not found", 404, { detail: "Not found." }),
+    );
     const { onClose } = renderForm();
 
     startDelete();
@@ -237,6 +254,19 @@ describe("EditAccountModal", () => {
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("shows an error when the delete request isn't handled by the API", async () => {
+    mockedDeleteAccount.mockRejectedValueOnce(
+      new ApiError("Not found", 404, null),
+    );
+    const { onClose } = renderForm();
+
+    startDelete();
+    confirmDelete();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("shows an error when the account can't be deleted", async () => {
@@ -320,7 +350,8 @@ describe("EditAccountModal", () => {
     );
   });
 
-  it("closes from the confirmation and reopens on the form", () => {
+  it("closes from the confirmation and reopens on the form", async () => {
+    vi.useFakeTimers();
     const { onClose, setOpened } = renderForm();
 
     startDelete();
@@ -329,8 +360,26 @@ describe("EditAccountModal", () => {
     expect(onClose).toHaveBeenCalled();
 
     setOpened(false);
+    await act(() => vi.runAllTimersAsync());
     setOpened(true);
+    vi.useRealTimers();
 
     screen.getByRole("textbox", { name: /^name/i });
+  });
+
+  it("opens another account on the form, not its confirmation", () => {
+    const onClose = vi.fn();
+    const other = makeAccount({ id: "43", name: "United credit" });
+    const { rerender } = renderWithProviders(
+      <EditAccountModal account={account} opened onClose={onClose} />,
+    );
+
+    startDelete();
+    rerender(
+      <EditAccountModal account={account} opened={false} onClose={onClose} />,
+    );
+    rerender(<EditAccountModal account={other} opened onClose={onClose} />);
+
+    screen.getByRole("dialog", { name: "Edit account" });
   });
 });

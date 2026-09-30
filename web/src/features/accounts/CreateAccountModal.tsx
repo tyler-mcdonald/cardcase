@@ -21,7 +21,7 @@ export function CreateAccountModal({
   onClose: () => void;
 }) {
   const createAccount = useCreateAccount();
-  const close = useGuardedClose(createAccount, onClose);
+  const close = useGuardedClose([createAccount], onClose);
 
   return (
     <Modal opened={opened} onClose={close} title="Add account">

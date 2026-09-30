@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Alert, Button, Group, Modal, Stack } from "@mantine/core";
+import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { AccountForm } from "./AccountForm";
+import { FormError } from "./FormError";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useGuardedClose } from "./use-guarded-close";
@@ -30,26 +31,12 @@ export function EditAccountModal({
 }) {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [wasOpened, setWasOpened] = useState(opened);
-
-  if (opened !== wasOpened) {
-    setWasOpened(opened);
-    if (opened) {
-      setConfirmingDelete(false);
-    }
-  }
-
-  const close = useGuardedClose(
-    {
-      isPending: updateAccount.isPending || deleteAccount.isPending,
-      reset: () => {
-        updateAccount.reset();
-        deleteAccount.reset();
-      },
-    },
-    onClose,
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
   );
+  const confirmingDelete =
+    account !== null && confirmingDeleteId === account.id;
+  const close = useGuardedClose([updateAccount, deleteAccount], onClose);
 
   function save(account: Account, values: AccountInput) {
     const changes = editedFields(account, values);
@@ -60,46 +47,54 @@ export function EditAccountModal({
     updateAccount.mutate({ id: account.id, changes }, { onSuccess: onClose });
   }
 
-  function startDelete() {
+  function startDelete(account: Account) {
     updateAccount.reset();
-    setConfirmingDelete(true);
+    setConfirmingDeleteId(account.id);
   }
 
   function cancelDelete() {
     deleteAccount.reset();
-    setConfirmingDelete(false);
+    setConfirmingDeleteId(null);
   }
 
   function confirmDelete(account: Account) {
     deleteAccount.mutate(account.id, { onSuccess: onClose });
   }
 
-  const title =
-    account && confirmingDelete ? `Delete ${account.name}?` : "Edit account";
+  const title = confirmingDelete ? `Delete ${account.name}?` : "Edit account";
 
   return (
-    <Modal opened={opened} onClose={close} title={title}>
-      {account &&
-        (confirmingDelete ? (
-          <DeleteConfirmation
-            isPending={deleteAccount.isPending}
-            error={deleteAccount.error}
-            onConfirm={() => confirmDelete(account)}
-            onCancel={cancelDelete}
-          />
-        ) : (
-          <AccountForm
-            key={account.id}
-            initialValues={account}
-            typeLocked
-            submitLabel="Save changes"
-            isPending={updateAccount.isPending}
-            error={updateAccount.error}
-            onSubmit={(values) => save(account, values)}
-            onCancel={close}
-            onDelete={startDelete}
-          />
-        ))}
+    <Modal
+      opened={opened}
+      onClose={close}
+      onExitTransitionEnd={() => setConfirmingDeleteId(null)}
+      title={title}
+    >
+      {account && (
+        <>
+          {confirmingDelete && (
+            <DeleteConfirmation
+              isPending={deleteAccount.isPending}
+              error={deleteAccount.error}
+              onConfirm={() => confirmDelete(account)}
+              onCancel={cancelDelete}
+            />
+          )}
+          <div hidden={confirmingDelete}>
+            <AccountForm
+              key={account.id}
+              initialValues={account}
+              typeLocked
+              submitLabel="Save changes"
+              isPending={updateAccount.isPending}
+              error={updateAccount.error}
+              onSubmit={(values) => save(account, values)}
+              onCancel={close}
+              onDelete={() => startDelete(account)}
+            />
+          </div>
+        </>
+      )}
     </Modal>
   );
 }
@@ -117,11 +112,11 @@ function DeleteConfirmation({
 }) {
   return (
     <Stack>
-      {error && (
-        <Alert color="red" role="alert">
-          {apiErrorMessage(error)}
-        </Alert>
-      )}
+      <Text size="sm">
+        This removes the account and its transaction history. You can't undo
+        this.
+      </Text>
+      {error && <FormError message={apiErrorMessage(error)} />}
       <Group justify="flex-end">
         <Button
           variant="default"

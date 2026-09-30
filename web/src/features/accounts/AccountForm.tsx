@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   Group,
   Input,
@@ -12,6 +11,7 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { useEffect, useMemo } from "react";
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
+import { FormError } from "./FormError";
 import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
@@ -100,11 +100,7 @@ export function AccountForm({
           maxLength={1000}
           {...form.getInputProps("description")}
         />
-        {formError && (
-          <Alert color="red" role="alert">
-            {formError}
-          </Alert>
-        )}
+        {formError && <FormError message={formError} />}
         <Group justify={onDelete ? "space-between" : "flex-end"}>
           {onDelete && (
             <Button
