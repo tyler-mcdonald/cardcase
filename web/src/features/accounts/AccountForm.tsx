@@ -8,8 +8,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect, useMemo } from "react";
-import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
+import { useEffect } from "react";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import { FormError } from "./FormError";
 import type { AccountInput } from "./types";
@@ -18,19 +17,13 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
-const FORM_FIELDS = [
-  "name",
-  "type",
-  "expires_on",
-  "description",
-] as const satisfies readonly (keyof AccountInput)[];
-
 export function AccountForm({
   initialValues,
   typeLocked = false,
   submitLabel,
   isPending,
-  error,
+  fieldErrors,
+  formError,
   onSubmit,
   onCancel,
   onDelete,
@@ -39,7 +32,8 @@ export function AccountForm({
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
-  error: Error | null;
+  fieldErrors: Record<string, string>;
+  formError: string | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
   onDelete?: () => void;
@@ -51,12 +45,6 @@ export function AccountForm({
   });
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
-  const fieldErrors = useMemo(
-    () => apiFieldErrors(error, FORM_FIELDS),
-    [error],
-  );
-  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const formError = error && !hasFieldErrors ? apiErrorMessage(error) : null;
 
   useEffect(() => {
     setErrors(fieldErrors);

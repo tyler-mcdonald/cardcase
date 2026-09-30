@@ -5,6 +5,7 @@ import { AccountForm } from "./AccountForm";
 import { FormError } from "./FormError";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
+import { useAccountFormErrors } from "./use-account-form-errors";
 import { useGuardedClose } from "./use-guarded-close";
 
 const EDITABLE_FIELDS = [
@@ -37,6 +38,7 @@ export function EditAccountModal({
   const confirmingDelete =
     account !== null && confirmingDeleteId === account.id;
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
+  const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
 
   function save(account: Account, values: AccountInput) {
     const changes = editedFields(account, values);
@@ -75,7 +77,9 @@ export function EditAccountModal({
           {confirmingDelete && (
             <DeleteConfirmation
               isPending={deleteAccount.isPending}
-              error={deleteAccount.error}
+              errorMessage={
+                deleteAccount.error && apiErrorMessage(deleteAccount.error)
+              }
               onConfirm={() => confirmDelete(account)}
               onCancel={cancelDelete}
             />
@@ -87,7 +91,8 @@ export function EditAccountModal({
               typeLocked
               submitLabel="Save changes"
               isPending={updateAccount.isPending}
-              error={updateAccount.error}
+              fieldErrors={fieldErrors}
+              formError={formError}
               onSubmit={(values) => save(account, values)}
               onCancel={close}
               onDelete={() => startDelete(account)}
@@ -101,12 +106,12 @@ export function EditAccountModal({
 
 function DeleteConfirmation({
   isPending,
-  error,
+  errorMessage,
   onConfirm,
   onCancel,
 }: {
   isPending: boolean;
-  error: Error | null;
+  errorMessage: string | null;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -116,7 +121,7 @@ function DeleteConfirmation({
         This removes the account and its transaction history. You can't undo
         this.
       </Text>
-      {error && <FormError message={apiErrorMessage(error)} />}
+      {errorMessage && <FormError message={errorMessage} />}
       <Group justify="flex-end">
         <Button
           variant="default"
