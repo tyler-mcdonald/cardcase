@@ -1,3 +1,7 @@
+// Turns an account form mutation error into what AccountForm displays: a
+// message under each field the API rejected, or a single form-level message
+// when the error isn't about a specific field.
+
 import { useMemo } from "react";
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
 import type { AccountInput } from "./types";
