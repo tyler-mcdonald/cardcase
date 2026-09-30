@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Any
 
 from allauth.account.models import EmailAddress
@@ -7,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.utils import timezone
 
 from accounts.models import Account
+from devtools.seed_data import sample_accounts
 from users.models import User
 
 
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         user = User.objects.filter(email=email).first() or self._create_user(email)
 
         created_count = 0
-        for name, defaults in self._accounts().items():
+        for name, defaults in sample_accounts(timezone.localdate()).items():
             _, created = Account.objects.get_or_create(
                 user=user, name=name, defaults=defaults
             )
@@ -38,20 +38,3 @@ class Command(BaseCommand):
         user = User.objects.create_user(email)
         EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
         return user
-
-    def _accounts(self) -> dict[str, dict[str, Any]]:
-        today = timezone.localdate()
-        return {
-            "Amazon": {
-                "type": Account.Type.GIFT_CARD,
-                "description": "Birthday gift from Mom",
-            },
-            "Delta": {
-                "type": Account.Type.FLIGHT_CREDIT,
-                "expires_on": today + timedelta(days=365),
-            },
-            "Starbucks": {
-                "type": Account.Type.GIFT_CARD,
-                "expires_on": today - timedelta(days=30),
-            },
-        }
