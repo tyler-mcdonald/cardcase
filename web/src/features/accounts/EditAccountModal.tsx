@@ -32,18 +32,14 @@ export function EditAccountModal({
 }) {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
-    null,
-  );
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [wasOpened, setWasOpened] = useState(opened);
   if (opened !== wasOpened) {
     setWasOpened(opened);
     if (opened) {
-      setConfirmingDeleteId(null);
+      setConfirmingDelete(false);
     }
   }
-  const confirmingDelete =
-    account !== null && confirmingDeleteId === account.id;
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
   const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
 
@@ -56,21 +52,22 @@ export function EditAccountModal({
     updateAccount.mutate({ id: account.id, changes }, { onSuccess: onClose });
   }
 
-  function startDelete(account: Account) {
+  function startDelete() {
     updateAccount.reset();
-    setConfirmingDeleteId(account.id);
+    setConfirmingDelete(true);
   }
 
   function cancelDelete() {
     deleteAccount.reset();
-    setConfirmingDeleteId(null);
+    setConfirmingDelete(false);
   }
 
   function confirmDelete(account: Account) {
     deleteAccount.mutate(account.id, { onSuccess: onClose });
   }
 
-  const title = confirmingDelete ? `Delete ${account.name}?` : "Edit account";
+  const title =
+    confirmingDelete && account ? `Delete ${account.name}?` : "Edit account";
 
   return (
     <Modal opened={opened} onClose={close} title={title}>
@@ -101,7 +98,7 @@ export function EditAccountModal({
                 <Button
                   variant="light"
                   color="red"
-                  onClick={() => startDelete(account)}
+                  onClick={startDelete}
                   disabled={updateAccount.isPending}
                 >
                   Delete account

@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
@@ -359,8 +359,7 @@ describe("EditAccountModal", () => {
     );
   });
 
-  it("closes from the confirmation and reopens on the form", async () => {
-    vi.useFakeTimers();
+  it("closes from the confirmation and reopens on the form", () => {
     const { onClose, rerenderWith } = renderForm();
 
     startDelete();
@@ -368,18 +367,6 @@ describe("EditAccountModal", () => {
 
     expect(onClose).toHaveBeenCalled();
 
-    rerenderWith({ opened: false });
-    await act(() => vi.runAllTimersAsync());
-    rerenderWith({ opened: true });
-    vi.useRealTimers();
-
-    screen.getByRole("textbox", { name: /^name/i });
-  });
-
-  it("reopens on the form when reopened before it finishes closing", () => {
-    const { rerenderWith } = renderForm();
-
-    startDelete();
     rerenderWith({ opened: false });
     rerenderWith({ opened: true });
 

@@ -83,8 +83,6 @@ export function useDeleteAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteAccountIfPresent,
-    onSettled: () => {
-      void invalidateAccounts(queryClient);
-    },
+    onSettled: () => invalidateAccounts(queryClient),
   });
 }
