@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
+import type { Account } from "@/features/accounts/types";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
@@ -27,12 +28,18 @@ function renderForm() {
   const { rerender } = renderWithProviders(
     <EditAccountModal account={account} opened onClose={onClose} />,
   );
-  function setOpened(opened: boolean) {
+  function rerenderWith({
+    opened,
+    account: shown = account,
+  }: {
+    opened: boolean;
+    account?: Account;
+  }) {
     rerender(
-      <EditAccountModal account={account} opened={opened} onClose={onClose} />,
+      <EditAccountModal account={shown} opened={opened} onClose={onClose} />,
     );
   }
-  return { onClose, setOpened };
+  return { onClose, rerenderWith };
 }
 
 function submit() {
@@ -352,33 +359,28 @@ describe("EditAccountModal", () => {
 
   it("closes from the confirmation and reopens on the form", async () => {
     vi.useFakeTimers();
-    const { onClose, setOpened } = renderForm();
+    const { onClose, rerenderWith } = renderForm();
 
     startDelete();
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
 
     expect(onClose).toHaveBeenCalled();
 
-    setOpened(false);
+    rerenderWith({ opened: false });
     await act(() => vi.runAllTimersAsync());
-    setOpened(true);
+    rerenderWith({ opened: true });
     vi.useRealTimers();
 
     screen.getByRole("textbox", { name: /^name/i });
   });
 
   it("opens another account on the form, not its confirmation", () => {
-    const onClose = vi.fn();
     const other = makeAccount({ id: "43", name: "United credit" });
-    const { rerender } = renderWithProviders(
-      <EditAccountModal account={account} opened onClose={onClose} />,
-    );
+    const { rerenderWith } = renderForm();
 
     startDelete();
-    rerender(
-      <EditAccountModal account={account} opened={false} onClose={onClose} />,
-    );
-    rerender(<EditAccountModal account={other} opened onClose={onClose} />);
+    rerenderWith({ opened: false });
+    rerenderWith({ account: other, opened: true });
 
     screen.getByRole("dialog", { name: "Edit account" });
   });

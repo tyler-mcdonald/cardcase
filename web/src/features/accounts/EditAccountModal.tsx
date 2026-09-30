@@ -95,7 +95,16 @@ export function EditAccountModal({
               formError={formError}
               onSubmit={(values) => save(account, values)}
               onCancel={close}
-              onDelete={() => startDelete(account)}
+              secondaryAction={
+                <Button
+                  variant="light"
+                  color="red"
+                  onClick={() => startDelete(account)}
+                  disabled={updateAccount.isPending}
+                >
+                  Delete account
+                </Button>
+              }
             />
           </div>
         </>

@@ -8,7 +8,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import { FormError } from "./FormError";
 import type { AccountInput } from "./types";
@@ -26,7 +26,7 @@ export function AccountForm({
   formError,
   onSubmit,
   onCancel,
-  onDelete,
+  secondaryAction,
 }: {
   initialValues: AccountInput;
   typeLocked?: boolean;
@@ -36,7 +36,7 @@ export function AccountForm({
   formError: string | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
-  onDelete?: () => void;
+  secondaryAction?: ReactNode;
 }) {
   const form = useForm<AccountInput>({
     initialValues,
@@ -89,17 +89,8 @@ export function AccountForm({
           {...form.getInputProps("description")}
         />
         {formError && <FormError message={formError} />}
-        <Group justify={onDelete ? "space-between" : "flex-end"}>
-          {onDelete && (
-            <Button
-              variant="light"
-              color="red"
-              onClick={onDelete}
-              disabled={isPending}
-            >
-              Delete account
-            </Button>
-          )}
+        <Group justify={secondaryAction ? "space-between" : "flex-end"}>
+          {secondaryAction}
           <Group>
             <Button variant="default" onClick={onCancel} disabled={isPending}>
               Cancel
