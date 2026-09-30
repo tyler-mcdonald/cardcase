@@ -270,6 +270,14 @@ describe("EditAccountModal", () => {
       expect(onClose).not.toHaveBeenCalled();
     });
 
+    it("returns focus to the delete button when deleting is cancelled", () => {
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+      expect(document.activeElement).toBe(
+        screen.getByRole("button", { name: "Delete account" }),
+      );
+    });
+
     it("deletes the account once confirmed", async () => {
       mockedDeleteAccount.mockResolvedValueOnce(undefined);
 
@@ -293,6 +301,19 @@ describe("EditAccountModal", () => {
     it("shows an error when the delete request isn't handled by the API", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
         new ApiError("Not found", 404, null),
+      );
+
+      confirmDelete();
+
+      expect((await screen.findByRole("alert")).textContent).toBe(
+        GENERIC_ERROR,
+      );
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it("shows an error on a not-found response that isn't the API's", async () => {
+      mockedDeleteAccount.mockRejectedValueOnce(
+        new ApiError("Not found", 404, { message: "Route not found" }),
       );
 
       confirmDelete();
@@ -327,7 +348,7 @@ describe("EditAccountModal", () => {
       fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
       startDelete();
 
-      expect(screen.queryByRole("alert")).toBeNull();
+      await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     });
 
     it("can't be closed while the account is being deleted", async () => {
@@ -367,6 +388,16 @@ describe("EditAccountModal", () => {
 
     startDelete();
     rerenderWith({ opened: false });
+    rerenderWith({ account: other, opened: true });
+
+    screen.getByRole("dialog", { name: "Edit account" });
+  });
+
+  it("shows the form when the account changes while open", () => {
+    const other = makeAccount({ id: "43", name: "United credit" });
+    const { rerenderWith } = renderForm();
+
+    startDelete();
     rerenderWith({ account: other, opened: true });
 
     screen.getByRole("dialog", { name: "Edit account" });

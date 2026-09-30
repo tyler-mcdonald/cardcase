@@ -1,11 +1,12 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { AccountForm } from "./AccountForm";
-import { FormError } from "./FormError";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
-import { useDeleteConfirmation } from "./use-delete-confirmation";
 import { useGuardedClose } from "./use-guarded-close";
 
 const EDITABLE_FIELDS = [
@@ -33,10 +34,44 @@ export function EditAccountModal({
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
-  const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
-  const [confirmingDelete, setConfirmingDelete] = useDeleteConfirmation(opened);
 
-  function save(account: Account, values: AccountInput) {
+  return (
+    <Modal.Root opened={opened} onClose={close}>
+      <Modal.Overlay />
+      <Modal.Content>
+        {account && (
+          <EditAccountContent
+            key={account.id}
+            account={account}
+            updateAccount={updateAccount}
+            deleteAccount={deleteAccount}
+            close={close}
+            onClose={onClose}
+          />
+        )}
+      </Modal.Content>
+    </Modal.Root>
+  );
+}
+
+function EditAccountContent({
+  account,
+  updateAccount,
+  deleteAccount,
+  close,
+  onClose,
+}: {
+  account: Account;
+  updateAccount: ReturnType<typeof useUpdateAccount>;
+  deleteAccount: ReturnType<typeof useDeleteAccount>;
+  close: () => void;
+  onClose: () => void;
+}) {
+  const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+
+  function save(values: AccountInput) {
     const changes = editedFields(account, values);
     if (Object.keys(changes).length === 0) {
       close();
@@ -52,56 +87,56 @@ export function EditAccountModal({
 
   function cancelDelete() {
     deleteAccount.reset();
-    setConfirmingDelete(false);
+    flushSync(() => setConfirmingDelete(false));
+    deleteButtonRef.current?.focus();
   }
-
-  function confirmDelete(account: Account) {
-    deleteAccount.mutate(account.id, { onSuccess: onClose });
-  }
-
-  const title =
-    confirmingDelete && account ? `Delete ${account.name}?` : "Edit account";
 
   return (
-    <Modal opened={opened} onClose={close} title={title}>
-      {account && (
-        <>
-          {confirmingDelete && (
-            <DeleteConfirmation
-              isPending={deleteAccount.isPending}
-              errorMessage={
-                deleteAccount.error && apiErrorMessage(deleteAccount.error)
-              }
-              onConfirm={() => confirmDelete(account)}
-              onCancel={cancelDelete}
-            />
-          )}
-          <div hidden={confirmingDelete}>
-            <AccountForm
-              key={account.id}
-              initialValues={account}
-              typeLocked
-              submitLabel="Save changes"
-              isPending={updateAccount.isPending}
-              fieldErrors={fieldErrors}
-              formError={formError}
-              onSubmit={(values) => save(account, values)}
-              onCancel={close}
-              secondaryAction={
-                <Button
-                  variant="light"
-                  color="red"
-                  onClick={startDelete}
-                  disabled={updateAccount.isPending}
-                >
-                  Delete account
-                </Button>
-              }
-            />
-          </div>
-        </>
-      )}
-    </Modal>
+    <>
+      <Modal.Header>
+        <Modal.Title>
+          {confirmingDelete ? `Delete ${account.name}?` : "Edit account"}
+        </Modal.Title>
+        <Modal.CloseButton />
+      </Modal.Header>
+      <Modal.Body>
+        {confirmingDelete && (
+          <DeleteConfirmation
+            isPending={deleteAccount.isPending}
+            errorMessage={
+              deleteAccount.error && apiErrorMessage(deleteAccount.error)
+            }
+            onConfirm={() =>
+              deleteAccount.mutate(account.id, { onSuccess: onClose })
+            }
+            onCancel={cancelDelete}
+          />
+        )}
+        <div hidden={confirmingDelete}>
+          <AccountForm
+            initialValues={account}
+            typeLocked
+            submitLabel="Save changes"
+            isPending={updateAccount.isPending}
+            fieldErrors={fieldErrors}
+            formError={formError}
+            onSubmit={save}
+            onCancel={close}
+            secondaryAction={
+              <Button
+                ref={deleteButtonRef}
+                variant="light"
+                color="red"
+                onClick={startDelete}
+                disabled={updateAccount.isPending}
+              >
+                Delete account
+              </Button>
+            }
+          />
+        </div>
+      </Modal.Body>
+    </>
   );
 }
 

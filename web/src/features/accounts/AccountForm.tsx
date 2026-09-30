@@ -9,8 +9,8 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
+import { FormError } from "@/components/FormError";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
-import { FormError } from "./FormError";
 import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
