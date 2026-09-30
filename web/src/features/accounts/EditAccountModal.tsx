@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { AccountForm } from "./AccountForm";
@@ -6,6 +5,7 @@ import { FormError } from "./FormError";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
+import { useDeleteConfirmation } from "./use-delete-confirmation";
 import { useGuardedClose } from "./use-guarded-close";
 
 const EDITABLE_FIELDS = [
@@ -32,16 +32,9 @@ export function EditAccountModal({
 }) {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [wasOpened, setWasOpened] = useState(opened);
-  if (opened !== wasOpened) {
-    setWasOpened(opened);
-    if (opened) {
-      setConfirmingDelete(false);
-    }
-  }
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
   const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
+  const [confirmingDelete, setConfirmingDelete] = useDeleteConfirmation(opened);
 
   function save(account: Account, values: AccountInput) {
     const changes = editedFields(account, values);
