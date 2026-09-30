@@ -1,6 +1,5 @@
-import { Modal } from "@mantine/core";
 import { AccountForm } from "./AccountForm";
-import { closeUnlessPending } from "./closeUnlessPending";
+import { AccountFormModal } from "./AccountFormModal";
 import { useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 
@@ -28,11 +27,7 @@ export function EditAccountModal({
 }) {
   const updateAccount = useUpdateAccount();
 
-  function close() {
-    closeUnlessPending(updateAccount, onClose);
-  }
-
-  function save(account: Account, values: AccountInput) {
+  function save(account: Account, values: AccountInput, close: () => void) {
     const changes = editedFields(account, values);
     if (Object.keys(changes).length === 0) {
       close();
@@ -42,19 +37,26 @@ export function EditAccountModal({
   }
 
   return (
-    <Modal opened={opened} onClose={close} title="Edit account">
-      {account && (
-        <AccountForm
-          key={account.id}
-          initialValues={account}
-          typeLocked
-          submitLabel="Save changes"
-          isPending={updateAccount.isPending}
-          error={updateAccount.error}
-          onSubmit={(values) => save(account, values)}
-          onCancel={close}
-        />
-      )}
-    </Modal>
+    <AccountFormModal
+      title="Edit account"
+      opened={opened}
+      onClose={onClose}
+      mutation={updateAccount}
+    >
+      {(close) =>
+        account && (
+          <AccountForm
+            key={account.id}
+            initialValues={account}
+            typeLocked
+            submitLabel="Save changes"
+            isPending={updateAccount.isPending}
+            error={updateAccount.error}
+            onSubmit={(values) => save(account, values, close)}
+            onCancel={close}
+          />
+        )
+      }
+    </AccountFormModal>
   );
 }
