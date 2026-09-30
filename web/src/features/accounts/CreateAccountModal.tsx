@@ -2,6 +2,7 @@ import { Modal } from "@mantine/core";
 import { AccountForm } from "./AccountForm";
 import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
+import { useAccountFormErrors } from "./use-account-form-errors";
 import { useGuardedClose } from "./use-guarded-close";
 
 const INITIAL_VALUES: AccountInput = {
@@ -21,7 +22,8 @@ export function CreateAccountModal({
   onClose: () => void;
 }) {
   const createAccount = useCreateAccount();
-  const close = useGuardedClose(createAccount, onClose);
+  const close = useGuardedClose([createAccount], onClose);
+  const { fieldErrors, formError } = useAccountFormErrors(createAccount.error);
 
   return (
     <Modal opened={opened} onClose={close} title="Add account">
@@ -29,7 +31,8 @@ export function CreateAccountModal({
         initialValues={INITIAL_VALUES}
         submitLabel="Add account"
         isPending={createAccount.isPending}
-        error={createAccount.error}
+        fieldErrors={fieldErrors}
+        formError={formError}
         onSubmit={(values) =>
           createAccount.mutate(values, { onSuccess: onCreated })
         }

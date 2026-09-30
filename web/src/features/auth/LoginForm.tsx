@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import {
-  Alert,
   Button,
   Paper,
   PinInput,
@@ -9,6 +8,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
 
@@ -54,11 +54,7 @@ export function LoginForm() {
             submitting={submitting}
           />
         )}
-        {error && (
-          <Alert color="red" mt="md" role="alert">
-            {apiErrorMessage(error)}
-          </Alert>
-        )}
+        {error && <FormError mt="md" message={apiErrorMessage(error)} />}
       </Paper>
     </main>
   );

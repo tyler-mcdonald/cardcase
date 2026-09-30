@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   Group,
   Input,
@@ -9,8 +8,8 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useEffect, useMemo } from "react";
-import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
+import { type ReactNode, useEffect } from "react";
+import { FormError } from "@/components/FormError";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
@@ -18,29 +17,26 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
-const FORM_FIELDS = [
-  "name",
-  "type",
-  "expires_on",
-  "description",
-] as const satisfies readonly (keyof AccountInput)[];
-
 export function AccountForm({
   initialValues,
   typeLocked = false,
   submitLabel,
   isPending,
-  error,
+  fieldErrors,
+  formError,
   onSubmit,
   onCancel,
+  secondaryAction,
 }: {
   initialValues: AccountInput;
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
-  error: Error | null;
+  fieldErrors: Record<string, string>;
+  formError: string | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
+  secondaryAction?: ReactNode;
 }) {
   const form = useForm<AccountInput>({
     initialValues,
@@ -49,12 +45,6 @@ export function AccountForm({
   });
   const { setErrors } = form;
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
-  const fieldErrors = useMemo(
-    () => apiFieldErrors(error, FORM_FIELDS),
-    [error],
-  );
-  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const formError = error && !hasFieldErrors ? apiErrorMessage(error) : null;
 
   useEffect(() => {
     setErrors(fieldErrors);
@@ -98,18 +88,17 @@ export function AccountForm({
           maxLength={1000}
           {...form.getInputProps("description")}
         />
-        {formError && (
-          <Alert color="red" role="alert">
-            {formError}
-          </Alert>
-        )}
-        <Group justify="flex-end">
-          <Button variant="default" onClick={onCancel} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button type="submit" loading={isPending}>
-            {submitLabel}
-          </Button>
+        {formError && <FormError message={formError} />}
+        <Group justify={secondaryAction ? "space-between" : "flex-end"}>
+          {secondaryAction}
+          <Group>
+            <Button variant="default" onClick={onCancel} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={isPending}>
+              {submitLabel}
+            </Button>
+          </Group>
         </Group>
       </Stack>
     </form>

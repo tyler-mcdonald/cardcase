@@ -19,3 +19,7 @@ export function updateAccount(id: string, input: AccountUpdate) {
     body: JSON.stringify(input),
   });
 }
+
+export function deleteAccount(id: string) {
+  return request<void>("DELETE", `${ACCOUNTS_PATH}/${id}`);
+}

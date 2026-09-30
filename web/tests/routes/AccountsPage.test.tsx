@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
 import {
   createAccount,
+  deleteAccount,
   listAccounts,
   updateAccount,
 } from "@/features/accounts/api";
@@ -15,11 +16,13 @@ vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
   createAccount: vi.fn(),
   updateAccount: vi.fn(),
+  deleteAccount: vi.fn(),
 }));
 
 const mockedListAccounts = vi.mocked(listAccounts);
 const mockedCreateAccount = vi.mocked(createAccount);
 const mockedUpdateAccount = vi.mocked(updateAccount);
+const mockedDeleteAccount = vi.mocked(deleteAccount);
 
 function page(
   results: Account[],
@@ -60,6 +63,12 @@ async function openEditDialog(accountName: string) {
 async function renameAccount(currentName: string, newName: string) {
   await openEditDialog(currentName);
   await submitNameInDialog(newName, "Save changes");
+}
+
+async function deleteAccountNamed(name: string) {
+  await openEditDialog(name);
+  fireEvent.click(screen.getByRole("button", { name: "Delete account" }));
+  fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 }
 
 async function expectDialogLockedWhileSaving() {
@@ -241,6 +250,53 @@ describe("AccountsPage", () => {
     await openEditDialog("Amazon");
 
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("deletes an account and removes it from the list", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(
+        page([
+          makeAccount({ id: "1", name: "Starbucks" }),
+          makeAccount({ id: "2", name: "Amazon" }),
+        ]),
+      )
+      .mockResolvedValueOnce(
+        page([makeAccount({ id: "1", name: "Starbucks" })]),
+      );
+    mockedDeleteAccount.mockResolvedValueOnce(undefined);
+
+    renderPage();
+    await screen.findByText("Amazon");
+
+    await deleteAccountNamed("Amazon");
+
+    await waitFor(() => expect(screen.queryByText("Amazon")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByText("Starbucks")).toBeTruthy();
+    expect(mockedDeleteAccount).toHaveBeenCalledWith("2");
+    expect(mockedListAccounts).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns to the first page after deleting the last account on a page", async () => {
+    mockedListAccounts.mockImplementation(async (requestedPage) => {
+      if (requestedPage === 1) {
+        return page([makeAccount({ id: "1", name: "Starbucks" })]);
+      }
+      if (mockedDeleteAccount.mock.calls.length > 0) {
+        throw new ApiError("Not found", 404);
+      }
+      return page([makeAccount({ id: "2", name: "Amazon" })]);
+    });
+    mockedDeleteAccount.mockResolvedValueOnce(undefined);
+
+    renderPage("/?page=2");
+    await screen.findByText("Amazon");
+
+    await deleteAccountNamed("Amazon");
+
+    expect(await screen.findByText("Starbucks")).toBeTruthy();
+    expect(screen.queryByText("Amazon")).toBeNull();
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
   });
 
   it("shows an error state and can retry", async () => {

@@ -6,7 +6,12 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { hasApiStatus } from "@/lib/api/errors";
-import { createAccount, listAccounts, updateAccount } from "./api";
+import {
+  createAccount,
+  deleteAccount,
+  listAccounts,
+  updateAccount,
+} from "./api";
 import type { Paginated } from "@/lib/api/types";
 import type { Account, AccountUpdate } from "./types";
 
@@ -57,5 +62,33 @@ export function useUpdateAccount() {
     mutationFn: ({ id, changes }: { id: string; changes: AccountUpdate }) =>
       updateAccount(id, changes),
     onSettled: () => invalidateAccounts(queryClient),
+  });
+}
+
+function isAlreadyDeleted(error: unknown): boolean {
+  if (!hasApiStatus(error, 404)) {
+    return false;
+  }
+  const body = error.body as { detail?: unknown } | null;
+  return typeof body?.detail === "string";
+}
+
+async function deleteAccountIfPresent(id: string) {
+  try {
+    await deleteAccount(id);
+  } catch (error) {
+    if (!isAlreadyDeleted(error)) {
+      throw error;
+    }
+  }
+}
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAccountIfPresent,
+    onSettled: () => {
+      void invalidateAccounts(queryClient);
+    },
   });
 }

@@ -4,14 +4,16 @@ type ClosableMutation = {
 };
 
 export function useGuardedClose(
-  mutation: ClosableMutation,
+  mutations: readonly ClosableMutation[],
   onClose: () => void,
 ) {
   return function close() {
-    if (mutation.isPending) {
+    if (mutations.some((mutation) => mutation.isPending)) {
       return;
     }
-    mutation.reset();
+    for (const mutation of mutations) {
+      mutation.reset();
+    }
     onClose();
   };
 }
