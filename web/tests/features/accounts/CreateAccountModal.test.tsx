@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
-import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
+import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
@@ -14,17 +14,11 @@ const mockedCreateAccount = vi.mocked(createAccount);
 
 function renderForm() {
   const onCreated = vi.fn();
-  const onCancel = vi.fn();
+  const onClose = vi.fn();
   renderWithProviders(
-    <CreateAccountForm onCreated={onCreated} onCancel={onCancel} />,
+    <CreateAccountModal opened onCreated={onCreated} onClose={onClose} />,
   );
-  return { onCreated, onCancel };
-}
-
-function fillField(label: RegExp, value: string) {
-  fireEvent.change(screen.getByRole("textbox", { name: label }), {
-    target: { value },
-  });
+  return { onCreated, onClose };
 }
 
 function submit() {
@@ -35,14 +29,18 @@ function submittedInput() {
   return mockedCreateAccount.mock.calls[0][0];
 }
 
-describe("CreateAccountForm", () => {
+describe("CreateAccountModal", () => {
   it("creates the account from the entered values", async () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "  Delta credit  ");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "  Delta credit  " },
+    });
     fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
-    fillField(/description/i, "Cancelled flight");
+    fireEvent.change(screen.getByRole("textbox", { name: /description/i }), {
+      target: { value: "Cancelled flight" },
+    });
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -58,8 +56,13 @@ describe("CreateAccountForm", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "Starbucks");
-    fillField(/expiration date/i, "Dec 31, 2026");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /expiration date/i }),
+      { target: { value: "Dec 31, 2026" } },
+    );
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -71,7 +74,9 @@ describe("CreateAccountForm", () => {
   it("requires a name", async () => {
     renderForm();
 
-    fillField(/^name/i, "   ");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "   " },
+    });
     submit();
 
     expect(await screen.findByText("Name is required")).toBeTruthy();
@@ -84,7 +89,9 @@ describe("CreateAccountForm", () => {
     );
     const { onCreated } = renderForm();
 
-    fillField(/^name/i, "Amazon");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Amazon" },
+    });
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
@@ -92,11 +99,11 @@ describe("CreateAccountForm", () => {
   });
 
   it("cancels without creating", () => {
-    const { onCancel } = renderForm();
+    const { onClose } = renderForm();
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(onCancel).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
 });

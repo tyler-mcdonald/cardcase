@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useSearchParams } from "react-router-dom";
 import {
@@ -5,7 +6,6 @@ import {
   Box,
   Button,
   Group,
-  Modal,
   Pagination,
   Stack,
   Text,
@@ -16,12 +16,10 @@ import {
   AccountCard,
   AccountCardSkeleton,
 } from "@/features/accounts/AccountCard";
-import { CreateAccountForm } from "@/features/accounts/CreateAccountForm";
-import {
-  accountsQuery,
-  isMissingPage,
-  useIsCreatingAccount,
-} from "@/features/accounts/queries";
+import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
+import { EditAccountModal } from "@/features/accounts/EditAccountModal";
+import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
 import classes from "./AccountsPage.module.css";
 
@@ -37,7 +35,13 @@ export function AccountsPage() {
     accountsQuery(page),
   );
   const [createOpened, createModal] = useDisclosure(false);
-  const creatingAccount = useIsCreatingAccount();
+  const [editOpened, editModal] = useDisclosure(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
+  function openEdit(account: Account) {
+    setEditingAccount(account);
+    editModal.open();
+  }
 
   function goToPage(nextPage: number) {
     setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
@@ -69,16 +73,17 @@ export function AccountsPage() {
         <Button onClick={createModal.open}>Add account</Button>
       </Group>
 
-      <Modal
+      <CreateAccountModal
         opened={createOpened}
-        onClose={creatingAccount ? () => {} : createModal.close}
-        title="Add account"
-      >
-        <CreateAccountForm
-          onCreated={handleCreated}
-          onCancel={createModal.close}
-        />
-      </Modal>
+        onCreated={handleCreated}
+        onClose={createModal.close}
+      />
+
+      <EditAccountModal
+        account={editingAccount}
+        opened={editOpened}
+        onClose={editModal.close}
+      />
 
       {isPending && (
         <Box className={classes.grid}>
@@ -118,7 +123,11 @@ export function AccountsPage() {
       {data && data.accounts.length > 0 && (
         <Box className={classes.grid}>
           {data.accounts.map((account) => (
-            <AccountCard key={account.id} account={account} />
+            <AccountCard
+              key={account.id}
+              account={account}
+              onEdit={() => openEdit(account)}
+            />
           ))}
         </Box>
       )}

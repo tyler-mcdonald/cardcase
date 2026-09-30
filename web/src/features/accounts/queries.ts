@@ -1,17 +1,16 @@
 import {
   keepPreviousData,
   queryOptions,
-  useIsMutating,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
-import { ApiError } from "@/lib/api/errors";
-import { createAccount, listAccounts } from "./api";
+import { hasApiStatus } from "@/lib/api/errors";
+import { createAccount, listAccounts, updateAccount } from "./api";
 import type { Paginated } from "@/lib/api/types";
-import type { Account } from "./types";
+import type { Account, AccountUpdate } from "./types";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
-const CREATE_ACCOUNT_MUTATION_KEY = [...ACCOUNTS_QUERY_KEY, "create"] as const;
 
 type AccountsResult = {
   accounts: Account[];
@@ -28,8 +27,12 @@ function toAccountsResult(
   return { accounts: response.results, totalPages };
 }
 
+function invalidateAccounts(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+}
+
 export function isMissingPage(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 404;
+  return hasApiStatus(error, 404);
 }
 
 export function accountsQuery(page: number) {
@@ -43,13 +46,16 @@ export function accountsQuery(page: number) {
 export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: CREATE_ACCOUNT_MUTATION_KEY,
     mutationFn: createAccount,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
+    onSuccess: () => invalidateAccounts(queryClient),
   });
 }
 
-export function useIsCreatingAccount() {
-  return useIsMutating({ mutationKey: CREATE_ACCOUNT_MUTATION_KEY }) > 0;
+export function useUpdateAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, changes }: { id: string; changes: AccountUpdate }) =>
+      updateAccount(id, changes),
+    onSettled: () => invalidateAccounts(queryClient),
+  });
 }

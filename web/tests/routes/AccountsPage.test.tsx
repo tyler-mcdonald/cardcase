@@ -1,7 +1,11 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
-import { createAccount, listAccounts } from "@/features/accounts/api";
+import {
+  createAccount,
+  listAccounts,
+  updateAccount,
+} from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
@@ -10,10 +14,12 @@ import { renderWithProviders } from "../render";
 vi.mock("@/features/accounts/api", () => ({
   listAccounts: vi.fn(),
   createAccount: vi.fn(),
+  updateAccount: vi.fn(),
 }));
 
 const mockedListAccounts = vi.mocked(listAccounts);
 const mockedCreateAccount = vi.mocked(createAccount);
+const mockedUpdateAccount = vi.mocked(updateAccount);
 
 function page(
   results: Account[],
@@ -21,7 +27,9 @@ function page(
 ) {
   return {
     count,
-    next: hasNext ? "http://localhost:8000/v1/accounts?page=next" : null,
+    next: hasNext
+      ? new URL("/v1/accounts?page=next", import.meta.env.VITE_API_URL).href
+      : null,
     previous: null,
     results,
   };
@@ -31,13 +39,39 @@ function renderPage(route = "/") {
   return renderWithProviders(<AccountsPage />, { route });
 }
 
-async function createAccountNamed(name: string) {
-  fireEvent.click(screen.getByRole("button", { name: "Add account" }));
+async function submitNameInDialog(name: string, submitLabel: string) {
   const dialog = await screen.findByRole("dialog");
-  fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+  fireEvent.change(within(dialog).getByRole("textbox", { name: /^name/i }), {
     target: { value: name },
   });
-  fireEvent.click(within(dialog).getByRole("button", { name: "Add account" }));
+  fireEvent.click(within(dialog).getByRole("button", { name: submitLabel }));
+}
+
+async function createAccountNamed(name: string) {
+  fireEvent.click(screen.getByRole("button", { name: "Add account" }));
+  await submitNameInDialog(name, "Add account");
+}
+
+async function openEditDialog(accountName: string) {
+  fireEvent.click(screen.getByRole("button", { name: `Edit ${accountName}` }));
+  return screen.findByRole("dialog");
+}
+
+async function renameAccount(currentName: string, newName: string) {
+  await openEditDialog(currentName);
+  await submitNameInDialog(newName, "Save changes");
+}
+
+async function expectDialogLockedWhileSaving() {
+  const dialog = screen.getByRole("dialog");
+  await waitFor(() =>
+    expect(
+      within(dialog).getByRole("button", { name: "Cancel" }),
+    ).toHaveProperty("disabled", true),
+  );
+  fireEvent.keyDown(dialog, { key: "Escape" });
+
+  expect(screen.queryByRole("dialog")).not.toBeNull();
 }
 
 beforeEach(() => {
@@ -124,15 +158,89 @@ describe("AccountsPage", () => {
     await screen.findByText("No accounts yet.");
 
     await createAccountNamed("Starbucks");
-    const dialog = screen.getByRole("dialog");
-    await waitFor(() =>
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
-      ).toHaveProperty("disabled", true),
-    );
-    fireEvent.keyDown(dialog, { key: "Escape" });
 
-    expect(screen.queryByRole("dialog")).not.toBeNull();
+    await expectDialogLockedWhileSaving();
+  });
+
+  it("edits an account and shows the change on the same page", async () => {
+    const renamed = makeAccount({ id: "2", name: "Amazon Prime" });
+    mockedListAccounts
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValueOnce(page([renamed]));
+    mockedUpdateAccount.mockResolvedValueOnce(renamed);
+
+    renderPage("/?page=2");
+    await screen.findByText("Amazon");
+
+    await renameAccount("Amazon", "Amazon Prime");
+
+    expect(await screen.findByText("Amazon Prime")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedUpdateAccount.mock.calls[0][0]).toBe("2");
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
+  });
+
+  it("keeps the modal open while the account is being saved", async () => {
+    mockedListAccounts.mockResolvedValue(
+      page([makeAccount({ name: "Amazon" })]),
+    );
+    mockedUpdateAccount.mockReturnValueOnce(new Promise(() => {}));
+
+    renderPage();
+    await screen.findByText("Amazon");
+
+    await renameAccount("Amazon", "Amazon Prime");
+
+    await expectDialogLockedWhileSaving();
+  });
+
+  it("retrying a failed save doesn't overwrite a name changed elsewhere", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValue(
+        page([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
+      );
+    mockedUpdateAccount
+      .mockRejectedValueOnce(new ApiError("Server error", 500))
+      .mockResolvedValueOnce(makeAccount({ id: "2", name: "Amazon" }));
+
+    renderPage();
+    await screen.findByText("Amazon");
+
+    const dialog = await openEditDialog("Amazon");
+    fireEvent.change(
+      within(dialog).getByRole("textbox", { name: /description/i }),
+      { target: { value: "Birthday gift" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByText("Renamed elsewhere")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mockedUpdateAccount).toHaveBeenCalledTimes(2));
+    expect(mockedUpdateAccount).toHaveBeenLastCalledWith("2", {
+      description: "Birthday gift",
+    });
+  });
+
+  it("clears a failed save's error when the account is reopened", async () => {
+    mockedListAccounts.mockResolvedValue(
+      page([makeAccount({ id: "2", name: "Amazon" })]),
+    );
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400),
+    );
+
+    renderPage();
+    await screen.findByText("Amazon");
+    await renameAccount("Amazon", "Amazon gift card");
+    await screen.findByRole("alert");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    await openEditDialog("Amazon");
+
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("shows an error state and can retry", async () => {
