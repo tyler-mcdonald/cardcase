@@ -12,3 +12,5 @@ export type AccountInput = Pick<
   Account,
   "name" | "description" | "type" | "expires_on"
 >;
+
+export type AccountUpdate = Partial<Omit<AccountInput, "type">>;

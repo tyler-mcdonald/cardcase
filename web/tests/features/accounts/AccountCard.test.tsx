@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountCard } from "@/features/accounts/AccountCard";
 import type { Account } from "@/features/accounts/types";
@@ -6,7 +6,9 @@ import { makeAccount } from "./factories";
 import { renderWithProviders } from "../../render";
 
 function renderCard(account: Account) {
-  return renderWithProviders(<AccountCard account={account} />);
+  const onEdit = vi.fn();
+  renderWithProviders(<AccountCard account={account} onEdit={onEdit} />);
+  return { onEdit };
 }
 
 beforeEach(() => {
@@ -19,6 +21,14 @@ afterEach(() => {
 });
 
 describe("AccountCard", () => {
+  it("opens the account for editing when clicked", () => {
+    const { onEdit } = renderCard(makeAccount({ name: "Starbucks" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit Starbucks" }));
+
+    expect(onEdit).toHaveBeenCalled();
+  });
+
   it("renders the account name and type", () => {
     renderCard(makeAccount({ name: "Starbucks", type: "gift_card" }));
 

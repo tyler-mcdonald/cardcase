@@ -9,42 +9,59 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { apiErrorMessage } from "@/lib/api/errors";
+import { useEffect, useMemo } from "react";
+import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
-import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
-const INITIAL_VALUES: AccountInput = {
-  name: "",
-  type: "gift_card",
-  expires_on: null,
-  description: "",
-};
+const FORM_FIELDS = [
+  "name",
+  "type",
+  "expires_on",
+  "description",
+] as const satisfies readonly (keyof AccountInput)[];
 
-export function CreateAccountForm({
-  onCreated,
+export function AccountForm({
+  initialValues,
+  typeLocked = false,
+  submitLabel,
+  isPending,
+  error,
+  onSubmit,
   onCancel,
 }: {
-  onCreated: () => void;
+  initialValues: AccountInput;
+  typeLocked?: boolean;
+  submitLabel: string;
+  isPending: boolean;
+  error: Error | null;
+  onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
 }) {
-  const createAccount = useCreateAccount();
   const form = useForm<AccountInput>({
-    initialValues: INITIAL_VALUES,
+    initialValues,
     validate: { name: isNotEmpty("Name is required") },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
+  const { setErrors } = form;
+  const { error: typeError, ...typeInputProps } = form.getInputProps("type");
+  const fieldErrors = useMemo(
+    () => apiFieldErrors(error, FORM_FIELDS),
+    [error],
+  );
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  const formError = error && !hasFieldErrors ? apiErrorMessage(error) : null;
 
-  const handleSubmit = form.onSubmit((values) => {
-    createAccount.mutate(values, { onSuccess: onCreated });
-  });
+  useEffect(() => {
+    setErrors(fieldErrors);
+  }, [fieldErrors, setErrors]);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
         <TextInput
           label="Name"
@@ -53,12 +70,20 @@ export function CreateAccountForm({
           data-autofocus
           {...form.getInputProps("name")}
         />
-        <Input.Wrapper label="Type" required>
+        <Input.Wrapper
+          label="Type"
+          required
+          error={typeError}
+          description={
+            typeLocked ? "Type can't be changed after creation." : undefined
+          }
+        >
           <SegmentedControl
             fullWidth
+            disabled={typeLocked}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
-            {...form.getInputProps("type")}
+            {...typeInputProps}
           />
         </Input.Wrapper>
         <DateInput
@@ -73,21 +98,17 @@ export function CreateAccountForm({
           maxLength={1000}
           {...form.getInputProps("description")}
         />
-        {createAccount.isError && (
+        {formError && (
           <Alert color="red" role="alert">
-            {apiErrorMessage(createAccount.error)}
+            {formError}
           </Alert>
         )}
         <Group justify="flex-end">
-          <Button
-            variant="default"
-            onClick={onCancel}
-            disabled={createAccount.isPending}
-          >
+          <Button variant="default" onClick={onCancel} disabled={isPending}>
             Cancel
           </Button>
-          <Button type="submit" loading={createAccount.isPending}>
-            Add account
+          <Button type="submit" loading={isPending}>
+            {submitLabel}
           </Button>
         </Group>
       </Stack>

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Badge, Card, Skeleton, Text } from "@mantine/core";
+import { Badge, Card, Skeleton, Text, UnstyledButton } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
@@ -23,7 +23,13 @@ const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   },
 };
 
-export function AccountCard({ account }: { account: Account }) {
+export function AccountCard({
+  account,
+  onEdit,
+}: {
+  account: Account;
+  onEdit: () => void;
+}) {
   const style = ACCOUNT_STYLE[account.type];
   const expiry = describeExpiry(account.expires_on);
 
@@ -33,14 +39,16 @@ export function AccountCard({ account }: { account: Account }) {
         {style.renderArt(account)}
       </div>
       <div aria-hidden className={classes.scrim} />
-      <Badge
-        variant="light"
-        radius="xl"
-        size="sm"
-        className={classes.typeBadge}
-      >
-        {ACCOUNT_TYPE_DISPLAY[account.type].label}
-      </Badge>
+      <div className={classes.headerRow}>
+        <Badge
+          variant="light"
+          radius="xl"
+          size="sm"
+          className={classes.typeBadge}
+        >
+          {ACCOUNT_TYPE_DISPLAY[account.type].label}
+        </Badge>
+      </div>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>
           <Text fw={700} size="sm" truncate c="white">
@@ -65,6 +73,11 @@ export function AccountCard({ account }: { account: Account }) {
           —
         </Text>
       </div>
+      <UnstyledButton
+        aria-label={`Edit ${account.name}`}
+        className={classes.cardButton}
+        onClick={onEdit}
+      />
     </Card>
   );
 }

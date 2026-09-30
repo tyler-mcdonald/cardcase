@@ -14,6 +14,24 @@ export class ApiError extends Error {
   }
 }
 
+type FieldErrorsBody = Record<string, string[] | undefined>;
+
+export function apiFieldErrors(
+  error: unknown,
+  fields: readonly string[],
+): Record<string, string> {
+  if (!hasApiStatus(error, 400)) {
+    return {};
+  }
+  const body = (error.body ?? {}) as FieldErrorsBody;
+  return Object.fromEntries(
+    fields.flatMap((field) => {
+      const message = body[field]?.[0];
+      return message ? [[field, message]] : [];
+    }),
+  );
+}
+
 export function apiErrorMessage(
   error: unknown,
   fallback: string = GENERIC_ERROR,
@@ -35,4 +53,11 @@ export function isClientError(error: unknown): boolean {
     error.status >= 400 &&
     error.status < 500
   );
+}
+
+export function hasApiStatus(
+  error: unknown,
+  status: number,
+): error is ApiError {
+  return error instanceof ApiError && error.status === status;
 }
