@@ -205,7 +205,9 @@ describe("EditAccountModal", () => {
     startDelete();
 
     screen.getByRole("dialog", { name: "Delete Delta credit?" });
-    screen.getByText(/removes the account and its transaction history/i);
+    screen.getByText(
+      /lose access to this account and its transaction history/i,
+    );
     expect(screen.queryByRole("textbox", { name: /^name/i })).toBeNull();
     expect(document.activeElement).toBe(
       screen.getByRole("button", { name: "Cancel" }),

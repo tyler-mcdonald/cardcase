@@ -73,11 +73,7 @@ export function EditAccountModal({
   const title = confirmingDelete ? `Delete ${account.name}?` : "Edit account";
 
   return (
-    <Modal
-      opened={opened}
-      onClose={close}
-      title={title}
-    >
+    <Modal opened={opened} onClose={close} title={title}>
       {account && (
         <>
           {confirmingDelete && (
@@ -133,8 +129,8 @@ function DeleteConfirmation({
   return (
     <Stack>
       <Text size="sm">
-        This removes the account and its transaction history. You can't undo
-        this.
+        You'll lose access to this account and its transaction history. You
+        can't undo this.
       </Text>
       {errorMessage && <FormError message={errorMessage} />}
       <Group justify="flex-end">
