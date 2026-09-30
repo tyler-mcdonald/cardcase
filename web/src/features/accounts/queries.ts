@@ -53,19 +53,9 @@ export function useCreateAccount() {
 
 export function useUpdateAccount() {
   const queryClient = useQueryClient();
-
-  function saveChanges({
-    id,
-    changes,
-  }: {
-    id: string;
-    changes: AccountUpdate;
-  }) {
-    return updateAccount(id, changes);
-  }
-
   return useMutation({
-    mutationFn: saveChanges,
+    mutationFn: ({ id, changes }: { id: string; changes: AccountUpdate }) =>
+      updateAccount(id, changes),
     onSettled: () => invalidateAccounts(queryClient),
   });
 }
