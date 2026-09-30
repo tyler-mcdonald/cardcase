@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { changeTextbox, getTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -29,14 +28,6 @@ function renderForm() {
   return { onClose };
 }
 
-function nameInput() {
-  return getTextbox(/^name/i);
-}
-
-function expirationInput() {
-  return getTextbox(/expiration date/i);
-}
-
 function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 }
@@ -45,13 +36,22 @@ describe("EditAccountModal", () => {
   it("prefills the account's current values", () => {
     renderForm();
 
-    expect(nameInput().value).toBe("Delta credit");
+    expect(
+      screen.getByRole<HTMLInputElement>("textbox", { name: /^name/i }).value,
+    ).toBe("Delta credit");
     expect(
       screen.getByRole<HTMLInputElement>("radio", { name: "Flight credit" })
         .checked,
     ).toBe(true);
-    expect(expirationInput().value).toBe("Dec 31, 2026");
-    expect(getTextbox(/description/i).value).toBe("Cancelled flight");
+    expect(
+      screen.getByRole<HTMLInputElement>("textbox", {
+        name: /expiration date/i,
+      }).value,
+    ).toBe("Dec 31, 2026");
+    expect(
+      screen.getByRole<HTMLInputElement>("textbox", { name: /description/i })
+        .value,
+    ).toBe("Cancelled flight");
   });
 
   it("locks the account type", () => {
@@ -66,7 +66,9 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    changeTextbox(/^name/i, "  Delta voucher  ");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "  Delta voucher  " },
+    });
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -79,7 +81,10 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    changeTextbox(/expiration date/i, "Jan 15, 2027");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /expiration date/i }),
+      { target: { value: "Jan 15, 2027" } },
+    );
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -92,7 +97,10 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     const { onClose } = renderForm();
 
-    changeTextbox(/expiration date/i, "");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /expiration date/i }),
+      { target: { value: "" } },
+    );
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -116,7 +124,9 @@ describe("EditAccountModal", () => {
     );
     const { onClose } = renderForm();
 
-    changeTextbox(/^name/i, "Delta voucher");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
@@ -131,7 +141,9 @@ describe("EditAccountModal", () => {
     );
     renderForm();
 
-    changeTextbox(/^name/i, "Delta voucher");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
     submit();
 
     expect(
@@ -139,7 +151,11 @@ describe("EditAccountModal", () => {
         "Ensure this field has no more than 255 characters.",
       ),
     ).toBeTruthy();
-    expect(nameInput().getAttribute("aria-invalid")).toBe("true");
+    expect(
+      screen
+        .getByRole("textbox", { name: /^name/i })
+        .getAttribute("aria-invalid"),
+    ).toBe("true");
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
@@ -151,7 +167,9 @@ describe("EditAccountModal", () => {
     );
     renderForm();
 
-    changeTextbox(/^name/i, "Delta voucher");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
     submit();
 
     expect(

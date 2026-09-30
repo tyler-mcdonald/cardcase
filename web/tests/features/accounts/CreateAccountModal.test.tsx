@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { changeTextbox } from "../../queries";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -35,9 +34,13 @@ describe("CreateAccountModal", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    changeTextbox(/^name/i, "  Delta credit  ");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "  Delta credit  " },
+    });
     fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
-    changeTextbox(/description/i, "Cancelled flight");
+    fireEvent.change(screen.getByRole("textbox", { name: /description/i }), {
+      target: { value: "Cancelled flight" },
+    });
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -53,8 +56,13 @@ describe("CreateAccountModal", () => {
     mockedCreateAccount.mockResolvedValueOnce(makeAccount());
     const { onCreated } = renderForm();
 
-    changeTextbox(/^name/i, "Starbucks");
-    changeTextbox(/expiration date/i, "Dec 31, 2026");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /expiration date/i }),
+      { target: { value: "Dec 31, 2026" } },
+    );
     submit();
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -66,7 +74,9 @@ describe("CreateAccountModal", () => {
   it("requires a name", async () => {
     renderForm();
 
-    changeTextbox(/^name/i, "   ");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "   " },
+    });
     submit();
 
     expect(await screen.findByText("Name is required")).toBeTruthy();
@@ -79,7 +89,9 @@ describe("CreateAccountModal", () => {
     );
     const { onCreated } = renderForm();
 
-    changeTextbox(/^name/i, "Amazon");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Amazon" },
+    });
     submit();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
