@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { updateAccount } from "@/features/accounts/api";
+import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
@@ -8,9 +8,11 @@ import { makeAccount } from "./factories";
 
 vi.mock("@/features/accounts/api", () => ({
   updateAccount: vi.fn(),
+  deleteAccount: vi.fn(),
 }));
 
 const mockedUpdateAccount = vi.mocked(updateAccount);
+const mockedDeleteAccount = vi.mocked(deleteAccount);
 
 const account = makeAccount({
   id: "42",
@@ -22,14 +24,27 @@ const account = makeAccount({
 
 function renderForm() {
   const onClose = vi.fn();
-  renderWithProviders(
+  const { rerender } = renderWithProviders(
     <EditAccountModal account={account} opened onClose={onClose} />,
   );
-  return { onClose };
+  function setOpened(opened: boolean) {
+    rerender(
+      <EditAccountModal account={account} opened={opened} onClose={onClose} />,
+    );
+  }
+  return { onClose, setOpened };
 }
 
 function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+}
+
+function startDelete() {
+  fireEvent.click(screen.getByRole("button", { name: "Delete account" }));
+}
+
+function confirmDelete() {
+  fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 }
 
 describe("EditAccountModal", () => {
@@ -175,5 +190,147 @@ describe("EditAccountModal", () => {
     expect(
       await screen.findByText('"foo" is not a valid choice.'),
     ).toBeTruthy();
+  });
+
+  it("asks for confirmation before deleting", () => {
+    renderForm();
+
+    startDelete();
+
+    screen.getByRole("dialog", { name: "Delete Delta credit?" });
+    expect(screen.queryByRole("textbox", { name: /^name/i })).toBeNull();
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "Cancel" }),
+    );
+    expect(mockedDeleteAccount).not.toHaveBeenCalled();
+  });
+
+  it("returns to the form when deleting is cancelled", () => {
+    const { onClose } = renderForm();
+
+    startDelete();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    screen.getByRole("dialog", { name: "Edit account" });
+    screen.getByRole("textbox", { name: /^name/i });
+    expect(mockedDeleteAccount).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("deletes the account once confirmed", async () => {
+    mockedDeleteAccount.mockResolvedValueOnce(undefined);
+    const { onClose } = renderForm();
+
+    startDelete();
+    confirmDelete();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedDeleteAccount).toHaveBeenCalledWith("42");
+  });
+
+  it("treats an account that's already gone as deleted", async () => {
+    mockedDeleteAccount.mockRejectedValueOnce(new ApiError("Not found", 404));
+    const { onClose } = renderForm();
+
+    startDelete();
+    confirmDelete();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("shows an error when the account can't be deleted", async () => {
+    mockedDeleteAccount.mockRejectedValueOnce(
+      new ApiError("Server error", 500),
+    );
+    const { onClose } = renderForm();
+
+    startDelete();
+    confirmDelete();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+    screen.getByRole("dialog", { name: "Delete Delta credit?" });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("clears a failed delete's error when returning to the form", async () => {
+    mockedDeleteAccount.mockRejectedValueOnce(
+      new ApiError("Server error", 500),
+    );
+    renderForm();
+
+    startDelete();
+    confirmDelete();
+    await screen.findByRole("alert");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    startDelete();
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("clears a failed save's error when starting to delete", async () => {
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400),
+    );
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
+    submit();
+    await screen.findByRole("alert");
+    startDelete();
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("can't be closed while the account is being deleted", async () => {
+    mockedDeleteAccount.mockReturnValueOnce(new Promise(() => {}));
+    const { onClose } = renderForm();
+
+    startDelete();
+    confirmDelete();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole<HTMLButtonElement>("button", { name: "Cancel" })
+          .disabled,
+      ).toBe(true),
+    );
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("can't start deleting while changes are being saved", async () => {
+    mockedUpdateAccount.mockReturnValueOnce(new Promise(() => {}));
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
+    submit();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole<HTMLButtonElement>("button", {
+          name: "Delete account",
+        }).disabled,
+      ).toBe(true),
+    );
+  });
+
+  it("closes from the confirmation and reopens on the form", () => {
+    const { onClose, setOpened } = renderForm();
+
+    startDelete();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+    expect(onClose).toHaveBeenCalled();
+
+    setOpened(false);
+    setOpened(true);
+
+    screen.getByRole("textbox", { name: /^name/i });
   });
 });

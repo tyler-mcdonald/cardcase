@@ -33,6 +33,7 @@ export function AccountForm({
   error,
   onSubmit,
   onCancel,
+  onDelete,
 }: {
   initialValues: AccountInput;
   typeLocked?: boolean;
@@ -41,6 +42,7 @@ export function AccountForm({
   error: Error | null;
   onSubmit: (values: AccountInput) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }) {
   const form = useForm<AccountInput>({
     initialValues,
@@ -103,13 +105,25 @@ export function AccountForm({
             {formError}
           </Alert>
         )}
-        <Group justify="flex-end">
-          <Button variant="default" onClick={onCancel} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button type="submit" loading={isPending}>
-            {submitLabel}
-          </Button>
+        <Group justify={onDelete ? "space-between" : "flex-end"}>
+          {onDelete && (
+            <Button
+              variant="light"
+              color="red"
+              onClick={onDelete}
+              disabled={isPending}
+            >
+              Delete account
+            </Button>
+          )}
+          <Group>
+            <Button variant="default" onClick={onCancel} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={isPending}>
+              {submitLabel}
+            </Button>
+          </Group>
         </Group>
       </Stack>
     </form>

@@ -3,6 +3,7 @@ import { request } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
 import {
   createAccount,
+  deleteAccount,
   listAccounts,
   updateAccount,
 } from "@/features/accounts/api";
@@ -80,5 +81,21 @@ describe("updateAccount", () => {
     await expect(updateAccount("42", input)).rejects.toMatchObject({
       status: 404,
     });
+  });
+});
+
+describe("deleteAccount", () => {
+  it("deletes the given account", async () => {
+    mockedRequest.mockResolvedValueOnce(null);
+
+    await deleteAccount("42");
+
+    expect(mockedRequest).toHaveBeenCalledWith("DELETE", "/v1/accounts/42");
+  });
+
+  it("propagates request failures", async () => {
+    mockedRequest.mockRejectedValueOnce(new ApiError("Server error", 500));
+
+    await expect(deleteAccount("42")).rejects.toMatchObject({ status: 500 });
   });
 });

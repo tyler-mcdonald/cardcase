@@ -106,4 +106,10 @@ describe("CreateAccountModal", () => {
     expect(onClose).toHaveBeenCalled();
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
+
+  it("doesn't offer to delete an account that doesn't exist yet", () => {
+    renderForm();
+
+    expect(screen.queryByRole("button", { name: "Delete account" })).toBeNull();
+  });
 });
