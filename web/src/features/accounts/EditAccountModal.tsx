@@ -35,6 +35,13 @@ export function EditAccountModal({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null,
   );
+  const [wasOpened, setWasOpened] = useState(opened);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
+    if (opened) {
+      setConfirmingDeleteId(null);
+    }
+  }
   const confirmingDelete =
     account !== null && confirmingDeleteId === account.id;
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
@@ -69,7 +76,6 @@ export function EditAccountModal({
     <Modal
       opened={opened}
       onClose={close}
-      onExitTransitionEnd={() => setConfirmingDeleteId(null)}
       title={title}
     >
       {account && (

@@ -374,6 +374,16 @@ describe("EditAccountModal", () => {
     screen.getByRole("textbox", { name: /^name/i });
   });
 
+  it("reopens on the form when reopened before it finishes closing", () => {
+    const { rerenderWith } = renderForm();
+
+    startDelete();
+    rerenderWith({ opened: false });
+    rerenderWith({ opened: true });
+
+    screen.getByRole("dialog", { name: "Edit account" });
+  });
+
   it("opens another account on the form, not its confirmation", () => {
     const other = makeAccount({ id: "43", name: "United credit" });
     const { rerenderWith } = renderForm();
