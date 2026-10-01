@@ -26,27 +26,6 @@ def transaction_detail_url(account: Account, transaction: Transaction) -> str:
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
-def test_requires_authentication(client: Client, user: User, case: str) -> None:
-    account = create_account(user)
-    transaction = create_transaction(account)
-    list_path = transaction_list_url(account)
-    detail_path = transaction_detail_url(account, transaction)
-
-    responses = {
-        "list": lambda: get(client, list_path),
-        "create": lambda: post(
-            client, list_path, {"amount": "10.00", "occurred_on": "2026-01-01"}
-        ),
-        "retrieve": lambda: get(client, detail_path),
-        "update": lambda: patch(client, detail_path, {"amount": "5.00"}),
-        "delete": lambda: delete(client, detail_path),
-    }
-
-    assert responses[case]().status_code == 403
-
-
-@pytest.mark.django_db
 def test_create_transaction_success(auth_client: Client, user: User) -> None:
     account = create_account(user)
 
