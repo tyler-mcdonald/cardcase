@@ -81,7 +81,7 @@ def test_create_account_at_limit_is_rejected(auth_client: Client, user: User) ->
     response = post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
 
     assert response.status_code == 400
-    assert response.json() == {"non_field_errors": ["You can have up to 250 accounts."]}
+    assert response.json() == {"non_field_errors": ["You can only have up to 250 accounts."]}
     assert Account.objects.filter(user=user).count() == MAX_ACCOUNTS_PER_USER
 
 

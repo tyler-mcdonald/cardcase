@@ -29,7 +29,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if self.instance is None and self._at_account_limit():
             raise serializers.ValidationError(
-                f"You can have up to {MAX_ACCOUNTS_PER_USER} accounts."
+                f"You can only have up to {MAX_ACCOUNTS_PER_USER} accounts."
             )
         return attrs
 
