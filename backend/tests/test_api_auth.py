@@ -88,7 +88,6 @@ def test_api_route_has_unique_name(namespace: str, pattern: URLPattern) -> None:
     assert resolve(_path(namespace, pattern)).func is pattern.callback
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(("method", "namespace", "pattern"), API_REQUESTS)
 def test_api_requires_authentication(
     client: Client, method: str, namespace: str, pattern: URLPattern
