@@ -4,13 +4,11 @@
 import sys
 from pathlib import Path
 
-import environ
-
 
 def main() -> None:
     """Run administrative tasks."""
-    environ.Env.read_env(Path(__file__).resolve().parent / ".env")
     try:
+        import environ
         from django.core.management import execute_from_command_line
     except ImportError as exc:
         raise ImportError(
@@ -18,6 +16,7 @@ def main() -> None:
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+    environ.Env.read_env(Path(__file__).resolve().parent / ".env")
     execute_from_command_line(sys.argv)
 
 

@@ -58,7 +58,7 @@ jobs:
   migrations:
     runs-on: ubuntu-latest
     env:
-      DJANGO_SETTINGS_MODULE: config.settings.test
+      DJANGO_SETTINGS_MODULE: config.settings.production
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-backend

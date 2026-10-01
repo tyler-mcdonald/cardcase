@@ -27,6 +27,8 @@ make setup-backend
 make setup-web
 ```
 
+`backend/.env` must set `DJANGO_SETTINGS_MODULE` (see `backend/.env.example`). If your `.env` predates that line, add `DJANGO_SETTINGS_MODULE=config.settings.local` to it.
+
 Seed the database
 
 ```
