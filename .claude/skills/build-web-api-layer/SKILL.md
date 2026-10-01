@@ -30,17 +30,6 @@ lint-staged.
 - Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
   `api.ts`, or `fetch` directly.
 
-## Cross-feature imports
-
-A file in `features/A/` may import from `features/B/` only:
-
-- PascalCase `.tsx` components (e.g. `features/accounts/AccountCard.tsx`)
-- `import type` from `features/B/types.ts`
-
-Never another feature's `queries.ts`, `api.ts`, `constants.ts`, hooks, or helpers. If
-feature A needs feature B's data, A's component renders B's component, or the shared
-piece moves out of B.
-
 ## Pagination
 
 Never loop through paginated pages to "get all". For a capped collection whose endpoint
