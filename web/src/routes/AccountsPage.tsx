@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Navigate, useSearchParams } from "react-router-dom";
-import {
-  Alert,
-  Box,
-  Button,
-  Group,
-  Pagination,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Navigate } from "react-router-dom";
+import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { LoadErrorAlert } from "@/components/LoadErrorAlert";
+import { PagePagination } from "@/components/PagePagination";
 import {
   AccountCard,
   AccountCardSkeleton,
@@ -20,13 +13,12 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { isMissingPage, parsePage } from "@/lib/api/pagination";
+import { isMissingPage } from "@/lib/api/pagination";
+import { usePageParam } from "@/lib/hooks/use-page-param";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = parsePage(searchParams.get("page"));
+  const { page, goToPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     accountsQuery(page),
   );
@@ -37,11 +29,6 @@ export function AccountsPage() {
   function openEdit(account: Account) {
     setEditingAccount(account);
     editModal.open();
-  }
-
-  function goToPage(nextPage: number) {
-    setSearchParams(nextPage === 1 ? {} : { page: String(nextPage) });
-    window.scrollTo({ top: 0 });
   }
 
   function handleCreated() {
@@ -90,24 +77,15 @@ export function AccountsPage() {
       )}
 
       {isError && (
-        <Alert color="red" title="Couldn't load your accounts">
-          <Stack gap="sm">
-            <Text size="sm">{apiErrorMessage(error)}</Text>
-            <Button
-              variant="light"
-              color="red"
-              size="xs"
-              loading={isFetching}
-              onClick={() => refetch()}
-              className={classes.retryButton}
-            >
-              Try again
-            </Button>
-          </Stack>
-        </Alert>
+        <LoadErrorAlert
+          title="Couldn't load your accounts"
+          error={error}
+          retrying={isFetching}
+          onRetry={() => refetch()}
+        />
       )}
 
-      {data?.accounts.length === 0 && (
+      {data?.items.length === 0 && (
         <div>
           <Text fw={600}>No accounts yet.</Text>
           <Text c="dimmed" size="sm">
@@ -116,9 +94,9 @@ export function AccountsPage() {
         </div>
       )}
 
-      {data && data.accounts.length > 0 && (
+      {data && data.items.length > 0 && (
         <Box className={classes.grid}>
-          {data.accounts.map((account) => (
+          {data.items.map((account) => (
             <AccountCard
               key={account.id}
               account={account}
@@ -128,12 +106,11 @@ export function AccountsPage() {
         </Box>
       )}
 
-      {data && data.totalPages > 1 && (
-        <Pagination
+      {data && (
+        <PagePagination
           total={data.totalPages}
-          value={page}
+          page={page}
           onChange={goToPage}
-          className={classes.pagination}
         />
       )}
     </Stack>

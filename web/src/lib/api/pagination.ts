@@ -12,6 +12,18 @@ export function totalPages(response: Paginated<unknown>, page: number): number {
     : page;
 }
 
+type Page<T> = {
+  items: T[];
+  totalPages: number;
+};
+
+export function toPage<T>(response: Paginated<T>, page: number): Page<T> {
+  return {
+    items: response.results,
+    totalPages: totalPages(response, page),
+  };
+}
+
 export function isMissingPage(error: unknown): boolean {
   return hasApiStatus(error, 404);
 }

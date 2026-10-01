@@ -51,7 +51,9 @@ export function TransactionsTable({
                 <AccountTypeBadge type={transaction.account.type} />
               </Group>
             </Table.Td>
-            <Table.Td>{transaction.description}</Table.Td>
+            <Table.Td className={classes.description}>
+              {transaction.description}
+            </Table.Td>
             <Table.Td className={classes.amount}>{outflow}</Table.Td>
             <Table.Td className={classes.amount}>{inflow}</Table.Td>
           </Table.Tr>
