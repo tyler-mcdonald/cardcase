@@ -27,6 +27,33 @@ module.exports = {
         pathNot: "^src/features/$1/api\\.ts$",
       },
     },
+    {
+      name: "no-cross-feature-internals-import",
+      comment:
+        "A feature may import another feature only through its PascalCase .tsx components or its types.ts",
+      severity: "error",
+      from: { path: "^src/features/([^/]+)/" },
+      to: {
+        path: "^src/features/[^/]+/",
+        pathNot: [
+          "^src/features/$1/",
+          "^src/features/[^/]+/[A-Z][^/]*\\.tsx$",
+          "^src/features/[^/]+/types\\.ts$",
+        ],
+      },
+    },
+    {
+      name: "no-cross-feature-value-types-import",
+      comment:
+        "A feature may import another feature's types.ts only with `import type`",
+      severity: "error",
+      from: { path: "^src/features/([^/]+)/" },
+      to: {
+        path: "^src/features/[^/]+/types\\.ts$",
+        pathNot: "^src/features/$1/",
+        dependencyTypesNot: ["type-only"],
+      },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },
