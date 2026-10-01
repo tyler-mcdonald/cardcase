@@ -73,7 +73,8 @@ API_REQUESTS = _api_requests()
 
 
 def test_api_routes_are_discovered() -> None:
-    assert API_REQUESTS
+    names = {pattern.name for _, _, pattern in API_ROUTES}
+    assert {"account-list", "account-transaction-detail"} <= names
 
 
 @pytest.mark.parametrize(("namespace", "pattern"), _api_route_params())
