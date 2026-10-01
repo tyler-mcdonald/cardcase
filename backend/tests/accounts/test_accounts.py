@@ -1,7 +1,9 @@
 from datetime import date
 
 import pytest
+from django.db import connection
 from django.test import Client
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from accounts.models import MAX_ACCOUNTS_PER_USER, Account
@@ -110,6 +112,19 @@ def test_create_account_at_limit_is_rejected(auth_client: Client, user: User) ->
     assert response.status_code == 400
     assert response.json() == {"non_field_errors": ["You can have up to 250 accounts."]}
     assert Account.objects.filter(user=user).count() == MAX_ACCOUNTS_PER_USER
+
+
+@pytest.mark.django_db
+def test_create_account_locks_user_before_counting(
+    auth_client: Client, user: User
+) -> None:
+    with CaptureQueriesContext(connection) as queries:
+        post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+
+    sql = [query["sql"] for query in queries.captured_queries]
+    lock_index = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q)
+    count_index = next(i for i, q in enumerate(sql) if "COUNT(" in q)
+    assert lock_index < count_index
 
 
 @pytest.mark.django_db
