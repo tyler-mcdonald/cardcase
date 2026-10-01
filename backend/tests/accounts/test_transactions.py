@@ -6,6 +6,7 @@ import pytest
 from django.db import connection
 from django.test import Client
 from django.test.utils import CaptureQueriesContext
+from pytest_django import Settings
 
 from accounts.models import Account, Transaction
 from tests.accounts.client import delete, get, patch, post, result_ids, results
@@ -450,21 +451,24 @@ def test_list_all_includes_account_summary(auth_client: Client, user: User) -> N
 
 
 @pytest.mark.django_db
-def test_list_all_is_paginated(auth_client: Client, user: User) -> None:
+def test_list_all_is_paginated(
+    auth_client: Client, user: User, settings: Settings
+) -> None:
+    page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
     account = create_account(user)
     Transaction.objects.bulk_create(
         Transaction(account=account, amount="1.00", occurred_on="2026-01-01")
-        for _ in range(51)
+        for _ in range(page_size + 1)
     )
 
-    page_1 = get(auth_client, "/transactions").json()
-    assert page_1["count"] == 51
-    assert len(page_1["results"]) == 50
-    assert page_1["next"] is not None
+    page_1 = get(auth_client, "/transactions")
+    assert page_1.json()["count"] == page_size + 1
+    assert len(results(page_1)) == page_size
+    assert page_1.json()["next"] is not None
 
-    page_2 = get(auth_client, "/transactions?page=2").json()
-    assert len(page_2["results"]) == 1
-    assert page_2["next"] is None
+    page_2 = get(auth_client, "/transactions?page=2")
+    assert len(results(page_2)) == 1
+    assert page_2.json()["next"] is None
 
 
 @pytest.mark.django_db
