@@ -27,7 +27,7 @@ make setup-backend
 make setup-web
 ```
 
-`backend/.env` must set `DJANGO_SETTINGS_MODULE` (see `backend/.env.example`). If your `.env` predates that line, add `DJANGO_SETTINGS_MODULE=config.settings.local` to it.
+`manage.py` reads `DJANGO_SETTINGS_MODULE` from `backend/.env` (see `backend/.env.example`). If your `.env` predates that line, add `DJANGO_SETTINGS_MODULE=config.settings.local` to it. The WSGI/ASGI entry points don't read `.env`, so export `DJANGO_SETTINGS_MODULE` before starting a WSGI/ASGI server directly.
 
 Seed the database
 

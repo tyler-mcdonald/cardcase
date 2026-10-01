@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -23,3 +24,43 @@ def test_entry_point_fails_without_settings_module(entry_point: str) -> None:
 
     assert result.returncode != 0
     assert "DJANGO_SETTINGS_MODULE" in result.stderr
+
+
+def run_manage_py(
+    tmp_path: Path, env_file: str | None
+) -> subprocess.CompletedProcess[str]:
+    shutil.copy(BACKEND_DIR / "manage.py", tmp_path / "manage.py")
+    if env_file is not None:
+        (tmp_path / ".env").write_text(env_file)
+    env = {k: v for k, v in os.environ.items() if k != "DJANGO_SETTINGS_MODULE"}
+    env["PYTHONPATH"] = str(BACKEND_DIR)
+
+    return subprocess.run(
+        [
+            sys.executable,
+            "manage.py",
+            "shell",
+            "--no-imports",
+            "-c",
+            "from django.conf import settings; print(settings.SETTINGS_MODULE)",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_manage_py_reads_settings_module_from_env_file(tmp_path: Path) -> None:
+    result = run_manage_py(tmp_path, "DJANGO_SETTINGS_MODULE=config.settings.test\n")
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "config.settings.test"
+
+
+def test_manage_py_fails_without_settings_module(tmp_path: Path) -> None:
+    result = run_manage_py(tmp_path, None)
+
+    assert result.returncode != 0
+    assert "DJANGO_SETTINGS_MODULE is not set" in result.stderr
