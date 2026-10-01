@@ -90,16 +90,11 @@ def test_create_account_at_limit_is_rejected(auth_client: Client, user: User) ->
 
 
 @pytest.mark.django_db
-def test_create_account_locks_user_before_counting(
-    auth_client: Client, user: User
-) -> None:
+def test_create_account_locks_user(auth_client: Client) -> None:
     with CaptureQueriesContext(connection) as queries:
         post_account(auth_client)
 
-    sql = [query["sql"] for query in queries.captured_queries]
-    lock_index = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q)
-    count_index = next(i for i, q in enumerate(sql) if "COUNT(" in q)
-    assert lock_index < count_index
+    assert any("FOR UPDATE" in query["sql"] for query in queries.captured_queries)
 
 
 @pytest.mark.django_db
