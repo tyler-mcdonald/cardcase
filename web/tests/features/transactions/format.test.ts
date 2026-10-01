@@ -12,4 +12,8 @@ describe("splitAmount", () => {
   it("puts a positive amount under inflow", () => {
     expect(splitAmount("25.00")).toEqual({ outflow: null, inflow: "$25.00" });
   });
+
+  it("leaves a zero amount out of both columns", () => {
+    expect(splitAmount("0.00")).toEqual({ outflow: null, inflow: null });
+  });
 });

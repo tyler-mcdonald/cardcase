@@ -9,7 +9,7 @@ export function splitAmount(amount: string): {
 } {
   const value = Number(amount);
   const formatted = currencyFormatter.format(Math.abs(value));
-  return value < 0
-    ? { outflow: formatted, inflow: null }
-    : { outflow: null, inflow: formatted };
+  if (value < 0) return { outflow: formatted, inflow: null };
+  if (value > 0) return { outflow: null, inflow: formatted };
+  return { outflow: null, inflow: null };
 }
