@@ -6,11 +6,22 @@ from django.test import Client
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
+from accounts import serializers
 from accounts.models import MAX_ACCOUNTS_PER_USER, Account
+from accounts.views import AccountPagination
 from tests.accounts.client import delete, get, patch, post
 from tests.accounts.factories import create_account, create_accounts
 from tests.client import TestResponse, csrf_token
 from users.models import User
+
+TEST_ACCOUNT_LIMIT = 5
+
+
+@pytest.fixture
+def account_limit(monkeypatch: pytest.MonkeyPatch) -> int:
+    monkeypatch.setattr(serializers, "MAX_ACCOUNTS_PER_USER", TEST_ACCOUNT_LIMIT)
+    monkeypatch.setattr(AccountPagination, "max_page_size", TEST_ACCOUNT_LIMIT)
+    return TEST_ACCOUNT_LIMIT
 
 
 def post_account(client: Client) -> TestResponse:
@@ -69,24 +80,28 @@ def test_create_account_validation_errors(
 
 
 @pytest.mark.django_db
-def test_create_account_below_limit_succeeds(auth_client: Client, user: User) -> None:
-    create_accounts(user, MAX_ACCOUNTS_PER_USER - 1)
+def test_create_account_below_limit_succeeds(
+    auth_client: Client, user: User, account_limit: int
+) -> None:
+    create_accounts(user, account_limit - 1)
 
     response = post_account(auth_client)
 
     assert response.status_code == 201
-    assert Account.objects.filter(user=user).count() == MAX_ACCOUNTS_PER_USER
+    assert Account.objects.filter(user=user).count() == account_limit
 
 
 @pytest.mark.django_db
-def test_create_account_at_limit_is_rejected(auth_client: Client, user: User) -> None:
-    create_accounts(user, MAX_ACCOUNTS_PER_USER)
+def test_create_account_at_limit_is_rejected(
+    auth_client: Client, user: User, account_limit: int
+) -> None:
+    create_accounts(user, account_limit)
 
     response = post_account(auth_client)
 
     assert response.status_code == 400
-    assert response.json() == {"non_field_errors": ["You can only have up to 250 accounts."]}
-    assert Account.objects.filter(user=user).count() == MAX_ACCOUNTS_PER_USER
+    assert response.json() == {"non_field_errors": [f"You can only have up to {account_limit} accounts."]}
+    assert Account.objects.filter(user=user).count() == account_limit
 
 
 @pytest.mark.django_db
@@ -99,9 +114,9 @@ def test_create_account_locks_user(auth_client: Client) -> None:
 
 @pytest.mark.django_db
 def test_soft_deleted_accounts_do_not_count_toward_limit(
-    auth_client: Client, user: User
+    auth_client: Client, user: User, account_limit: int
 ) -> None:
-    accounts = create_accounts(user, MAX_ACCOUNTS_PER_USER)
+    accounts = create_accounts(user, account_limit)
     accounts[0].soft_delete()
 
     response = post_account(auth_client)
@@ -111,9 +126,9 @@ def test_soft_deleted_accounts_do_not_count_toward_limit(
 
 @pytest.mark.django_db
 def test_other_users_accounts_do_not_count_toward_limit(
-    auth_client: Client, other_user: User
+    auth_client: Client, other_user: User, account_limit: int
 ) -> None:
-    create_accounts(other_user, MAX_ACCOUNTS_PER_USER)
+    create_accounts(other_user, account_limit)
 
     response = post_account(auth_client)
 
@@ -121,8 +136,10 @@ def test_other_users_accounts_do_not_count_toward_limit(
 
 
 @pytest.mark.django_db
-def test_update_account_at_limit_succeeds(auth_client: Client, user: User) -> None:
-    accounts = create_accounts(user, MAX_ACCOUNTS_PER_USER)
+def test_update_account_at_limit_succeeds(
+    auth_client: Client, user: User, account_limit: int
+) -> None:
+    accounts = create_accounts(user, account_limit)
 
     response = patch(auth_client, f"/accounts/{accounts[0].id}", {"name": "Renamed"})
 
@@ -342,18 +359,22 @@ def test_list_page_size_at_limit_returns_all_accounts(
 @pytest.mark.parametrize(
     ("page_size", "expected_results"),
     [
-        ("", 50),
-        ("10", 10),
-        ("1000", MAX_ACCOUNTS_PER_USER),
-        ("0", 50),
-        ("-1", 50),
-        ("abc", 50),
+        ("", TEST_ACCOUNT_LIMIT + 1),
+        ("2", 2),
+        ("1000", TEST_ACCOUNT_LIMIT),
+        ("0", TEST_ACCOUNT_LIMIT + 1),
+        ("-1", TEST_ACCOUNT_LIMIT + 1),
+        ("abc", TEST_ACCOUNT_LIMIT + 1),
     ],
 )
 def test_list_page_size(
-    auth_client: Client, user: User, page_size: str, expected_results: int
+    auth_client: Client,
+    user: User,
+    account_limit: int,
+    page_size: str,
+    expected_results: int,
 ) -> None:
-    create_accounts(user, MAX_ACCOUNTS_PER_USER + 1)
+    create_accounts(user, account_limit + 1)
 
     page = get(auth_client, f"/accounts?page_size={page_size}").json()
 
