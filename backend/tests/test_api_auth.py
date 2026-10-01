@@ -8,7 +8,6 @@ from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 from rest_framework.exceptions import NotAuthenticated
 
 API_PREFIX = "v1/"
-UNTESTED_METHODS = {"head", "options"}
 
 
 def _walk(
@@ -30,10 +29,13 @@ def _allowed_methods(route: str, view: Any) -> list[str]:
     assert view_class, f"API route {route} must be a DRF view"
     allowed = view_class.http_method_names
     actions = getattr(view, "actions", None)
-    handled = (
+    handled = list(
         actions.keys() if actions else [m for m in allowed if hasattr(view_class, m)]
     )
-    return [m for m in handled if m in allowed and m not in UNTESTED_METHODS]
+    if "get" in handled:
+        handled.append("head")
+    handled.append("options")
+    return [m for m in allowed if m in handled]
 
 
 def _path(namespace: str, pattern: URLPattern) -> str:
@@ -70,4 +72,5 @@ def test_api_requires_authentication(
     response = client.generic(method.upper(), _path(namespace, pattern))
 
     assert response.status_code == 403
-    assert response.json()["detail"] == NotAuthenticated.default_detail
+    if method != "head":
+        assert response.json()["detail"] == NotAuthenticated.default_detail
