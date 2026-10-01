@@ -7,6 +7,10 @@ from pathlib import Path
 import pytest
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_NOT_CONFIGURED = (
+    "settings are not configured. You must either define the environment variable "
+    "DJANGO_SETTINGS_MODULE"
+)
 
 
 @pytest.mark.parametrize("entry_point", ["config.wsgi", "config.asgi"])
@@ -23,7 +27,7 @@ def test_entry_point_fails_without_settings_module(entry_point: str) -> None:
     )
 
     assert result.returncode != 0
-    assert "DJANGO_SETTINGS_MODULE" in result.stderr
+    assert SETTINGS_NOT_CONFIGURED in result.stderr
 
 
 PRINT_SETTINGS_MODULE = [
