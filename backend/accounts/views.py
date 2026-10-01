@@ -57,7 +57,22 @@ class TransactionViewSet(UserScopedViewSet):
         return get_object_or_404(Account, id=self.kwargs["account_id"], user=self.user)
 
     def get_queryset(self) -> QuerySet[Transaction]:
-        return Transaction.objects.filter(account=self.get_account())
+        return Transaction.objects.filter(account=self.get_account()).select_related(
+            "account"
+        )
 
     def perform_create(self, serializer: BaseSerializer[Transaction]) -> None:
         serializer.save(account=self.get_account())
+
+
+class UserTransactionViewSet(UserScopedViewSet):
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self) -> QuerySet[Transaction]:
+        return (
+            Transaction.objects.filter(
+                account__in=Account.objects.filter(user=self.user)
+            )
+            .select_related("account")
+            .order_by("-occurred_on", "account__name", "-created_at", "-id")
+        )

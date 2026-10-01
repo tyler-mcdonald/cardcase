@@ -59,6 +59,10 @@
     - { name?, description?, type?, expires_on? }
   - DELETE /accounts/{id}
 - Transactions
+  - GET /transactions
+    - All of the user's transactions across their non-deleted accounts
+    - Ordered by occurred_on (newest first), then account name (A→Z), then newest created
+    - ?page (default 1)
   - POST /accounts/{id}/transactions
     - { amount, description?, occurred_on }
   - GET /accounts/{id}/transactions
@@ -66,3 +70,4 @@
   - PATCH /accounts/{id}/transactions/{id}
     - { amount?, description?, occurred_on? }
   - DELETE /accounts/{id}/transactions/{id}
+  - Every transaction response includes a read-only account: { id, name, type }

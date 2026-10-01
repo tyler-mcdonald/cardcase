@@ -38,11 +38,19 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         return Account.objects.filter(user=user).count() >= MAX_ACCOUNTS_PER_USER
 
 
+class TransactionAccountSerializer(AccountSerializer):
+    class Meta(AccountSerializer.Meta):
+        fields: ClassVar[list[str]] = ["id", "name", "type"]
+
+
 class TransactionSerializer(serializers.ModelSerializer[Transaction]):
+    account = TransactionAccountSerializer(read_only=True)
+
     class Meta:
         model = Transaction
         fields: ClassVar[list[str]] = [
             "id",
+            "account",
             "amount",
             "description",
             "occurred_on",
