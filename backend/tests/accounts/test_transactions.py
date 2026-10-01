@@ -480,7 +480,7 @@ def test_list_all_is_paginated(
     ],
     ids=["all", "per-account"],
 )
-def test_list_query_count_does_not_grow_with_transactions(
+def test_list_avoids_n_plus_one_queries(
     auth_client: Client, user: User, path: Callable[[Account], str]
 ) -> None:
     account = create_account(user)
