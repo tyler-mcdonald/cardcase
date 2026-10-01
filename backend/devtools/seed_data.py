@@ -28,6 +28,8 @@ def sample_accounts(today: date) -> dict[str, dict[str, Any]]:
 
 
 GENERATED_SPENDS_PER_ACCOUNT = 17
+GENERATED_SPEND_CENTS_RANGE = (100, 2000)
+GENERATED_SPEND_DAYS_AGO_RANGE = (0, 120)
 
 
 def sample_transactions(today: date) -> dict[str, list[tuple[str, str, date]]]:
@@ -53,13 +55,15 @@ def sample_transactions(today: date) -> dict[str, list[tuple[str, str, date]]]:
 def generated_spends(name: str, today: date) -> list[tuple[str, str, date]]:
     rng = random.Random(name)
     return [
-        (
-            str(-Decimal(rng.randint(100, 2000)) / 100),
-            f"{name} purchase",
-            today - timedelta(days=rng.randint(0, 120)),
-        )
-        for _ in range(GENERATED_SPENDS_PER_ACCOUNT)
+        _random_spend(rng, name, today) for _ in range(GENERATED_SPENDS_PER_ACCOUNT)
     ]
+
+
+def _random_spend(rng: random.Random, name: str, today: date) -> tuple[str, str, date]:
+    cents = rng.randint(*GENERATED_SPEND_CENTS_RANGE)
+    days_ago = rng.randint(*GENERATED_SPEND_DAYS_AGO_RANGE)
+    amount = -Decimal(cents) / 100
+    return str(amount), f"{name} purchase", today - timedelta(days=days_ago)
 
 
 def get_or_create_seed_user(email: str) -> User:
