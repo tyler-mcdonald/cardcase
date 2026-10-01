@@ -38,15 +38,13 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         return Account.objects.filter(user=user).count() >= MAX_ACCOUNTS_PER_USER
 
 
-class AccountSummarySerializer(serializers.ModelSerializer[Account]):
-    class Meta:
-        model = Account
+class TransactionAccountSerializer(AccountSerializer):
+    class Meta(AccountSerializer.Meta):
         fields: ClassVar[list[str]] = ["id", "name", "type"]
-        read_only_fields: ClassVar[list[str]] = fields
 
 
 class TransactionSerializer(serializers.ModelSerializer[Transaction]):
-    account = AccountSummarySerializer(read_only=True)
+    account = TransactionAccountSerializer(read_only=True)
 
     class Meta:
         model = Transaction
