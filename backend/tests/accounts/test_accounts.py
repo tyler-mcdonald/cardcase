@@ -9,8 +9,12 @@ from django.utils import timezone
 from accounts.models import MAX_ACCOUNTS_PER_USER, Account
 from tests.accounts.client import delete, get, patch, post
 from tests.accounts.factories import create_account, create_accounts
-from tests.client import csrf_token
+from tests.client import TestResponse, csrf_token
 from users.models import User
+
+
+def post_account(client: Client) -> TestResponse:
+    return post(client, "/accounts", {"name": "Amazon", "type": "gift_card"})
 
 
 @pytest.mark.django_db
@@ -68,7 +72,7 @@ def test_create_account_validation_errors(
 def test_create_account_below_limit_succeeds(auth_client: Client, user: User) -> None:
     create_accounts(user, MAX_ACCOUNTS_PER_USER - 1)
 
-    response = post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+    response = post_account(auth_client)
 
     assert response.status_code == 201
     assert Account.objects.filter(user=user).count() == MAX_ACCOUNTS_PER_USER
@@ -78,7 +82,7 @@ def test_create_account_below_limit_succeeds(auth_client: Client, user: User) ->
 def test_create_account_at_limit_is_rejected(auth_client: Client, user: User) -> None:
     create_accounts(user, MAX_ACCOUNTS_PER_USER)
 
-    response = post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+    response = post_account(auth_client)
 
     assert response.status_code == 400
     assert response.json() == {"non_field_errors": ["You can only have up to 250 accounts."]}
@@ -90,7 +94,7 @@ def test_create_account_locks_user_before_counting(
     auth_client: Client, user: User
 ) -> None:
     with CaptureQueriesContext(connection) as queries:
-        post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+        post_account(auth_client)
 
     sql = [query["sql"] for query in queries.captured_queries]
     lock_index = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q)
@@ -105,7 +109,7 @@ def test_soft_deleted_accounts_do_not_count_toward_limit(
     accounts = create_accounts(user, MAX_ACCOUNTS_PER_USER)
     accounts[0].soft_delete()
 
-    response = post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+    response = post_account(auth_client)
 
     assert response.status_code == 201
 
@@ -116,7 +120,7 @@ def test_other_users_accounts_do_not_count_toward_limit(
 ) -> None:
     create_accounts(other_user, MAX_ACCOUNTS_PER_USER)
 
-    response = post(auth_client, "/accounts", {"name": "Amazon", "type": "gift_card"})
+    response = post_account(auth_client)
 
     assert response.status_code == 201
 
