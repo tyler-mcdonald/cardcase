@@ -43,13 +43,8 @@ def _allowed_methods(view: Any) -> list[str]:
 
 
 def _path(namespace: str, pattern: URLPattern) -> str:
-    assert pattern.name, f"API route {pattern.pattern} needs a name"
     params = {param: str(uuid4()) for param in pattern.pattern.regex.groupindex}
-    path = reverse(namespace + pattern.name, kwargs=params)
-    assert resolve(path).func is pattern.callback, (
-        f"API route name {namespace + pattern.name} is not unique"
-    )
-    return path
+    return reverse(f"{namespace}{pattern.name}", kwargs=params)
 
 
 API_ROUTES = [
@@ -84,6 +79,12 @@ def test_api_routes_are_discovered() -> None:
 @pytest.mark.parametrize(("namespace", "pattern"), _api_route_params())
 def test_api_route_is_drf_view(namespace: str, pattern: URLPattern) -> None:
     assert getattr(pattern.callback, "cls", None)
+
+
+@pytest.mark.parametrize(("namespace", "pattern"), _api_route_params())
+def test_api_route_has_unique_name(namespace: str, pattern: URLPattern) -> None:
+    assert pattern.name
+    assert resolve(_path(namespace, pattern)).func is pattern.callback
 
 
 @pytest.mark.django_db
