@@ -10,12 +10,12 @@ from rest_framework.exceptions import NotAuthenticated
 API_PREFIX = "v1/"
 
 
-def _walk(
+def _flatten_url_patterns(
     patterns: Sequence[URLPattern | URLResolver], prefix: str = "", namespace: str = ""
 ) -> Iterator[tuple[str, str, URLPattern]]:
     for pattern in patterns:
         if isinstance(pattern, URLResolver):
-            yield from _walk(
+            yield from _flatten_url_patterns(
                 pattern.url_patterns,
                 prefix + str(pattern.pattern),
                 f"{namespace}{pattern.namespace}:" if pattern.namespace else namespace,
@@ -51,7 +51,7 @@ def _path(namespace: str, pattern: URLPattern) -> str:
 def _api_requests() -> list[Any]:
     return [
         pytest.param(method, namespace, pattern, id=f"{method.upper()} /{route}")
-        for route, namespace, pattern in _walk(get_resolver().url_patterns)
+        for route, namespace, pattern in _flatten_url_patterns(get_resolver().url_patterns)
         if route.startswith(API_PREFIX)
         for method in _allowed_methods(route, pattern.callback)
     ]
