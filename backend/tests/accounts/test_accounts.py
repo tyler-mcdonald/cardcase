@@ -9,9 +9,9 @@ from django.utils import timezone
 from accounts import serializers
 from accounts.models import MAX_ACCOUNTS_PER_USER, Account
 from accounts.views import AccountPagination
-from tests.accounts.client import delete, get, patch, post
+from tests.accounts.client import delete, get, patch, post, post_account
 from tests.accounts.factories import create_account, create_accounts
-from tests.client import TestResponse, csrf_token
+from tests.client import csrf_token
 from users.models import User
 
 TEST_ACCOUNT_LIMIT = 5
@@ -22,10 +22,6 @@ def account_limit(monkeypatch: pytest.MonkeyPatch) -> int:
     monkeypatch.setattr(serializers, "MAX_ACCOUNTS_PER_USER", TEST_ACCOUNT_LIMIT)
     monkeypatch.setattr(AccountPagination, "max_page_size", TEST_ACCOUNT_LIMIT)
     return TEST_ACCOUNT_LIMIT
-
-
-def post_account(client: Client) -> TestResponse:
-    return post(client, "/accounts", {"name": "Amazon", "type": "gift_card"})
 
 
 @pytest.mark.django_db
@@ -100,7 +96,9 @@ def test_create_account_at_limit_is_rejected(
     response = post_account(auth_client)
 
     assert response.status_code == 400
-    assert response.json() == {"non_field_errors": [f"You can only have up to {account_limit} accounts."]}
+    assert response.json() == {
+        "non_field_errors": [f"You can only have up to {account_limit} accounts."]
+    }
     assert Account.objects.filter(user=user).count() == account_limit
 
 
