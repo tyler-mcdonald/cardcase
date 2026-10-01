@@ -10,6 +10,7 @@ def main() -> None:
     """Run administrative tasks."""
     try:
         import environ
+        from django.core.exceptions import ImproperlyConfigured
         from django.core.management import execute_from_command_line
     except ImportError as exc:
         raise ImportError(
@@ -18,15 +19,16 @@ def main() -> None:
             "forget to activate a virtual environment?"
         ) from exc
     environ.Env.read_env(Path(__file__).resolve().parent / ".env")
-    if "DJANGO_SETTINGS_MODULE" not in os.environ and not any(
-        arg.startswith("--settings") for arg in sys.argv
-    ):
+    try:
+        execute_from_command_line(sys.argv)
+    except ImproperlyConfigured:
+        if "DJANGO_SETTINGS_MODULE" in os.environ:
+            raise
         sys.exit(
-            "DJANGO_SETTINGS_MODULE is not set. Add "
-            "DJANGO_SETTINGS_MODULE=config.settings.local to backend/.env "
-            "(see backend/.env.example)."
+            "DJANGO_SETTINGS_MODULE is not set. Set it in the environment; for "
+            "local development, add it to backend/.env as shown in "
+            "backend/.env.example."
         )
-    execute_from_command_line(sys.argv)
 
 
 if __name__ == "__main__":

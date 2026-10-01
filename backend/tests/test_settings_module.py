@@ -26,8 +26,16 @@ def test_entry_point_fails_without_settings_module(entry_point: str) -> None:
     assert "DJANGO_SETTINGS_MODULE" in result.stderr
 
 
+PRINT_SETTINGS_MODULE = [
+    "shell",
+    "--no-imports",
+    "-c",
+    "from django.conf import settings; print(settings.SETTINGS_MODULE)",
+]
+
+
 def run_manage_py(
-    tmp_path: Path, env_file: str | None
+    tmp_path: Path, env_file: str | None, args: list[str]
 ) -> subprocess.CompletedProcess[str]:
     shutil.copy(BACKEND_DIR / "manage.py", tmp_path / "manage.py")
     if env_file is not None:
@@ -36,14 +44,7 @@ def run_manage_py(
     env["PYTHONPATH"] = str(BACKEND_DIR)
 
     return subprocess.run(
-        [
-            sys.executable,
-            "manage.py",
-            "shell",
-            "--no-imports",
-            "-c",
-            "from django.conf import settings; print(settings.SETTINGS_MODULE)",
-        ],
+        [sys.executable, "manage.py", *args],
         cwd=tmp_path,
         env=env,
         capture_output=True,
@@ -53,14 +54,24 @@ def run_manage_py(
 
 
 def test_manage_py_reads_settings_module_from_env_file(tmp_path: Path) -> None:
-    result = run_manage_py(tmp_path, "DJANGO_SETTINGS_MODULE=config.settings.test\n")
+    result = run_manage_py(
+        tmp_path, "DJANGO_SETTINGS_MODULE=config.settings.test\n", PRINT_SETTINGS_MODULE
+    )
 
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "config.settings.test"
 
 
 def test_manage_py_fails_without_settings_module(tmp_path: Path) -> None:
-    result = run_manage_py(tmp_path, None)
+    result = run_manage_py(tmp_path, None, PRINT_SETTINGS_MODULE)
 
     assert result.returncode != 0
     assert "DJANGO_SETTINGS_MODULE is not set" in result.stderr
+
+
+def test_manage_py_runs_settings_free_commands_without_settings_module(
+    tmp_path: Path,
+) -> None:
+    result = run_manage_py(tmp_path, None, ["--version"])
+
+    assert result.returncode == 0, result.stderr
