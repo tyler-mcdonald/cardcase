@@ -1,8 +1,8 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from rest_framework import serializers
 
-from .models import Account, Transaction
+from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
@@ -25,6 +25,17 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
                 "This field cannot be changed after creation."
             )
         return value
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if self.instance is None and self._at_account_limit():
+            raise serializers.ValidationError(
+                f"You can only have up to {MAX_ACCOUNTS_PER_USER} accounts."
+            )
+        return attrs
+
+    def _at_account_limit(self) -> bool:
+        user = self.context["request"].user
+        return Account.objects.filter(user=user).count() >= MAX_ACCOUNTS_PER_USER
 
 
 class TransactionSerializer(serializers.ModelSerializer[Transaction]):

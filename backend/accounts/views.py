@@ -1,13 +1,17 @@
 from typing import Any
 
+from django.db import transaction
 from django.db.models import QuerySet
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
 from users.models import User
 
-from .models import Account, Transaction
+from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 from .serializers import AccountSerializer, TransactionSerializer
 
 
@@ -21,12 +25,23 @@ class UserScopedViewSet(viewsets.ModelViewSet[Any]):
         return self.request.user
 
 
+class AccountPagination(PageNumberPagination):
+    page_size_query_param = "page_size"
+    max_page_size = MAX_ACCOUNTS_PER_USER
+
+
 class AccountViewSet(UserScopedViewSet):
     serializer_class = AccountSerializer
+    pagination_class = AccountPagination
     http_method_names = ("get", "post", "patch", "delete", "head", "options")
 
     def get_queryset(self) -> QuerySet[Account]:
         return Account.objects.filter(user=self.user)
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        with transaction.atomic():
+            User.objects.select_for_update().get(pk=self.user.pk)
+            return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
         serializer.save(user=self.user)

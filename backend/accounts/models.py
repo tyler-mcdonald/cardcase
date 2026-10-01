@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+MAX_ACCOUNTS_PER_USER = 250
+
 
 class AccountManager(models.Manager["Account"]):
     def get_queryset(self) -> models.QuerySet["Account"]:
