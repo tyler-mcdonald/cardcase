@@ -21,7 +21,7 @@ import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { isMissingPage, parsePage } from "@/lib/pagination";
+import { isMissingPage, parsePage } from "@/lib/api/pagination";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {

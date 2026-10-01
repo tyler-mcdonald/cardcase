@@ -6,7 +6,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { hasApiStatus } from "@/lib/api/errors";
-import { totalPages } from "@/lib/pagination";
+import { totalPages } from "@/lib/api/pagination";
 import {
   createAccount,
   deleteAccount,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@/lib/api/errors";
-import { isMissingPage, parsePage, totalPages } from "@/lib/pagination";
+import { isMissingPage, parsePage, totalPages } from "@/lib/api/pagination";
 
 describe("parsePage", () => {
   it("returns a positive integer page", () => {
