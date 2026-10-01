@@ -9,9 +9,9 @@ from django.test.utils import CaptureQueriesContext
 from pytest_django import Settings
 
 from accounts.models import Account, Transaction
-from tests.accounts.client import delete, get, patch, post, result_ids, results
+from tests.accounts.client import delete, get, patch, post
 from tests.accounts.factories import create_account, create_transaction
-from tests.client import csrf_token
+from tests.client import csrf_token, result_ids, results
 from users.models import User
 
 MALFORMED_IDS = [

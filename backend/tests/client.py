@@ -1,6 +1,6 @@
 import json
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.test import Client
 
@@ -47,6 +47,14 @@ def _delete(client: Client, path: str, base: str) -> TestResponse:
         f"{base}{path}",
         HTTP_X_CSRFTOKEN=csrf_token(client),
     )
+
+
+def results(response: TestResponse) -> list[dict[str, Any]]:
+    return cast(list[dict[str, Any]], response.json()["results"])
+
+
+def result_ids(response: TestResponse) -> list[str]:
+    return [result["id"] for result in results(response)]
 
 
 def get_session(client: Client) -> TestResponse:
