@@ -30,12 +30,6 @@ lint-staged.
 - Components — call only `queries.ts` hooks/options. Never call `request`, a feature's
   `api.ts`, or `fetch` directly.
 
-## Pagination
-
-Never loop through paginated pages to "get all". For a capped collection whose endpoint
-accepts `page_size` (e.g. accounts), fetch it in one request with `page_size`. Paginate
-anything else, such as transactions, in the UI.
-
 ## Types
 
 Types shared across layers (a feature's own or otherwise) belong in a `types.ts`
