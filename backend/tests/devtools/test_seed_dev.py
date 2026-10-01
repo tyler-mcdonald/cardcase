@@ -6,7 +6,7 @@ from django.core.management import CommandError, call_command
 from django.test import Client
 from pytest_django import Settings
 
-from accounts.models import Account
+from accounts.models import Account, Transaction
 from tests.client import AUTH_BASE, get_session, scoped
 from users.models import User
 
@@ -43,6 +43,24 @@ def test_seed_dev_is_idempotent() -> None:
 
     assert User.objects.count() == 1
     assert Account.objects.count() == 3
+
+
+def test_seed_dev_creates_more_than_one_page_of_transactions(
+    settings: Settings,
+) -> None:
+    call_command("seed_dev", email=EMAIL)
+
+    page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
+    assert Transaction.objects.filter(account__user__email=EMAIL).count() > page_size
+
+
+def test_seed_dev_does_not_duplicate_transactions() -> None:
+    call_command("seed_dev", email=EMAIL)
+    seeded_count = Transaction.objects.count()
+
+    call_command("seed_dev", email=EMAIL)
+
+    assert Transaction.objects.count() == seeded_count
 
 
 def test_seed_dev_requires_debug(settings: Settings) -> None:
