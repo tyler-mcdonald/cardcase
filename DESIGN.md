@@ -10,6 +10,7 @@
 ##### Non-Functional Requirements
 
 - All accounts and transaction access is scoped to the authenticated user
+- A user can have up to 250 accounts (soft-deleted accounts don't count)
 - User sessions expire after 30 days
 - Browser sessions are cookie-based
 - Verification codes expire after a few minutes
@@ -52,6 +53,7 @@
   - POST /accounts
     - { name, description?, type, expires_on?, starting_balance }
   - GET /accounts
+    - ?page (default 1), ?page_size (default 50, max 250; larger values are clamped)
   - GET /accounts/{id}
   - PATCH /accounts/{id}
     - { name?, description?, type?, expires_on? }
