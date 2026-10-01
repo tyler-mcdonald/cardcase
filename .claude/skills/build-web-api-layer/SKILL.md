@@ -43,8 +43,9 @@ piece moves out of B.
 
 ## Pagination
 
-Never loop through paginated pages to "get all". Fetch a bounded collection in one
-request with `page_size`, or paginate in the UI.
+Never loop through paginated pages to "get all". For a capped collection whose endpoint
+accepts `page_size` (e.g. accounts), fetch it in one request with `page_size`. Paginate
+anything else, such as transactions, in the UI.
 
 ## Types
 
