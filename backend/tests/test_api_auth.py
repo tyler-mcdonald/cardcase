@@ -31,9 +31,10 @@ def _handled_methods(view: Any, view_class: Any) -> list[str]:
     return [m for m in view_class.http_method_names if hasattr(view_class, m)]
 
 
-def _allowed_methods(route: str, view: Any) -> list[str]:
+def _allowed_methods(view: Any) -> list[str]:
     view_class = getattr(view, "cls", None)
-    assert view_class, f"API route {route} must be a DRF view"
+    if not view_class:
+        return []
     handled = _handled_methods(view, view_class)
     if "get" in handled:
         handled.append("head")
@@ -51,12 +52,25 @@ def _path(namespace: str, pattern: URLPattern) -> str:
     return path
 
 
+API_ROUTES = [
+    (route, namespace, pattern)
+    for route, namespace, pattern in _flatten_url_patterns(get_resolver().url_patterns)
+    if route.startswith(API_PREFIX)
+]
+
+
+def _api_route_params() -> list[Any]:
+    return [
+        pytest.param(namespace, pattern, id=f"/{route}")
+        for route, namespace, pattern in API_ROUTES
+    ]
+
+
 def _api_requests() -> list[Any]:
     return [
         pytest.param(method, namespace, pattern, id=f"{method.upper()} /{route}")
-        for route, namespace, pattern in _flatten_url_patterns(get_resolver().url_patterns)
-        if route.startswith(API_PREFIX)
-        for method in _allowed_methods(route, pattern.callback)
+        for route, namespace, pattern in API_ROUTES
+        for method in _allowed_methods(pattern.callback)
     ]
 
 
@@ -65,6 +79,11 @@ API_REQUESTS = _api_requests()
 
 def test_api_routes_are_discovered() -> None:
     assert API_REQUESTS
+
+
+@pytest.mark.parametrize(("namespace", "pattern"), _api_route_params())
+def test_api_route_is_drf_view(namespace: str, pattern: URLPattern) -> None:
+    assert getattr(pattern.callback, "cls", None)
 
 
 @pytest.mark.django_db
