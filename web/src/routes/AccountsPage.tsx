@@ -18,15 +18,11 @@ import {
 } from "@/features/accounts/AccountCard";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
-import { accountsQuery, isMissingPage } from "@/features/accounts/queries";
+import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { isMissingPage, parsePage } from "@/lib/pagination";
 import classes from "./AccountsPage.module.css";
-
-function parsePage(value: string | null): number {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
-}
 
 export function AccountsPage() {
   const [searchParams, setSearchParams] = useSearchParams();

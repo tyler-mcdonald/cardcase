@@ -6,6 +6,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { hasApiStatus } from "@/lib/api/errors";
+import { totalPages } from "@/lib/pagination";
 import {
   createAccount,
   deleteAccount,
@@ -26,18 +27,14 @@ function toAccountsResult(
   response: Paginated<Account>,
   page: number,
 ): AccountsResult {
-  const totalPages = response.next
-    ? Math.ceil(response.count / response.results.length)
-    : page;
-  return { accounts: response.results, totalPages };
+  return {
+    accounts: response.results,
+    totalPages: totalPages(response, page),
+  };
 }
 
 function invalidateAccounts(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-}
-
-export function isMissingPage(error: unknown): boolean {
-  return hasApiStatus(error, 404);
 }
 
 export function accountsQuery(page: number) {
