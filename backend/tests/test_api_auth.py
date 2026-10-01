@@ -24,18 +24,21 @@ def _flatten_url_patterns(
             yield prefix + str(pattern.pattern), namespace, pattern
 
 
+def _handled_methods(view: Any, view_class: Any) -> list[str]:
+    actions = getattr(view, "actions", None)
+    if actions:
+        return list(actions.keys())
+    return [m for m in view_class.http_method_names if hasattr(view_class, m)]
+
+
 def _allowed_methods(route: str, view: Any) -> list[str]:
     view_class = getattr(view, "cls", None)
     assert view_class, f"API route {route} must be a DRF view"
-    allowed = view_class.http_method_names
-    actions = getattr(view, "actions", None)
-    handled = list(
-        actions.keys() if actions else [m for m in allowed if hasattr(view_class, m)]
-    )
+    handled = _handled_methods(view, view_class)
     if "get" in handled:
         handled.append("head")
     handled.append("options")
-    return [m for m in allowed if m in handled]
+    return [m for m in view_class.http_method_names if m in handled]
 
 
 def _path(namespace: str, pattern: URLPattern) -> str:
