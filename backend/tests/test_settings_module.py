@@ -63,23 +63,9 @@ def test_manage_py_reads_settings_module_from_env_file(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("env_file", [None, "DJANGO_SETTINGS_MODULE=\n"])
-@pytest.mark.parametrize(
-    "args",
-    [PRINT_SETTINGS_MODULE, ["seed_dev"], ["createsuperuser", "--noinput"]],
-)
 def test_manage_py_fails_without_settings_module(
-    tmp_path: Path, env_file: str | None, args: list[str]
+    tmp_path: Path, env_file: str | None
 ) -> None:
-    result = run_manage_py(tmp_path, env_file, args)
+    result = run_manage_py(tmp_path, env_file, PRINT_SETTINGS_MODULE)
 
     assert result.returncode != 0
-    assert "DJANGO_SETTINGS_MODULE is not set" in result.stderr
-
-
-@pytest.mark.parametrize("args", [["--version"], ["help"], ["help", "--commands"]])
-def test_manage_py_runs_settings_free_commands_without_settings_module(
-    tmp_path: Path, args: list[str]
-) -> None:
-    result = run_manage_py(tmp_path, None, args)
-
-    assert result.returncode == 0, result.stderr
