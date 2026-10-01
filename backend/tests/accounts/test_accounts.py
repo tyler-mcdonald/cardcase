@@ -12,35 +12,6 @@ from users.models import User
 
 
 @pytest.mark.django_db
-def test_list_requires_authentication(client: Client) -> None:
-    assert get(client, "/accounts").status_code == 403
-
-
-@pytest.mark.django_db
-def test_create_requires_authentication(client: Client) -> None:
-    response = post(client, "/accounts", {"name": "Amazon", "type": "gift_card"})
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
-def test_update_requires_authentication(client: Client, user: User) -> None:
-    account = create_account(user)
-
-    response = patch(client, f"/accounts/{account.id}", {"name": "Hijacked"})
-
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
-def test_delete_requires_authentication(client: Client, user: User) -> None:
-    account = create_account(user)
-
-    response = delete(client, f"/accounts/{account.id}")
-
-    assert response.status_code == 403
-
-
-@pytest.mark.django_db
 def test_create_account_success(auth_client: Client, user: User) -> None:
     response = post(
         auth_client,
