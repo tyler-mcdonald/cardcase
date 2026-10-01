@@ -8,7 +8,7 @@ from django.test import Client
 from django.test.utils import CaptureQueriesContext
 
 from accounts.models import Account, Transaction
-from tests.accounts.client import delete, get, patch, post
+from tests.accounts.client import delete, get, patch, post, result_ids, results
 from tests.accounts.factories import create_account, create_transaction
 from tests.client import csrf_token
 from users.models import User
@@ -135,8 +135,7 @@ def test_list_only_returns_transactions_for_the_given_account(
     response = get(auth_client, transaction_list_url(account))
 
     assert response.status_code == 200
-    results = response.json()["results"]
-    assert [r["id"] for r in results] == [str(mine.id)]
+    assert result_ids(response) == [str(mine.id)]
 
 
 @pytest.mark.django_db
@@ -147,8 +146,7 @@ def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) 
 
     response = get(auth_client, transaction_list_url(account))
 
-    results = response.json()["results"]
-    assert [r["id"] for r in results] == [str(newer.id), str(older.id)]
+    assert result_ids(response) == [str(newer.id), str(older.id)]
 
 
 @pytest.mark.django_db
@@ -399,8 +397,7 @@ def test_list_all_returns_own_transactions_across_accounts(
     response = get(auth_client, "/transactions")
 
     assert response.status_code == 200
-    ids = {r["id"] for r in response.json()["results"]}
-    assert ids == {str(first.id), str(second.id)}
+    assert set(result_ids(response)) == {str(first.id), str(second.id)}
 
 
 @pytest.mark.django_db
@@ -414,7 +411,7 @@ def test_list_all_excludes_soft_deleted_accounts(
 
     response = get(auth_client, "/transactions")
 
-    assert [r["id"] for r in response.json()["results"]] == [str(kept.id)]
+    assert result_ids(response) == [str(kept.id)]
 
 
 @pytest.mark.django_db
@@ -430,7 +427,7 @@ def test_list_all_orders_by_date_then_account_name_then_newest_created(
 
     response = get(auth_client, "/transactions")
 
-    assert [r["id"] for r in response.json()["results"]] == [
+    assert result_ids(response) == [
         str(amazon_last_created.id),
         str(amazon_first_created.id),
         str(delta_same_day.id),
@@ -445,7 +442,7 @@ def test_list_all_includes_account_summary(auth_client: Client, user: User) -> N
 
     response = get(auth_client, "/transactions")
 
-    assert response.json()["results"][0]["account"] == {
+    assert results(response)[0]["account"] == {
         "id": str(account.id),
         "name": "Delta",
         "type": "flight_credit",
