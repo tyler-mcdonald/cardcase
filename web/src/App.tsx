@@ -3,6 +3,7 @@ import { AppLayout } from "./AppLayout";
 import { AccountsPage } from "./routes/AccountsPage";
 import { LoginPage } from "./routes/LoginPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
+import { TransactionsPage } from "./routes/TransactionsPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         }
       >
         <Route index element={<AccountsPage />} />
+        <Route path="transactions" element={<TransactionsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

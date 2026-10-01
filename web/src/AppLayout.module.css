@@ -1,0 +1,8 @@
+.navLink {
+  color: var(--mantine-color-dimmed);
+}
+
+.navLink[aria-current="page"] {
+  color: var(--mantine-color-text);
+  font-weight: 600;
+}

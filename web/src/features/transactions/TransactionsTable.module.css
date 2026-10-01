@@ -1,0 +1,17 @@
+.table {
+  table-layout: fixed;
+}
+
+.date {
+  width: 130px;
+}
+
+.account {
+  width: 280px;
+}
+
+.amount {
+  width: 120px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
