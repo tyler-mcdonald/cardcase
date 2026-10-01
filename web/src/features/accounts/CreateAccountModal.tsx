@@ -3,7 +3,7 @@ import { AccountForm } from "./AccountForm";
 import { useCreateAccount } from "./queries";
 import type { AccountInput } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
-import { useGuardedClose } from "./use-guarded-close";
+import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 
 const INITIAL_VALUES: AccountInput = {
   name: "",

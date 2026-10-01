@@ -1,9 +1,4 @@
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC",
-});
+import { formatDate } from "@/lib/format";
 
 function localDateString(date: Date): string {
   const year = date.getFullYear();
@@ -23,7 +18,7 @@ export function describeExpiry(expiresOn: string | null): {
   if (!expiresOn) {
     return { label: "No expiration", expired: false };
   }
-  const formatted = dateFormatter.format(new Date(`${expiresOn}T00:00:00Z`));
+  const formatted = formatDate(expiresOn);
   const expired = isExpired(expiresOn);
   return {
     label: expired ? `Expired ${formatted}` : `Expires ${formatted}`,
