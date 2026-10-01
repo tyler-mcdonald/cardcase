@@ -71,7 +71,7 @@ class UserTransactionViewSet(UserScopedViewSet):
     def get_queryset(self) -> QuerySet[Transaction]:
         return (
             Transaction.objects.filter(
-                account__user=self.user, account__deleted_at__isnull=True
+                account__in=Account.objects.filter(user=self.user)
             )
             .select_related("account")
             .order_by("-occurred_on", "account__name", "-created_at", "-id")
