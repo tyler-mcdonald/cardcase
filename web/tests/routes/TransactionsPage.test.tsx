@@ -1,4 +1,10 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listAllAccounts } from "@/features/accounts/api";
@@ -350,9 +356,9 @@ describe("adding a transaction", () => {
   it("closes without saving when Escape is pressed", async () => {
     await openNewTransaction();
 
-    fireEvent.keyDown(screen.getByRole("textbox", { name: "Description" }), {
-      key: "Escape",
-    });
+    const description = screen.getByRole("textbox", { name: "Description" });
+    act(() => description.focus());
+    fireEvent.keyDown(description, { key: "Escape" });
 
     expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
@@ -365,6 +371,16 @@ describe("adding a transaction", () => {
     fireEvent.click(account);
     await screen.findByRole("option", { name: "Starbucks" });
     fireEvent.keyDown(account, { key: "Escape" });
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+  });
+
+  it("only closes the calendar when Escape is pressed in the date", async () => {
+    await openNewTransaction();
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Date" }), {
+      key: "Escape",
+    });
 
     expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
   });

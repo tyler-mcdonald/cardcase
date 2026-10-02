@@ -44,10 +44,12 @@ function validate(values: NewTransactionValues) {
   };
 }
 
-function isDropdownOpen(target: EventTarget): boolean {
-  return (
-    target instanceof HTMLElement &&
-    target.getAttribute("aria-expanded") === "true"
+function hasOpenDropdown(row: HTMLElement | null): boolean {
+  const dropdowns = row?.querySelectorAll<HTMLElement>(
+    ".mantine-Popover-dropdown",
+  );
+  return [...(dropdowns ?? [])].some(
+    (dropdown) => dropdown.style.display !== "none",
   );
 }
 
@@ -116,7 +118,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   }
 
   function cancelOnEscape(event: KeyboardEvent) {
-    if (event.key === "Escape" && !isDropdownOpen(event.target)) {
+    if (event.key === "Escape" && !hasOpenDropdown(editorRow)) {
       cancel();
     }
   }
@@ -146,7 +148,10 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             size="xs"
             valueFormat="MMM D, YYYY"
             allowDeselect
-            popoverProps={{ withinPortal: false }}
+            popoverProps={{
+              withinPortal: false,
+              transitionProps: { duration: 0 },
+            }}
             {...form.getInputProps("occurredOn")}
             error={Boolean(form.errors.occurredOn)}
           />
