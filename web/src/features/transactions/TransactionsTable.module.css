@@ -24,6 +24,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-.newTransactionRow {
+.clickableRow {
+  cursor: pointer;
+}
+
+.editorRow {
   background-color: var(--mantine-primary-color-light);
 }

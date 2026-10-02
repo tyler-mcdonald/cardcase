@@ -6,29 +6,51 @@ import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
 import {
+  type EditTarget,
   TransactionsTable,
   TransactionsTableSkeleton,
 } from "@/features/transactions/TransactionsTable";
 import {
   transactionsQuery,
-  useIsCreatingTransaction,
+  useIsSavingTransaction,
 } from "@/features/transactions/queries";
 import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
+
+type Editor = { kind: "new"; key: number } | ({ kind: "edit" } & EditTarget);
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
-  const isCreating = useIsCreatingTransaction();
-  const [editorKey, setEditorKey] = useState<number | null>(null);
-  const isAdding = editorKey !== null;
+  const isSaving = useIsSavingTransaction();
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const isEditedRowGone =
+    editor?.kind === "edit" &&
+    data !== undefined &&
+    !data.items.some((transaction) => transaction.id === editor.id);
+  if (isEditedRowGone) {
+    setEditor(null);
+  }
+  const isAdding = editor?.kind === "new";
+  const editing = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
-    setEditorKey((key) => (key ?? 0) + 1);
+    setEditor((current) => ({
+      kind: "new",
+      key: current?.kind === "new" ? current.key + 1 : 1,
+    }));
+  }
+
+  function openEditTransaction(target: EditTarget) {
+    setEditor({ kind: "edit", ...target });
+  }
+
+  function closeEditor(closing: Editor | null) {
+    setEditor((current) => (current === closing ? null : current));
   }
 
   if (page > 1 && isMissingPage(error)) {
@@ -43,7 +65,7 @@ export function TransactionsPage() {
         </Title>
         <Button
           onClick={openNewTransaction}
-          disabled={data === undefined || isCreating}
+          disabled={data === undefined || isSaving}
         >
           Add transaction
         </Button>
@@ -65,11 +87,14 @@ export function TransactionsPage() {
       {showTable && (
         <TransactionsTable
           transactions={data.items}
+          editing={editing}
+          onEdit={isSaving ? undefined : openEditTransaction}
+          onEditClose={() => closeEditor(editor)}
           newRow={
             isAdding && (
               <NewTransactionRow
-                key={editorKey}
-                onClose={() => setEditorKey(null)}
+                key={editor.key}
+                onClose={() => closeEditor(editor)}
               />
             )
           }
@@ -77,7 +102,12 @@ export function TransactionsPage() {
       )}
 
       {data && (
-        <Pager total={data.totalPages} page={page} onChange={goToPage} />
+        <Pager
+          total={data.totalPages}
+          page={page}
+          onChange={goToPage}
+          disabled={isSaving}
+        />
       )}
     </Stack>
   );

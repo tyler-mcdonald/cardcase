@@ -1,4 +1,4 @@
-type ClosableMutation = {
+export type ClosableMutation = {
   isPending: boolean;
   reset: () => void;
 };
