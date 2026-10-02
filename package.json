@@ -1,0 +1,16 @@
+{
+  "name": "132-create-a-transaction",
+  "version": "1.0.0",
+  "description": "![status](https://img.shields.io/badge/status-under%20construction-yellow)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

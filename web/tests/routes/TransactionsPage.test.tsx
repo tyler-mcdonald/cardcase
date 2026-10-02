@@ -282,6 +282,14 @@ describe("adding a transaction", () => {
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
   });
 
+  it("focuses the date when opened", async () => {
+    await openNewTransaction();
+
+    expect(document.activeElement).toBe(
+      screen.getByRole("textbox", { name: "Date" }),
+    );
+  });
+
   it("discards unsaved changes when opened again", async () => {
     await openNewTransaction();
 

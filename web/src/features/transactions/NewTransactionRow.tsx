@@ -107,6 +107,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
         <Table.Td>
           <DateInput
             aria-label="Date"
+            autoFocus
             size="xs"
             valueFormat="MMM D, YYYY"
             allowDeselect
