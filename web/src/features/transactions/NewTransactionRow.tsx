@@ -34,14 +34,20 @@ function isPositive(amount: Amount): boolean {
   return Number(amount) > 0;
 }
 
-function validate(values: NewTransactionValues) {
+function validate({
+  accountId,
+  occurredOn,
+  outflow,
+  inflow,
+}: NewTransactionValues) {
+  const hasAccount = Boolean(accountId);
+  const hasDate = Boolean(occurredOn);
+  const hasAmount = isPositive(outflow) || isPositive(inflow);
+
   return {
-    accountId: values.accountId ? null : "Account is required",
-    occurredOn: values.occurredOn ? null : "Date is required",
-    amount:
-      isPositive(values.outflow) || isPositive(values.inflow)
-        ? null
-        : "Enter either an outflow or an inflow",
+    accountId: hasAccount ? null : "Account is required",
+    occurredOn: hasDate ? null : "Date is required",
+    amount: hasAmount ? null : "Enter either an outflow or an inflow",
   };
 }
 
