@@ -16,6 +16,8 @@ export function TransactionsPage() {
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
+  const isEmpty = data?.items.length === 0;
+  const hasTransactions = data !== undefined && data.items.length > 0;
 
   if (page > 1 && isMissingPage(error)) {
     return <Navigate to={{ search: "" }} replace />;
@@ -38,11 +40,9 @@ export function TransactionsPage() {
         />
       )}
 
-      {data?.items.length === 0 && <Text fw={600}>No transactions yet.</Text>}
+      {isEmpty && <Text fw={600}>No transactions yet.</Text>}
 
-      {data && data.items.length > 0 && (
-        <TransactionsTable transactions={data.items} />
-      )}
+      {hasTransactions && <TransactionsTable transactions={data.items} />}
 
       {data && (
         <PagePagination
