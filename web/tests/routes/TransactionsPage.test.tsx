@@ -320,25 +320,52 @@ describe("adding a transaction", () => {
     );
   });
 
-  it("rejects a missing account, date, and amount", async () => {
+  it("requires an account", async () => {
     await openNewTransactionForm();
 
-    const date = screen.getByRole("textbox", { name: "Date" });
-    fireEvent.change(date, { target: { value: "" } });
-    fireEvent.blur(date);
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "5" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    const alert = await screen.findByRole("alert");
-    expect(within(alert).getByText("Account is required")).toBeTruthy();
-    expect(within(alert).getByText("Date is required")).toBeTruthy();
-    expect(
-      within(alert).getByText("Enter either an outflow or an inflow"),
-    ).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Account is required",
+    );
     expect(
       screen
         .getByRole("combobox", { name: "Account" })
         .getAttribute("aria-invalid"),
     ).toBe("true");
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("requires a date", async () => {
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "5" },
+    });
+    const date = screen.getByRole("textbox", { name: "Date" });
+    fireEvent.change(date, { target: { value: "" } });
+    fireEvent.blur(date);
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Date is required",
+    );
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("requires an outflow or an inflow", async () => {
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Enter either an outflow or an inflow",
+    );
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
   });
 
