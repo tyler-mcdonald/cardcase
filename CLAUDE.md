@@ -17,7 +17,7 @@ naming *how* the other side implements that contract is not.
 
 ## PR conventions
 
-Open PRs with the `open-pr` skill. On top of it, PR titles in this repo use only these scopes:
+PR titles in this repo use only these scopes:
 
 - `backend` — changes under `backend/`
 - `web` — changes under `web/`
