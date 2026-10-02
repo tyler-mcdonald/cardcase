@@ -9,7 +9,5 @@ export function AccountSelect(props: Omit<SelectProps, "data">) {
     label: account.name,
   }));
 
-  return (
-    <Select searchable selectFirstOptionOnChange data={options} {...props} />
-  );
+  return <Select data={options} {...props} />;
 }
