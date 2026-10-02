@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.stubGlobal("scrollTo", vi.fn());
 });
 
-it("shows each transaction's date, account, description, and amount", async () => {
+it("shows each transaction's date, account, type, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
       makeTransaction({
@@ -52,14 +52,16 @@ it("shows each transaction's date, account, description, and amount", async () =
 
   expect(cells(latteRow)).toEqual([
     "Sep 28, 2026",
-    "StarbucksGift card",
+    "Starbucks",
+    "Gift card",
     "Latte",
     "$4.75",
     "",
   ]);
   expect(cells(refundRow)).toEqual([
     "Sep 27, 2026",
-    "DeltaFlight credit",
+    "Delta",
+    "Flight credit",
     "Refund",
     "",
     "$150.00",

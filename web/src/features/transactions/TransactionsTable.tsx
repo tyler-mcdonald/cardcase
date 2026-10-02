@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { Group, Skeleton, Table, Text } from "@mantine/core";
+import { Skeleton, Table, Text } from "@mantine/core";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
 import type { Transaction } from "./types";
 
-const COLUMN_COUNT = 5;
+const COLUMN_COUNT = 6;
 const SKELETON_ROW_COUNT = 8;
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
@@ -21,6 +21,7 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
         <Table.Tr>
           <Table.Th className={classes.date}>Date</Table.Th>
           <Table.Th className={classes.account}>Account</Table.Th>
+          <Table.Th className={classes.accountType}>Type</Table.Th>
           <Table.Th>Description</Table.Th>
           <Table.Th className={classes.amount}>Outflow</Table.Th>
           <Table.Th className={classes.amount}>Inflow</Table.Th>
@@ -44,12 +45,12 @@ export function TransactionsTable({
           <Table.Tr key={transaction.id}>
             <Table.Td>{formatDate(transaction.occurred_on)}</Table.Td>
             <Table.Td>
-              <Group gap="xs" wrap="nowrap">
-                <Text size="sm" truncate>
-                  {transaction.account.name}
-                </Text>
-                <AccountTypeBadge type={transaction.account.type} />
-              </Group>
+              <Text size="sm" truncate>
+                {transaction.account.name}
+              </Text>
+            </Table.Td>
+            <Table.Td>
+              <AccountTypeBadge type={transaction.account.type} />
             </Table.Td>
             <Table.Td className={classes.description}>
               {transaction.description}
