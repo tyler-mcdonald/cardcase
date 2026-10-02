@@ -22,6 +22,11 @@ import { useCreateTransaction } from "./queries";
 type Amount = string | number;
 type AmountField = "outflow" | "inflow";
 
+const OPPOSITE_AMOUNT_FIELD: Record<AmountField, AmountField> = {
+  outflow: "inflow",
+  inflow: "outflow",
+};
+
 type NewTransactionValues = {
   accountId: string | null;
   occurredOn: string | null;
@@ -97,12 +102,11 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   useClickOutside(cancel, null, [editorRow, actionsRow]);
 
   function setAmount(field: AmountField, value: Amount) {
-    const otherField = field === "outflow" ? "inflow" : "outflow";
     form.setFieldValue(field, value);
-    if (value !== "") {
-      form.setFieldValue(otherField, "");
-    }
     form.clearFieldError("amount");
+    if (value !== "") {
+      form.setFieldValue(OPPOSITE_AMOUNT_FIELD[field], "");
+    }
   }
 
   function formatAmount(field: AmountField) {
