@@ -3,6 +3,7 @@ import {
   Button,
   Group,
   NumberInput,
+  type NumberInputProps,
   Stack,
   Table,
   Text,
@@ -69,6 +70,31 @@ function toNewTransaction(values: NewTransactionValues) {
       occurred_on: values.occurredOn!,
     },
   };
+}
+
+function AmountInput(props: NumberInputProps) {
+  return (
+    <NumberInput
+      size="xs"
+      min={0}
+      allowNegative={false}
+      decimalScale={2}
+      hideControls
+      {...props}
+    />
+  );
+}
+
+function ErrorMessages({ messages }: { messages: string[] }) {
+  return (
+    <Stack gap={2} role={messages.length > 0 ? "alert" : undefined}>
+      {messages.map((message) => (
+        <Text key={message} size="sm" c="red">
+          {message}
+        </Text>
+      ))}
+    </Stack>
+  );
 }
 
 export function NewTransactionRow({ onClose }: { onClose: () => void }) {
@@ -213,26 +239,10 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
           />
         </Table.Td>
         <Table.Td>
-          <NumberInput
-            aria-label="Outflow"
-            size="xs"
-            min={0}
-            allowNegative={false}
-            decimalScale={2}
-            hideControls
-            {...amountInputProps("outflow")}
-          />
+          <AmountInput aria-label="Outflow" {...amountInputProps("outflow")} />
         </Table.Td>
         <Table.Td>
-          <NumberInput
-            aria-label="Inflow"
-            size="xs"
-            min={0}
-            allowNegative={false}
-            decimalScale={2}
-            hideControls
-            {...amountInputProps("inflow")}
-          />
+          <AmountInput aria-label="Inflow" {...amountInputProps("inflow")} />
         </Table.Td>
       </Table.Tr>
       <Table.Tr
@@ -242,13 +252,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
       >
         <Table.Td colSpan={COLUMN_COUNT}>
           <Group justify="space-between" wrap="nowrap">
-            <Stack gap={2} role={messages.length > 0 ? "alert" : undefined}>
-              {messages.map((message) => (
-                <Text key={message} size="sm" c="red">
-                  {message}
-                </Text>
-              ))}
-            </Stack>
+            <ErrorMessages messages={messages} />
             <Group gap="xs" wrap="nowrap">
               <Button
                 size="xs"
