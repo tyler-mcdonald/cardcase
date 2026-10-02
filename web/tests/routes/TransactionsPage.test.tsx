@@ -332,6 +332,21 @@ describe("adding a transaction", () => {
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
   });
 
+  it("closes without saving when clicking outside", async () => {
+    await openNewTransaction();
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Account" }));
+    const option = await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.mouseDown(option);
+    fireEvent.click(option);
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByText("Groceries"));
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
   it("opens in place of the empty state", async () => {
     mockedListTransactions.mockReset();
     mockedListTransactions.mockResolvedValueOnce(makePage([]));

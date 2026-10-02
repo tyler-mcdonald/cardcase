@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useState, type KeyboardEvent } from "react";
 import {
   Button,
   Group,
@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { useClickOutside } from "@mantine/hooks";
 import dayjs from "dayjs";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
@@ -51,6 +52,10 @@ function signedAmount({ outflow, inflow }: NewTransactionValues): string {
 
 export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   const createTransaction = useCreateTransaction();
+  const [editorRow, setEditorRow] = useState<HTMLTableRowElement | null>(null);
+  const [actionsRow, setActionsRow] = useState<HTMLTableRowElement | null>(
+    null,
+  );
   const form = useForm<NewTransactionValues>({
     initialValues: {
       accountId: null,
@@ -79,6 +84,14 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     );
   });
 
+  function cancel() {
+    if (!createTransaction.isPending) {
+      onClose();
+    }
+  }
+
+  useClickOutside(cancel, null, [editorRow, actionsRow]);
+
   function setAmount(field: "outflow" | "inflow", value: Amount) {
     const otherField = field === "outflow" ? "inflow" : "outflow";
     form.setFieldValue(field, value);
@@ -103,7 +116,11 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <Table.Tr className={classes.editor} onKeyDown={saveOnEnter}>
+      <Table.Tr
+        ref={setEditorRow}
+        className={classes.editor}
+        onKeyDown={saveOnEnter}
+      >
         <Table.Td>
           <DateInput
             aria-label="Date"
@@ -111,6 +128,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             size="xs"
             valueFormat="MMM D, YYYY"
             allowDeselect
+            popoverProps={{ withinPortal: false }}
             {...form.getInputProps("occurredOn")}
             error={Boolean(form.errors.occurredOn)}
           />
@@ -119,6 +137,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
           <AccountSelect
             aria-label="Account"
             placeholder="Account"
+            comboboxProps={{ withinPortal: false }}
             size="xs"
             {...form.getInputProps("accountId")}
             error={Boolean(form.errors.accountId)}
@@ -160,7 +179,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
           />
         </Table.Td>
       </Table.Tr>
-      <Table.Tr className={classes.editor}>
+      <Table.Tr ref={setActionsRow} className={classes.editor}>
         <Table.Td colSpan={COLUMN_COUNT}>
           <Group justify="space-between" wrap="nowrap">
             <Stack gap={2} role={messages.length > 0 ? "alert" : undefined}>
