@@ -299,6 +299,25 @@ describe("adding a transaction", () => {
     ).toBe("");
   });
 
+  it("can't be reopened while a save is pending", async () => {
+    mockedCreateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    await openNewTransaction();
+
+    await chooseAccount("Starbucks");
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "5" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Add transaction" })
+          .hasAttribute("disabled"),
+      ).toBe(true),
+    );
+  });
+
   it("closes without saving on cancel", async () => {
     await openNewTransaction();
 

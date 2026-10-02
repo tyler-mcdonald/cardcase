@@ -9,7 +9,10 @@ import {
   TransactionsTable,
   TransactionsTableSkeleton,
 } from "@/features/transactions/TransactionsTable";
-import { transactionsQuery } from "@/features/transactions/queries";
+import {
+  transactionsQuery,
+  useIsCreatingTransaction,
+} from "@/features/transactions/queries";
 import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
@@ -18,6 +21,7 @@ export function TransactionsPage() {
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
+  const isCreating = useIsCreatingTransaction();
   const [editorKey, setEditorKey] = useState<number | null>(null);
   const isAdding = editorKey !== null;
   const isEmpty = data?.items.length === 0 && !isAdding;
@@ -37,7 +41,9 @@ export function TransactionsPage() {
         <Title order={1} size="h2">
           Transactions
         </Title>
-        <Button onClick={openNewTransaction}>Add transaction</Button>
+        <Button onClick={openNewTransaction} disabled={isCreating}>
+          Add transaction
+        </Button>
       </Group>
 
       {isPending && <TransactionsTableSkeleton />}
