@@ -14,3 +14,5 @@ export type TransactionInput = Pick<
   Transaction,
   "amount" | "description" | "occurred_on"
 >;
+
+export type TransactionUpdate = Partial<TransactionInput>;

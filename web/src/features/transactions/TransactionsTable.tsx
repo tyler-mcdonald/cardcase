@@ -3,6 +3,7 @@ import { Skeleton, Table, Text } from "@mantine/core";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
+import { EditTransactionRow } from "./EditTransactionRow";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
 import type { Transaction } from "./types";
@@ -35,17 +36,36 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
 export function TransactionsTable({
   transactions,
   newRow,
+  editingId,
+  onEdit,
+  onEditClose,
 }: {
   transactions: Transaction[];
   newRow?: ReactNode;
+  editingId: string | null;
+  onEdit?: (id: string) => void;
+  onEditClose: () => void;
 }) {
   return (
     <TransactionsTableFrame>
       {newRow}
       {transactions.map((transaction) => {
+        if (transaction.id === editingId) {
+          return (
+            <EditTransactionRow
+              key={transaction.id}
+              transaction={transaction}
+              onClose={onEditClose}
+            />
+          );
+        }
         const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
         return (
-          <Table.Tr key={transaction.id}>
+          <Table.Tr
+            key={transaction.id}
+            className={onEdit && classes.clickableRow}
+            onClick={onEdit && (() => onEdit(transaction.id))}
+          >
             <Table.Td>{formatDate(transaction.occurred_on)}</Table.Td>
             <Table.Td>
               <Text size="sm" truncate>

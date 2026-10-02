@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api/errors";
 import {
   createTransaction,
   listTransactions,
+  updateTransaction,
 } from "@/features/transactions/api";
 import { makeTransaction } from "./factories";
 
@@ -61,6 +62,32 @@ describe("createTransaction", () => {
     mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
 
     await expect(createTransaction("42", input)).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+});
+
+describe("updateTransaction", () => {
+  const changes = { description: "Mocha" };
+
+  it("patches the changed fields of the transaction", async () => {
+    const transaction = makeTransaction(changes);
+    mockedRequest.mockResolvedValueOnce(transaction);
+
+    await expect(updateTransaction("42", "7", changes)).resolves.toEqual(
+      transaction,
+    );
+    expect(mockedRequest).toHaveBeenCalledWith(
+      "PATCH",
+      "/v1/accounts/42/transactions/7",
+      { body: JSON.stringify(changes) },
+    );
+  });
+
+  it("propagates request failures", async () => {
+    mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
+
+    await expect(updateTransaction("42", "7", changes)).rejects.toMatchObject({
       status: 400,
     });
   });
