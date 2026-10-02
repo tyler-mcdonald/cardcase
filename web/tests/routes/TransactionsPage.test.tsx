@@ -261,19 +261,7 @@ describe("adding a transaction", () => {
     expect((outflow as HTMLInputElement).value).toBe("4.50");
   });
 
-  it("opens the account dropdown when tabbed into", async () => {
-    await openNewTransaction();
-
-    const account = screen.getByRole("combobox", { name: "Account" });
-    act(() => account.focus());
-    fireEvent.keyUp(account, { key: "Tab" });
-
-    expect(
-      await screen.findByRole("option", { name: "Starbucks" }),
-    ).toBeTruthy();
-  });
-
-  it("closes the account dropdown when tabbing away", async () => {
+  it("opens the account dropdown when tabbed into and closes it when tabbing away", async () => {
     await openNewTransaction();
 
     const account = screen.getByRole("combobox", { name: "Account" });
@@ -423,7 +411,6 @@ describe("adding a transaction", () => {
   });
 
   it("opens in place of the empty state", async () => {
-    mockedListTransactions.mockReset();
     mockedListTransactions.mockResolvedValueOnce(makePage([]));
     renderPage();
     await screen.findByText("No transactions yet.");

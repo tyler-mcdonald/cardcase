@@ -14,11 +14,13 @@ import { useClickOutside } from "@mantine/hooks";
 import dayjs from "dayjs";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
 import { useCreateTransaction } from "./queries";
 
 type Amount = string | number;
+type AmountField = "outflow" | "inflow";
 
 type NewTransactionValues = {
   accountId: string | null;
@@ -33,24 +35,14 @@ function isPositive(amount: Amount): boolean {
 }
 
 function validate(values: NewTransactionValues) {
-  const filledAmounts = [values.outflow, values.inflow].filter(isPositive);
   return {
     accountId: values.accountId ? null : "Account is required",
     occurredOn: values.occurredOn ? null : "Date is required",
     amount:
-      filledAmounts.length === 1
+      isPositive(values.outflow) || isPositive(values.inflow)
         ? null
         : "Enter either an outflow or an inflow",
   };
-}
-
-function hasOpenDropdown(row: HTMLElement | null): boolean {
-  const dropdowns = row?.querySelectorAll<HTMLElement>(
-    ".mantine-Popover-dropdown",
-  );
-  return [...(dropdowns ?? [])].some(
-    (dropdown) => dropdown.style.display !== "none",
-  );
 }
 
 function signedAmount({ outflow, inflow }: NewTransactionValues): string {
@@ -66,6 +58,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     null,
   );
   const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
+  const [dateDropdownOpened, setDateDropdownOpened] = useState(false);
   const form = useForm<NewTransactionValues>({
     initialValues: {
       accountId: null,
@@ -94,15 +87,11 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     );
   });
 
-  function cancel() {
-    if (!createTransaction.isPending) {
-      onClose();
-    }
-  }
+  const cancel = useGuardedClose([createTransaction], onClose);
 
   useClickOutside(cancel, null, [editorRow, actionsRow]);
 
-  function setAmount(field: "outflow" | "inflow", value: Amount) {
+  function setAmount(field: AmountField, value: Amount) {
     const otherField = field === "outflow" ? "inflow" : "outflow";
     form.setFieldValue(field, value);
     if (value !== "") {
@@ -111,11 +100,20 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     form.clearFieldError("amount");
   }
 
-  function formatAmount(field: "outflow" | "inflow") {
+  function formatAmount(field: AmountField) {
     const value = form.values[field];
     if (value !== "") {
       form.setFieldValue(field, Number(value).toFixed(2));
     }
+  }
+
+  function amountInputProps(field: AmountField) {
+    return {
+      value: form.values[field],
+      onChange: (value: Amount) => setAmount(field, value),
+      onBlur: () => formatAmount(field),
+      error: Boolean(form.errors.amount),
+    };
   }
 
   function saveOnEnter(event: KeyboardEvent) {
@@ -126,7 +124,11 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   }
 
   function cancelOnEscape(event: KeyboardEvent) {
-    if (event.key === "Escape" && !hasOpenDropdown(editorRow)) {
+    if (
+      event.key === "Escape" &&
+      !accountDropdownOpened &&
+      !dateDropdownOpened
+    ) {
       cancel();
     }
   }
@@ -153,7 +155,6 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   if (createTransaction.error) {
     messages.push(apiErrorMessage(createTransaction.error));
   }
-  const hasAmountError = Boolean(form.errors.amount);
 
   return (
     <>
@@ -171,7 +172,8 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             allowDeselect
             popoverProps={{
               withinPortal: false,
-              transitionProps: { duration: 0 },
+              onOpen: () => setDateDropdownOpened(true),
+              onClose: () => setDateDropdownOpened(false),
             }}
             {...form.getInputProps("occurredOn")}
             error={Boolean(form.errors.occurredOn)}
@@ -209,10 +211,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             allowNegative={false}
             decimalScale={2}
             hideControls
-            value={form.values.outflow}
-            onChange={(value) => setAmount("outflow", value)}
-            onBlur={() => formatAmount("outflow")}
-            error={hasAmountError}
+            {...amountInputProps("outflow")}
           />
         </Table.Td>
         <Table.Td>
@@ -223,10 +222,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             allowNegative={false}
             decimalScale={2}
             hideControls
-            value={form.values.inflow}
-            onChange={(value) => setAmount("inflow", value)}
-            onBlur={() => formatAmount("inflow")}
-            error={hasAmountError}
+            {...amountInputProps("inflow")}
           />
         </Table.Td>
       </Table.Tr>
@@ -248,7 +244,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
               <Button
                 size="xs"
                 variant="default"
-                onClick={onClose}
+                onClick={cancel}
                 disabled={createTransaction.isPending}
               >
                 Cancel
