@@ -191,6 +191,12 @@ describe("adding a transaction", () => {
     fireEvent.click(await screen.findByRole("option", { name }));
   }
 
+  function enterOutflow(amount: string) {
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: amount },
+    });
+  }
+
   function save() {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
   }
@@ -200,9 +206,7 @@ describe("adding a transaction", () => {
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "4.75" },
-    });
+    enterOutflow("4.75");
     save();
 
     await waitFor(() =>
@@ -222,9 +226,7 @@ describe("adding a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "  Latte  " },
     });
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "4.75" },
-    });
+    enterOutflow("4.75");
     save();
 
     await waitFor(() =>
@@ -240,9 +242,7 @@ describe("adding a transaction", () => {
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "4.75" },
-    });
+    enterOutflow("4.75");
     mockedListTransactions.mockResolvedValueOnce(
       makePage([makeTransaction({ id: "2", description: "Latte" })]),
     );
@@ -323,9 +323,7 @@ describe("adding a transaction", () => {
   it("requires an account", async () => {
     await openNewTransactionForm();
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "5" },
-    });
+    enterOutflow("5");
     save();
 
     expect((await screen.findByRole("alert")).textContent).toBe(
@@ -343,9 +341,7 @@ describe("adding a transaction", () => {
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "5" },
-    });
+    enterOutflow("5");
     const date = screen.getByRole("textbox", { name: "Date" });
     fireEvent.change(date, { target: { value: "" } });
     fireEvent.blur(date);
@@ -376,9 +372,7 @@ describe("adding a transaction", () => {
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "5" },
-    });
+    enterOutflow("5");
     save();
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
@@ -412,9 +406,7 @@ describe("adding a transaction", () => {
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
-    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
-      target: { value: "5" },
-    });
+    enterOutflow("5");
     save();
 
     await waitFor(() =>
