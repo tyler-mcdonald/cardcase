@@ -195,7 +195,26 @@ describe("adding a transaction", () => {
     fireEvent.click(await screen.findByRole("option", { name }));
   }
 
-  it("saves an outflow as a negative amount and refreshes the list", async () => {
+  it("saves an outflow as a negative amount", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "4.75" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("a", {
+        amount: "-4.75",
+        description: "",
+        occurred_on: "2026-09-30",
+      }),
+    );
+  });
+
+  it("trims the description", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
     await openNewTransactionForm();
 
@@ -206,17 +225,30 @@ describe("adding a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
       target: { value: "4.75" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith(
+        "a",
+        expect.objectContaining({ description: "Latte" }),
+      ),
+    );
+  });
+
+  it("closes and refreshes the list after saving", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "4.75" },
+    });
     mockedListTransactions.mockResolvedValueOnce(
       makePage([makeTransaction({ id: "2", description: "Latte" })]),
     );
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(await screen.findByText("Latte")).toBeTruthy();
-    expect(mockedCreateTransaction).toHaveBeenCalledWith("a", {
-      amount: "-4.75",
-      description: "Latte",
-      occurred_on: "2026-09-30",
-    });
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
