@@ -184,7 +184,7 @@ describe("adding a transaction", () => {
     vi.useRealTimers();
   });
 
-  async function openNewTransaction() {
+  async function openNewTransactionForm() {
     renderPage();
     await screen.findByText("Groceries");
     fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
@@ -197,7 +197,7 @@ describe("adding a transaction", () => {
 
   it("saves an outflow as a negative amount and refreshes the list", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
@@ -222,7 +222,7 @@ describe("adding a transaction", () => {
 
   it("saves an inflow as a positive amount when Enter is pressed", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     await chooseAccount("Delta");
     const inflow = screen.getByRole("textbox", { name: "Inflow" });
@@ -239,7 +239,7 @@ describe("adding a transaction", () => {
   });
 
   it("clears the other amount when one is entered", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const outflow = screen.getByRole("textbox", { name: "Outflow" });
     const inflow = screen.getByRole("textbox", { name: "Inflow" });
@@ -251,7 +251,7 @@ describe("adding a transaction", () => {
   });
 
   it("formats an amount when it loses focus", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const outflow = screen.getByRole("textbox", { name: "Outflow" });
     fireEvent.change(outflow, { target: { value: "4.5" } });
@@ -262,7 +262,7 @@ describe("adding a transaction", () => {
   });
 
   it("opens the account dropdown when tabbed into and closes it when tabbing away", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const account = screen.getByRole("combobox", { name: "Account" });
     act(() => account.focus());
@@ -276,7 +276,7 @@ describe("adding a transaction", () => {
   });
 
   it("rejects a missing account, date, and amount", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const date = screen.getByRole("textbox", { name: "Date" });
     fireEvent.change(date, { target: { value: "" } });
@@ -301,7 +301,7 @@ describe("adding a transaction", () => {
     mockedCreateTransaction.mockRejectedValueOnce(
       new ApiError("Request failed (500)", 500),
     );
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
@@ -314,7 +314,7 @@ describe("adding a transaction", () => {
   });
 
   it("focuses the date when opened", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     expect(document.activeElement).toBe(
       screen.getByRole("textbox", { name: "Date" }),
@@ -322,7 +322,7 @@ describe("adding a transaction", () => {
   });
 
   it("discards unsaved changes when opened again", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Latte" },
@@ -337,7 +337,7 @@ describe("adding a transaction", () => {
 
   it("can't be reopened while a save is pending", async () => {
     mockedCreateTransaction.mockReturnValueOnce(new Promise(() => {}));
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
@@ -355,7 +355,7 @@ describe("adding a transaction", () => {
   });
 
   it("closes without saving on cancel", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
@@ -364,7 +364,7 @@ describe("adding a transaction", () => {
   });
 
   it("closes without saving when clicking outside", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     fireEvent.click(screen.getByRole("combobox", { name: "Account" }));
     const option = await screen.findByRole("option", { name: "Starbucks" });
@@ -379,7 +379,7 @@ describe("adding a transaction", () => {
   });
 
   it("closes without saving when Escape is pressed", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const description = screen.getByRole("textbox", { name: "Description" });
     act(() => description.focus());
@@ -390,7 +390,7 @@ describe("adding a transaction", () => {
   });
 
   it("only closes the account dropdown when Escape is pressed in it", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     const account = screen.getByRole("combobox", { name: "Account" });
     fireEvent.click(account);
@@ -401,7 +401,7 @@ describe("adding a transaction", () => {
   });
 
   it("only closes the calendar when Escape is pressed in the date", async () => {
-    await openNewTransaction();
+    await openNewTransactionForm();
 
     fireEvent.keyDown(screen.getByRole("textbox", { name: "Date" }), {
       key: "Escape",
