@@ -3,7 +3,7 @@ import { Group, Skeleton, Table, Text } from "@mantine/core";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import classes from "./TransactionsTable.module.css";
-import { splitAmount } from "./format";
+import { formatOutflowAndInflow } from "./format";
 import type { Transaction } from "./types";
 
 const COLUMN_COUNT = 5;
@@ -39,7 +39,7 @@ export function TransactionsTable({
   return (
     <TransactionsTableFrame>
       {transactions.map((transaction) => {
-        const { outflow, inflow } = splitAmount(transaction.amount);
+        const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
         return (
           <Table.Tr key={transaction.id}>
             <Table.Td>{formatDate(transaction.occurred_on)}</Table.Td>

@@ -3,7 +3,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export function splitAmount(amount: string): {
+export function formatOutflowAndInflow(amount: string): {
   outflow: string | null;
   inflow: string | null;
 } {
