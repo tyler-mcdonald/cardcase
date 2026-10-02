@@ -23,3 +23,7 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.newTransactionRow {
+  background-color: var(--mantine-primary-color-light);
+}

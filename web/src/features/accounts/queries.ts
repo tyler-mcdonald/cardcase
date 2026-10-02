@@ -11,6 +11,7 @@ import {
   createAccount,
   deleteAccount,
   listAccounts,
+  listAllAccounts,
   updateAccount,
 } from "./api";
 import type { AccountUpdate } from "./types";
@@ -26,6 +27,13 @@ export function accountsQuery(page: number) {
     queryKey: [...ACCOUNTS_QUERY_KEY, page],
     queryFn: async () => toPage(await listAccounts(page), page),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function allAccountsQuery() {
+  return queryOptions({
+    queryKey: [...ACCOUNTS_QUERY_KEY, "all"],
+    queryFn: async () => (await listAllAccounts()).results,
   });
 }
 

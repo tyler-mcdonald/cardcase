@@ -1,25 +1,39 @@
-import { fireEvent, screen, within } from "@testing-library/react";
-import { beforeEach, expect, it, vi } from "vitest";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
-import { listTransactions } from "@/features/transactions/api";
-import { ApiError } from "@/lib/api/errors";
+import { listAllAccounts } from "@/features/accounts/api";
+import {
+  createTransaction,
+  listTransactions,
+} from "@/features/transactions/api";
+import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
+import { makeAccount } from "../features/accounts/factories";
 import { makeTransaction } from "../features/transactions/factories";
 import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/transactions/api", () => ({
   listTransactions: vi.fn(),
+  createTransaction: vi.fn(),
+}));
+
+vi.mock("@/features/accounts/api", () => ({
+  listAllAccounts: vi.fn(),
 }));
 
 const mockedListTransactions = vi.mocked(listTransactions);
+const mockedCreateTransaction = vi.mocked(createTransaction);
+const mockedListAllAccounts = vi.mocked(listAllAccounts);
 
 function renderPage(route = "/") {
   return renderWithProviders(<TransactionsPage />, { route });
 }
-
-beforeEach(() => {
-  vi.stubGlobal("scrollTo", vi.fn());
-});
 
 it("shows each transaction's date, account, type, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
@@ -96,6 +110,17 @@ it("shows an error state and can retry", async () => {
   expect(await screen.findByText("Groceries")).toBeTruthy();
 });
 
+it("disables adding a transaction until the list has loaded", async () => {
+  mockedListTransactions.mockReturnValueOnce(new Promise(() => {}));
+  renderPage();
+
+  expect(
+    screen
+      .getByRole("button", { name: "Add transaction" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+});
+
 it("paginates through the transactions", async () => {
   mockedListTransactions
     .mockResolvedValueOnce(
@@ -134,4 +159,329 @@ it("falls back to the first page when the requested page doesn't exist", async (
   expect(mockedListTransactions).toHaveBeenNthCalledWith(1, 9);
   expect(mockedListTransactions).toHaveBeenLastCalledWith(1);
   expect(screen.queryByText("Couldn't load your transactions")).toBeNull();
+});
+
+describe("adding a transaction", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 8, 30, 12));
+    mockedListTransactions.mockResolvedValue(
+      makePage([makeTransaction({ description: "Groceries" })]),
+    );
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks" }),
+        makeAccount({ id: "delta-id", name: "Delta" }),
+      ]),
+    );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function openNewTransactionForm() {
+    renderPage();
+    await screen.findByText("Groceries");
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+  }
+
+  async function chooseAccount(name: string) {
+    fireEvent.click(screen.getByRole("combobox", { name: "Account" }));
+    fireEvent.click(await screen.findByRole("option", { name }));
+  }
+
+  function enterOutflow(amount: string) {
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: amount },
+    });
+  }
+
+  function save() {
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  }
+
+  it("saves an outflow as a negative amount", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("4.75");
+    save();
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("starbucks-id", {
+        amount: "-4.75",
+        description: "",
+        occurred_on: "2026-09-30",
+      }),
+    );
+  });
+
+  it("trims the description", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "  Latte  " },
+    });
+    enterOutflow("4.75");
+    save();
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith(
+        "starbucks-id",
+        expect.objectContaining({ description: "Latte" }),
+      ),
+    );
+  });
+
+  it("closes and refreshes the list after saving", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("4.75");
+    mockedListTransactions.mockResolvedValueOnce(
+      makePage([makeTransaction({ id: "2", description: "Latte" })]),
+    );
+    save();
+
+    expect(await screen.findByText("Latte")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  });
+
+  it("saves an inflow as a positive amount", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Delta");
+    fireEvent.change(screen.getByRole("textbox", { name: "Inflow" }), {
+      target: { value: "150" },
+    });
+    save();
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("delta-id", {
+        amount: "150.00",
+        description: "",
+        occurred_on: "2026-09-30",
+      }),
+    );
+  });
+
+  it("saves when Enter is pressed", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Delta");
+    const inflow = screen.getByRole("textbox", { name: "Inflow" });
+    fireEvent.change(inflow, { target: { value: "150" } });
+    fireEvent.keyDown(inflow, { key: "Enter" });
+
+    await waitFor(() => expect(mockedCreateTransaction).toHaveBeenCalled());
+  });
+
+  it("clears the other amount when one is entered", async () => {
+    await openNewTransactionForm();
+
+    const outflow = screen.getByRole("textbox", { name: "Outflow" });
+    const inflow = screen.getByRole("textbox", { name: "Inflow" });
+    fireEvent.change(outflow, { target: { value: "10" } });
+    fireEvent.change(inflow, { target: { value: "20" } });
+
+    expect((outflow as HTMLInputElement).value).toBe("");
+    expect((inflow as HTMLInputElement).value).toBe("20");
+  });
+
+  it("formats an amount when it loses focus", async () => {
+    await openNewTransactionForm();
+
+    const outflow = screen.getByRole("textbox", { name: "Outflow" });
+    fireEvent.change(outflow, { target: { value: "4.5" } });
+    expect((outflow as HTMLInputElement).value).toBe("4.5");
+    fireEvent.blur(outflow);
+
+    expect((outflow as HTMLInputElement).value).toBe("4.50");
+  });
+
+  it("opens the account dropdown when tabbed into and closes it when tabbing away", async () => {
+    await openNewTransactionForm();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    act(() => account.focus());
+    fireEvent.keyUp(account, { key: "Tab" });
+    await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.blur(account);
+
+    await waitFor(() =>
+      expect(screen.queryByRole("option", { name: "Starbucks" })).toBeNull(),
+    );
+  });
+
+  it("requires an account", async () => {
+    await openNewTransactionForm();
+
+    enterOutflow("5");
+    save();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Account is required",
+    );
+    expect(
+      screen
+        .getByRole("combobox", { name: "Account" })
+        .getAttribute("aria-invalid"),
+    ).toBe("true");
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("requires a date", async () => {
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("5");
+    const date = screen.getByRole("textbox", { name: "Date" });
+    fireEvent.change(date, { target: { value: "" } });
+    fireEvent.blur(date);
+    save();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Date is required",
+    );
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("requires an outflow or an inflow", async () => {
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    save();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Enter either an outflow or an inflow",
+    );
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("shows an error and stays open when saving fails", async () => {
+    mockedCreateTransaction.mockRejectedValueOnce(
+      new ApiError("Request failed (500)", 500),
+    );
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("5");
+    save();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+  });
+
+  it("focuses the date when opened", async () => {
+    await openNewTransactionForm();
+
+    expect(document.activeElement).toBe(
+      screen.getByRole("textbox", { name: "Date" }),
+    );
+  });
+
+  it("discards unsaved changes when opened again", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Latte" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    expect(
+      (screen.getByRole("textbox", { name: "Description" }) as HTMLInputElement)
+        .value,
+    ).toBe("");
+  });
+
+  it("can't be reopened while a save is pending", async () => {
+    mockedCreateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("5");
+    save();
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Add transaction" })
+          .hasAttribute("disabled"),
+      ).toBe(true),
+    );
+  });
+
+  it("closes without saving on cancel", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("closes without saving when clicking outside", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Account" }));
+    const option = await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.mouseDown(option);
+    fireEvent.click(option);
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByText("Groceries"));
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("closes without saving when Escape is pressed", async () => {
+    await openNewTransactionForm();
+
+    const description = screen.getByRole("textbox", { name: "Description" });
+    act(() => description.focus());
+    fireEvent.keyDown(description, { key: "Escape" });
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("only closes the account dropdown when Escape is pressed in it", async () => {
+    await openNewTransactionForm();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    fireEvent.click(account);
+    await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.keyDown(account, { key: "Escape" });
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+  });
+
+  it("only closes the calendar when Escape is pressed in the date", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Date" }), {
+      key: "Escape",
+    });
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+  });
+
+  it("opens in place of the empty state", async () => {
+    mockedListTransactions.mockResolvedValueOnce(makePage([]));
+    renderPage();
+    await screen.findByText("No transactions yet.");
+
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    expect(screen.queryByText("No transactions yet.")).toBeNull();
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+  });
 });

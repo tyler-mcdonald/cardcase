@@ -26,6 +26,11 @@ Object.defineProperty(window, "ResizeObserver", {
   value: ResizeObserverStub,
 });
 
+Object.defineProperty(window, "scrollTo", {
+  writable: true,
+  value: () => {},
+});
+
 afterEach(() => {
   cleanup();
 });

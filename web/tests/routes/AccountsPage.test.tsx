@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AccountsPage } from "@/routes/AccountsPage";
 import {
   createAccount,
@@ -69,10 +69,6 @@ async function expectDialogLockedWhileSaving() {
 
   expect(screen.queryByRole("dialog")).not.toBeNull();
 }
-
-beforeEach(() => {
-  vi.stubGlobal("scrollTo", vi.fn());
-});
 
 describe("AccountsPage", () => {
   it("shows the user's accounts once loaded", async () => {
