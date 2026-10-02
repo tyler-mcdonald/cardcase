@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
-import { PagePagination } from "@/components/PagePagination";
+import { Pager } from "@/components/Pager";
 import {
   AccountCard,
   AccountCardSkeleton,
@@ -107,11 +107,7 @@ export function AccountsPage() {
       )}
 
       {data && (
-        <PagePagination
-          total={data.totalPages}
-          page={page}
-          onChange={goToPage}
-        />
+        <Pager total={data.totalPages} page={page} onChange={goToPage} />
       )}
     </Stack>
   );

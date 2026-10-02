@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import { Stack, Text, Title } from "@mantine/core";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
-import { PagePagination } from "@/components/PagePagination";
+import { Pager } from "@/components/Pager";
 import {
   TransactionsTable,
   TransactionsTableSkeleton,
@@ -45,11 +45,7 @@ export function TransactionsPage() {
       {hasTransactions && <TransactionsTable transactions={data.items} />}
 
       {data && (
-        <PagePagination
-          total={data.totalPages}
-          page={page}
-          onChange={goToPage}
-        />
+        <Pager total={data.totalPages} page={page} onChange={goToPage} />
       )}
     </Stack>
   );

@@ -1,7 +1,7 @@
 import { Pagination } from "@mantine/core";
-import classes from "./PagePagination.module.css";
+import classes from "./Pager.module.css";
 
-export function PagePagination({
+export function Pager({
   total,
   page,
   onChange,
