@@ -39,6 +39,9 @@ export function TransactionsPage() {
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
+    if (isSaving) {
+      return;
+    }
     setEditor((current) => ({
       kind: "new",
       key: current?.kind === "new" ? current.key + 1 : 1,
@@ -63,10 +66,7 @@ export function TransactionsPage() {
         <Title order={1} size="h2">
           Transactions
         </Title>
-        <Button
-          onClick={openNewTransaction}
-          disabled={data === undefined || isSaving}
-        >
+        <Button onClick={openNewTransaction} disabled={data === undefined}>
           Add transaction
         </Button>
       </Group>

@@ -412,14 +412,20 @@ describe("adding a transaction", () => {
     await chooseAccount("Starbucks");
     enterOutflow("5");
     save();
-
     await waitFor(() =>
       expect(
-        screen
-          .getByRole("button", { name: "Add transaction" })
-          .hasAttribute("disabled"),
+        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled"),
       ).toBe(true),
     );
+
+    const add = screen.getByRole("button", { name: "Add transaction" });
+    fireEvent.click(add);
+
+    expect(add.hasAttribute("disabled")).toBe(false);
+    expect(
+      (screen.getByRole("textbox", { name: "Outflow" }) as HTMLInputElement)
+        .value,
+    ).toBe("5");
   });
 
   it("closes without saving on cancel", async () => {
