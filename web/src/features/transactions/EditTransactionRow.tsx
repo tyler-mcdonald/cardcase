@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useUpdateTransaction } from "./queries";
 import { TransactionEditorRow } from "./TransactionEditorRow";
 import {
@@ -15,24 +16,25 @@ export function EditTransactionRow({
   transaction: Transaction;
   onClose: () => void;
 }) {
+  const [openedWith] = useState(transaction);
   const updateTransaction = useUpdateTransaction();
 
   function save(values: TransactionFormValues) {
-    const changes = changedFields(transaction, toTransactionInput(values));
+    const changes = changedFields(openedWith, toTransactionInput(values));
     if (Object.keys(changes).length === 0) {
       onClose();
       return;
     }
     updateTransaction.mutate(
-      { accountId: transaction.account.id, id: transaction.id, changes },
+      { accountId: openedWith.account.id, id: openedWith.id, changes },
       { onSuccess: onClose },
     );
   }
 
   return (
     <TransactionEditorRow
-      initialValues={transactionFormFrom(transaction)}
-      lockedAccountName={transaction.account.name}
+      initialValues={transactionFormFrom(openedWith)}
+      lockedAccountName={openedWith.account.name}
       mutation={updateTransaction}
       onSave={save}
       onClose={onClose}

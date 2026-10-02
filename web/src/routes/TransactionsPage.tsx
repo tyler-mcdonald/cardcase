@@ -25,6 +25,13 @@ export function TransactionsPage() {
   );
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
+  const isEditedRowGone =
+    editor?.kind === "edit" &&
+    data !== undefined &&
+    !data.items.some((transaction) => transaction.id === editor.id);
+  if (isEditedRowGone) {
+    setEditor(null);
+  }
   const isAdding = editor?.kind === "new";
   const editingId = editor?.kind === "edit" ? editor.id : null;
   const isEmpty = data?.items.length === 0 && !isAdding;

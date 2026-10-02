@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { QueryClient } from "@tanstack/react-query";
+import { focusManager, QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listAllAccounts } from "@/features/accounts/api";
@@ -633,6 +633,56 @@ describe("editing a transaction", () => {
       expect(screen.queryByRole("button", { name: "Save" })).toBeNull(),
     );
     expect(mockedListTransactions).toHaveBeenLastCalledWith(2);
+  });
+
+  it("doesn't reopen the editor after leaving its page", async () => {
+    const coffee = makeTransaction({ id: "coffee-id", description: "Coffee" });
+    mockedListTransactions.mockImplementation(async (page) =>
+      page === 1
+        ? makePage([latte, refund], { count: 3, hasNext: true })
+        : makePage([coffee], { count: 3 }),
+    );
+    await openEditor("Latte");
+
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    expect(await screen.findByText("Coffee")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "1" }));
+
+    expect(await screen.findByText("Latte")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  });
+
+  it("sends only the fields changed since the editor opened", async () => {
+    mockedUpdateTransaction.mockResolvedValueOnce(latte);
+    await openEditor("Latte");
+    mockedListTransactions.mockResolvedValue(
+      makePage([
+        { ...latte, description: "Renamed elsewhere" },
+        { ...refund, description: "Partial refund" },
+      ]),
+    );
+
+    try {
+      act(() => {
+        focusManager.setFocused(false);
+        focusManager.setFocused(true);
+      });
+      expect(await screen.findByText("Partial refund")).toBeTruthy();
+    } finally {
+      focusManager.setFocused(undefined);
+    }
+    fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
+      target: { value: "5.00" },
+    });
+    save();
+
+    await waitFor(() =>
+      expect(mockedUpdateTransaction).toHaveBeenCalledWith(
+        "starbucks-id",
+        "latte-id",
+        { amount: "-5.00" },
+      ),
+    );
   });
 
   it("refreshes the accounts after saving", async () => {

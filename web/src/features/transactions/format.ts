@@ -3,13 +3,25 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
+export function splitOutflowAndInflow(amount: string): {
+  outflow: number | null;
+  inflow: number | null;
+} {
+  const value = Number(amount);
+  const magnitude = Math.abs(value);
+  if (value < 0) return { outflow: magnitude, inflow: null };
+  if (value > 0) return { outflow: null, inflow: magnitude };
+  return { outflow: null, inflow: null };
+}
+
+function formatCurrency(magnitude: number | null): string | null {
+  return magnitude === null ? null : currencyFormatter.format(magnitude);
+}
+
 export function formatOutflowAndInflow(amount: string): {
   outflow: string | null;
   inflow: string | null;
 } {
-  const value = Number(amount);
-  const formatted = currencyFormatter.format(Math.abs(value));
-  if (value < 0) return { outflow: formatted, inflow: null };
-  if (value > 0) return { outflow: null, inflow: formatted };
-  return { outflow: null, inflow: null };
+  const { outflow, inflow } = splitOutflowAndInflow(amount);
+  return { outflow: formatCurrency(outflow), inflow: formatCurrency(inflow) };
 }

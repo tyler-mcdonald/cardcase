@@ -1,4 +1,5 @@
 import { localDateString } from "@/lib/format";
+import { splitOutflowAndInflow } from "./format";
 import type { Transaction, TransactionInput, TransactionUpdate } from "./types";
 
 export type Amount = string | number;
@@ -59,14 +60,13 @@ export function emptyTransactionForm(): TransactionFormValues {
 export function transactionFormFrom(
   transaction: Transaction,
 ): TransactionFormValues {
-  const amount = Number(transaction.amount);
-  const magnitude = Math.abs(amount).toFixed(2);
+  const { outflow, inflow } = splitOutflowAndInflow(transaction.amount);
   return {
     accountId: transaction.account.id,
     occurredOn: transaction.occurred_on,
     description: transaction.description,
-    outflow: amount < 0 ? magnitude : "",
-    inflow: amount > 0 ? magnitude : "",
+    outflow: outflow?.toFixed(2) ?? "",
+    inflow: inflow?.toFixed(2) ?? "",
   };
 }
 
