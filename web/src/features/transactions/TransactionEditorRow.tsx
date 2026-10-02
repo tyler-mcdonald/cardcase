@@ -237,10 +237,19 @@ export function TransactionEditorRow({
           <Group justify="space-between" wrap="nowrap">
             <ErrorMessages messages={messages} />
             <Group gap="xs" wrap="nowrap">
-              <Button size="xs" variant="default" onClick={cancel}>
+              <Button
+                size="xs"
+                variant="default"
+                onClick={cancel}
+                disabled={mutation.isPending}
+              >
                 Cancel
               </Button>
-              <Button size="xs" onClick={() => save()}>
+              <Button
+                size="xs"
+                onClick={() => save()}
+                disabled={mutation.isPending}
+              >
                 Save
               </Button>
             </Group>

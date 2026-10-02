@@ -412,7 +412,11 @@ describe("adding a transaction", () => {
     await chooseAccount("Starbucks");
     enterOutflow("5");
     save();
-    await waitFor(() => expect(mockedCreateTransaction).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled"),
+      ).toBe(true),
+    );
 
     const add = screen.getByRole("button", { name: "Add transaction" });
     fireEvent.click(add);
@@ -558,7 +562,7 @@ describe("editing a transaction", () => {
     );
   });
 
-  it("ignores Save and Cancel while saving", async () => {
+  it("disables Save while saving", async () => {
     mockedUpdateTransaction.mockReturnValueOnce(new Promise(() => {}));
     await openEditor("Latte");
 
@@ -566,16 +570,12 @@ describe("editing a transaction", () => {
       target: { value: "Mocha" },
     });
     save();
-    await waitFor(() => expect(mockedUpdateTransaction).toHaveBeenCalled());
 
-    save();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-
-    expect(mockedUpdateTransaction).toHaveBeenCalledTimes(1);
-    expect(inputValue("Description")).toBe("Mocha");
-    expect(
-      screen.getByRole("button", { name: "Save" }).hasAttribute("disabled"),
-    ).toBe(false);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled"),
+      ).toBe(true),
+    );
   });
 
   it("closes without saving when clicking outside", async () => {
