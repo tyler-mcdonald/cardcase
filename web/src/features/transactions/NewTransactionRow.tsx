@@ -11,9 +11,9 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
-import dayjs from "dayjs";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { localDateString } from "@/lib/format";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
@@ -62,7 +62,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   const form = useForm<NewTransactionValues>({
     initialValues: {
       accountId: null,
-      occurredOn: dayjs().format("YYYY-MM-DD"),
+      occurredOn: localDateString(new Date()),
       description: "",
       outflow: "",
       inflow: "",
