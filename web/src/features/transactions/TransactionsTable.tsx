@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { Skeleton, Table, Text } from "@mantine/core";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
+import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
 import type { Transaction } from "./types";
 
-const COLUMN_COUNT = 6;
 const SKELETON_ROW_COUNT = 8;
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
@@ -34,11 +34,14 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
 
 export function TransactionsTable({
   transactions,
+  newRow,
 }: {
   transactions: Transaction[];
+  newRow?: ReactNode;
 }) {
   return (
     <TransactionsTableFrame>
+      {newRow}
       {transactions.map((transaction) => {
         const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
         return (

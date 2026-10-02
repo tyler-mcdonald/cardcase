@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
-import { Stack, Text, Title } from "@mantine/core";
+import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
+import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
 import {
   TransactionsTable,
   TransactionsTableSkeleton,
@@ -16,8 +18,14 @@ export function TransactionsPage() {
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
-  const isEmpty = data?.items.length === 0;
-  const hasTransactions = data !== undefined && data.items.length > 0;
+  const [editorKey, setEditorKey] = useState<number | null>(null);
+  const isAdding = editorKey !== null;
+  const isEmpty = data?.items.length === 0 && !isAdding;
+  const showTable = data !== undefined && !isEmpty;
+
+  function openNewTransaction() {
+    setEditorKey((key) => (key ?? 0) + 1);
+  }
 
   if (page > 1 && isMissingPage(error)) {
     return <Navigate to={{ search: "" }} replace />;
@@ -25,9 +33,12 @@ export function TransactionsPage() {
 
   return (
     <Stack gap="lg">
-      <Title order={1} size="h2">
-        Transactions
-      </Title>
+      <Group justify="space-between" align="flex-end">
+        <Title order={1} size="h2">
+          Transactions
+        </Title>
+        <Button onClick={openNewTransaction}>Add transaction</Button>
+      </Group>
 
       {isPending && <TransactionsTableSkeleton />}
 
@@ -42,7 +53,19 @@ export function TransactionsPage() {
 
       {isEmpty && <Text fw={600}>No transactions yet.</Text>}
 
-      {hasTransactions && <TransactionsTable transactions={data.items} />}
+      {showTable && (
+        <TransactionsTable
+          transactions={data.items}
+          newRow={
+            isAdding && (
+              <NewTransactionRow
+                key={editorKey}
+                onClose={() => setEditorKey(null)}
+              />
+            )
+          }
+        />
+      )}
 
       {data && (
         <Pager total={data.totalPages} page={page} onChange={goToPage} />

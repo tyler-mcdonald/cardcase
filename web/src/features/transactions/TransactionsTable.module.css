@@ -23,3 +23,7 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.editor {
+  background-color: var(--mantine-primary-color-light);
+}

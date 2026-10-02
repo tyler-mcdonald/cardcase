@@ -5,6 +5,7 @@ import {
   createAccount,
   deleteAccount,
   listAccounts,
+  listAllAccounts,
   updateAccount,
 } from "@/features/accounts/api";
 import { makeAccount } from "./factories";
@@ -34,6 +35,24 @@ describe("listAccounts", () => {
     mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
 
     await expect(listAccounts(1)).rejects.toMatchObject({ status: 403 });
+  });
+});
+
+describe("listAllAccounts", () => {
+  it("requests every account in one page", async () => {
+    mockedRequest.mockResolvedValueOnce({
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    });
+
+    await listAllAccounts();
+
+    expect(mockedRequest).toHaveBeenCalledWith(
+      "GET",
+      "/v1/accounts?page_size=250",
+    );
   });
 });
 
