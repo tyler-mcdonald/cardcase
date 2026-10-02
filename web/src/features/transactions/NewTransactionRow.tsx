@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, type FocusEvent, type KeyboardEvent } from "react";
 import {
   Button,
   Group,
@@ -65,6 +65,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   const [actionsRow, setActionsRow] = useState<HTMLTableRowElement | null>(
     null,
   );
+  const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
   const form = useForm<NewTransactionValues>({
     initialValues: {
       accountId: null,
@@ -110,6 +111,13 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     form.clearFieldError("amount");
   }
 
+  function formatAmount(field: "outflow" | "inflow") {
+    const value = form.values[field];
+    if (value !== "") {
+      form.setFieldValue(field, Number(value).toFixed(2));
+    }
+  }
+
   function saveOnEnter(event: KeyboardEvent) {
     if (event.key === "Enter" && !event.defaultPrevented) {
       event.preventDefault();
@@ -126,6 +134,19 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   function handleEditorKeyDown(event: KeyboardEvent) {
     saveOnEnter(event);
     cancelOnEscape(event);
+  }
+
+  const accountInputProps = form.getInputProps("accountId");
+
+  function openAccountDropdownOnTab(event: KeyboardEvent) {
+    if (event.key === "Tab") {
+      setAccountDropdownOpened(true);
+    }
+  }
+
+  function closeAccountDropdownOnBlur(event: FocusEvent) {
+    setAccountDropdownOpened(false);
+    accountInputProps.onBlur(event);
   }
 
   const messages = Object.values(form.errors).map(String);
@@ -162,8 +183,13 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             placeholder="Account"
             comboboxProps={{ withinPortal: false }}
             size="xs"
-            {...form.getInputProps("accountId")}
+            {...accountInputProps}
             error={Boolean(form.errors.accountId)}
+            dropdownOpened={accountDropdownOpened}
+            onDropdownOpen={() => setAccountDropdownOpened(true)}
+            onDropdownClose={() => setAccountDropdownOpened(false)}
+            onKeyUp={openAccountDropdownOnTab}
+            onBlur={closeAccountDropdownOnBlur}
           />
         </Table.Td>
         <Table.Td>
@@ -185,6 +211,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             hideControls
             value={form.values.outflow}
             onChange={(value) => setAmount("outflow", value)}
+            onBlur={() => formatAmount("outflow")}
             error={hasAmountError}
           />
         </Table.Td>
@@ -198,6 +225,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
             hideControls
             value={form.values.inflow}
             onChange={(value) => setAmount("inflow", value)}
+            onBlur={() => formatAmount("inflow")}
             error={hasAmountError}
           />
         </Table.Td>

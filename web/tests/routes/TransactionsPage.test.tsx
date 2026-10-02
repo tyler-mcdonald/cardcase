@@ -250,6 +250,43 @@ describe("adding a transaction", () => {
     expect((inflow as HTMLInputElement).value).toBe("20");
   });
 
+  it("formats an amount when it loses focus", async () => {
+    await openNewTransaction();
+
+    const outflow = screen.getByRole("textbox", { name: "Outflow" });
+    fireEvent.change(outflow, { target: { value: "4.5" } });
+    expect((outflow as HTMLInputElement).value).toBe("4.5");
+    fireEvent.blur(outflow);
+
+    expect((outflow as HTMLInputElement).value).toBe("4.50");
+  });
+
+  it("opens the account dropdown when tabbed into", async () => {
+    await openNewTransaction();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    act(() => account.focus());
+    fireEvent.keyUp(account, { key: "Tab" });
+
+    expect(
+      await screen.findByRole("option", { name: "Starbucks" }),
+    ).toBeTruthy();
+  });
+
+  it("closes the account dropdown when tabbing away", async () => {
+    await openNewTransaction();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    act(() => account.focus());
+    fireEvent.keyUp(account, { key: "Tab" });
+    await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.blur(account);
+
+    await waitFor(() =>
+      expect(screen.queryByRole("option", { name: "Starbucks" })).toBeNull(),
+    );
+  });
+
   it("rejects a missing account, date, and amount", async () => {
     await openNewTransaction();
 
