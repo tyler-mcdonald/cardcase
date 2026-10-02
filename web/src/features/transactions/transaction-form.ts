@@ -12,6 +12,8 @@ export type TransactionFormValues = {
   inflow: Amount;
 };
 
+export type TransactionField = keyof TransactionFormValues;
+
 function isPositive(amount: Amount): boolean {
   return Number(amount) > 0;
 }

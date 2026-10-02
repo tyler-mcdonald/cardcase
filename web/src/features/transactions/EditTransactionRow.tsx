@@ -5,15 +5,18 @@ import {
   changedFields,
   toTransactionInput,
   transactionFormFrom,
+  type TransactionField,
   type TransactionFormValues,
 } from "./transaction-form";
 import type { Transaction } from "./types";
 
 export function EditTransactionRow({
   transaction,
+  focusField,
   onClose,
 }: {
   transaction: Transaction;
+  focusField: TransactionField;
   onClose: () => void;
 }) {
   const [openedWith] = useState(transaction);
@@ -35,6 +38,7 @@ export function EditTransactionRow({
     <TransactionEditorRow
       initialValues={transactionFormFrom(openedWith)}
       lockedAccountName={openedWith.account.name}
+      focusField={focusField === "accountId" ? "occurredOn" : focusField}
       mutation={updateTransaction}
       onSave={save}
       onClose={onClose}

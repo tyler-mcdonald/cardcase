@@ -440,7 +440,7 @@ describe("adding a transaction", () => {
     fireEvent.click(option);
     expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
 
-    fireEvent.mouseDown(screen.getByText("Groceries"));
+    fireEvent.click(screen.getByRole("heading", { name: "Transactions" }));
 
     expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
@@ -534,6 +534,54 @@ describe("editing a transaction", () => {
 
     expect(inputValue("Outflow")).toBe("");
     expect(inputValue("Inflow")).toBe("150.00");
+  });
+
+  it("focuses the field that was clicked", async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByText("$150.00"));
+
+    expect(document.activeElement).toBe(
+      screen.getByRole("textbox", { name: "Inflow" }),
+    );
+  });
+
+  it("focuses the date when the account was clicked", async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByText("Starbucks"));
+
+    expect(document.activeElement).toBe(
+      screen.getByRole("textbox", { name: "Date" }),
+    );
+  });
+
+  it("disables Save while saving", async () => {
+    mockedUpdateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    await openEditor("Latte");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    save();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled"),
+      ).toBe(true),
+    );
+  });
+
+  it("closes without saving when clicking outside", async () => {
+    await openEditor("Latte");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    fireEvent.click(screen.getByRole("heading", { name: "Transactions" }));
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedUpdateTransaction).not.toHaveBeenCalled();
   });
 
   it("shows the account but doesn't allow changing it", async () => {
@@ -735,9 +783,7 @@ describe("editing a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
     });
-    const refundCell = screen.getByText("Refund");
-    fireEvent.mouseDown(refundCell);
-    fireEvent.click(refundCell);
+    fireEvent.click(screen.getByText("Refund"));
 
     expect(inputValue("Description")).toBe("Refund");
     expect(screen.getByText("Latte")).toBeTruthy();
@@ -750,9 +796,7 @@ describe("editing a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
     });
-    const add = screen.getByRole("button", { name: "Add transaction" });
-    fireEvent.mouseDown(add);
-    fireEvent.click(add);
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
 
     expect(inputValue("Description")).toBe("");
     expect(screen.getByText("Latte")).toBeTruthy();

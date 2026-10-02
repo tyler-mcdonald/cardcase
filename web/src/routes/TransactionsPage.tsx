@@ -6,6 +6,7 @@ import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
 import {
+  type EditTarget,
   TransactionsTable,
   TransactionsTableSkeleton,
 } from "@/features/transactions/TransactionsTable";
@@ -16,7 +17,7 @@ import {
 import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
-type Editor = { kind: "new"; key: number } | { kind: "edit"; id: string };
+type Editor = { kind: "new"; key: number } | ({ kind: "edit" } & EditTarget);
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
@@ -33,7 +34,7 @@ export function TransactionsPage() {
     setEditor(null);
   }
   const isAdding = editor?.kind === "new";
-  const editingId = editor?.kind === "edit" ? editor.id : null;
+  const editing = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
   const showTable = data !== undefined && !isEmpty;
 
@@ -44,12 +45,12 @@ export function TransactionsPage() {
     }));
   }
 
-  function openEditTransaction(id: string) {
-    setEditor({ kind: "edit", id });
+  function openEditTransaction(target: EditTarget) {
+    setEditor({ kind: "edit", ...target });
   }
 
-  function closeEditor() {
-    setEditor(null);
+  function closeEditor(closing: Editor | null) {
+    setEditor((current) => (current === closing ? null : current));
   }
 
   if (page > 1 && isMissingPage(error)) {
@@ -86,12 +87,15 @@ export function TransactionsPage() {
       {showTable && (
         <TransactionsTable
           transactions={data.items}
-          editingId={editingId}
+          editing={editing}
           onEdit={isSaving ? undefined : openEditTransaction}
-          onEditClose={closeEditor}
+          onEditClose={() => closeEditor(editor)}
           newRow={
             isAdding && (
-              <NewTransactionRow key={editor.key} onClose={closeEditor} />
+              <NewTransactionRow
+                key={editor.key}
+                onClose={() => closeEditor(editor)}
+              />
             )
           }
         />

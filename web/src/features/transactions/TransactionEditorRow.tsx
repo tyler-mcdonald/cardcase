@@ -22,6 +22,7 @@ import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
 import {
   type Amount,
+  type TransactionField,
   type TransactionFormValues,
   validateTransactionForm,
 } from "./transaction-form";
@@ -62,12 +63,14 @@ type SaveMutation = ClosableMutation & { error: unknown };
 export function TransactionEditorRow({
   initialValues,
   lockedAccountName,
+  focusField = "occurredOn",
   mutation,
   onSave,
   onClose,
 }: {
   initialValues: TransactionFormValues;
   lockedAccountName?: string;
+  focusField?: TransactionField;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
   onClose: () => void;
@@ -92,7 +95,7 @@ export function TransactionEditorRow({
 
   const cancel = useGuardedClose([mutation], onClose);
 
-  useClickOutside(cancel, null, [editorRow, actionsRow]);
+  useClickOutside(cancel, ["click"], [editorRow, actionsRow]);
 
   function setAmount(field: AmountField, value: Amount) {
     form.setFieldValue(field, value);
@@ -115,6 +118,7 @@ export function TransactionEditorRow({
       onChange: (value: Amount) => setAmount(field, value),
       onBlur: () => formatAmount(field),
       error: Boolean(form.errors.amount),
+      autoFocus: focusField === field,
     };
   }
 
@@ -168,7 +172,7 @@ export function TransactionEditorRow({
         <Table.Td>
           <DateInput
             aria-label="Date"
-            autoFocus
+            autoFocus={focusField === "occurredOn"}
             size="xs"
             valueFormat="MMM D, YYYY"
             allowDeselect
@@ -188,6 +192,7 @@ export function TransactionEditorRow({
               placeholder="Account"
               comboboxProps={{ withinPortal: false }}
               size="xs"
+              autoFocus={focusField === "accountId"}
               {...accountInputProps}
               error={Boolean(form.errors.accountId)}
               dropdownOpened={accountDropdownOpened}
@@ -212,6 +217,7 @@ export function TransactionEditorRow({
             placeholder="Description"
             size="xs"
             maxLength={1000}
+            autoFocus={focusField === "description"}
             {...form.getInputProps("description")}
           />
         </Table.Td>
@@ -242,7 +248,7 @@ export function TransactionEditorRow({
               <Button
                 size="xs"
                 onClick={() => save()}
-                loading={mutation.isPending}
+                disabled={mutation.isPending}
               >
                 Save
               </Button>
