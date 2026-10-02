@@ -2,9 +2,9 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listTransactions } from "@/features/transactions/api";
-import type { Transaction } from "@/features/transactions/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeTransaction } from "../features/transactions/factories";
+import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/transactions/api", () => ({
@@ -12,20 +12,6 @@ vi.mock("@/features/transactions/api", () => ({
 }));
 
 const mockedListTransactions = vi.mocked(listTransactions);
-
-function page(
-  results: Transaction[],
-  { count = results.length, hasNext = false } = {},
-) {
-  return {
-    count,
-    next: hasNext
-      ? new URL("/v1/transactions?page=next", import.meta.env.VITE_API_URL).href
-      : null,
-    previous: null,
-    results,
-  };
-}
 
 function renderPage(route = "/") {
   return renderWithProviders(<TransactionsPage />, { route });
@@ -38,7 +24,7 @@ beforeEach(() => {
 describe("TransactionsPage", () => {
   it("shows each transaction's date, account, description, and amount", async () => {
     mockedListTransactions.mockResolvedValueOnce(
-      page([
+      makePage([
         makeTransaction({
           id: "1",
           account: { id: "a", name: "Starbucks", type: "gift_card" },
@@ -84,7 +70,7 @@ describe("TransactionsPage", () => {
   });
 
   it("shows an empty message when there are no transactions", async () => {
-    mockedListTransactions.mockResolvedValueOnce(page([]));
+    mockedListTransactions.mockResolvedValueOnce(makePage([]));
 
     renderPage();
 
@@ -102,7 +88,7 @@ describe("TransactionsPage", () => {
     ).toBeTruthy();
 
     mockedListTransactions.mockResolvedValueOnce(
-      page([makeTransaction({ description: "Groceries" })]),
+      makePage([makeTransaction({ description: "Groceries" })]),
     );
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
@@ -111,7 +97,7 @@ describe("TransactionsPage", () => {
 
   it("loads the page named in the URL", async () => {
     mockedListTransactions.mockResolvedValueOnce(
-      page([makeTransaction({ description: "Groceries" })]),
+      makePage([makeTransaction({ description: "Groceries" })]),
     );
 
     renderPage("/?page=3");
@@ -123,13 +109,13 @@ describe("TransactionsPage", () => {
   it("paginates through the transactions", async () => {
     mockedListTransactions
       .mockResolvedValueOnce(
-        page([makeTransaction({ description: "Groceries" })], {
+        makePage([makeTransaction({ description: "Groceries" })], {
           count: 3,
           hasNext: true,
         }),
       )
       .mockResolvedValueOnce(
-        page([makeTransaction({ id: "2", description: "Movies" })], {
+        makePage([makeTransaction({ id: "2", description: "Movies" })], {
           count: 3,
         }),
       );
@@ -149,7 +135,7 @@ describe("TransactionsPage", () => {
     mockedListTransactions
       .mockRejectedValueOnce(new ApiError("Not found", 404))
       .mockResolvedValueOnce(
-        page([makeTransaction({ description: "Groceries" })]),
+        makePage([makeTransaction({ description: "Groceries" })]),
       );
 
     renderPage("/?page=9");
