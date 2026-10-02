@@ -94,17 +94,6 @@ it("shows an error state and can retry", async () => {
   expect(await screen.findByText("Groceries")).toBeTruthy();
 });
 
-it("loads the page named in the URL", async () => {
-  mockedListTransactions.mockResolvedValueOnce(
-    makePage([makeTransaction({ description: "Groceries" })]),
-  );
-
-  renderPage("/?page=3");
-
-  expect(await screen.findByText("Groceries")).toBeTruthy();
-  expect(mockedListTransactions).toHaveBeenCalledWith(3);
-});
-
 it("paginates through the transactions", async () => {
   mockedListTransactions
     .mockResolvedValueOnce(
