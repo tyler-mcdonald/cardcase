@@ -170,8 +170,8 @@ describe("adding a transaction", () => {
     );
     mockedListAllAccounts.mockResolvedValue(
       makePage([
-        makeAccount({ id: "a", name: "Starbucks" }),
-        makeAccount({ id: "b", name: "Delta" }),
+        makeAccount({ id: "starbucks-id", name: "Starbucks" }),
+        makeAccount({ id: "delta-id", name: "Delta" }),
       ]),
     );
   });
@@ -206,7 +206,7 @@ describe("adding a transaction", () => {
     save();
 
     await waitFor(() =>
-      expect(mockedCreateTransaction).toHaveBeenCalledWith("a", {
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("starbucks-id", {
         amount: "-4.75",
         description: "",
         occurred_on: "2026-09-30",
@@ -229,7 +229,7 @@ describe("adding a transaction", () => {
 
     await waitFor(() =>
       expect(mockedCreateTransaction).toHaveBeenCalledWith(
-        "a",
+        "starbucks-id",
         expect.objectContaining({ description: "Latte" }),
       ),
     );
@@ -263,7 +263,7 @@ describe("adding a transaction", () => {
     save();
 
     await waitFor(() =>
-      expect(mockedCreateTransaction).toHaveBeenCalledWith("b", {
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("delta-id", {
         amount: "150.00",
         description: "",
         occurred_on: "2026-09-30",
