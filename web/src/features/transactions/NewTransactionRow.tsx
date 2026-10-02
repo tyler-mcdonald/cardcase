@@ -44,6 +44,13 @@ function validate(values: NewTransactionValues) {
   };
 }
 
+function isDropdownOpen(target: EventTarget): boolean {
+  return (
+    target instanceof HTMLElement &&
+    target.getAttribute("aria-expanded") === "true"
+  );
+}
+
 function signedAmount({ outflow, inflow }: NewTransactionValues): string {
   return isPositive(outflow)
     ? (-Number(outflow)).toFixed(2)
@@ -108,6 +115,17 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     }
   }
 
+  function cancelOnEscape(event: KeyboardEvent) {
+    if (event.key === "Escape" && !isDropdownOpen(event.target)) {
+      cancel();
+    }
+  }
+
+  function handleEditorKeyDown(event: KeyboardEvent) {
+    saveOnEnter(event);
+    cancelOnEscape(event);
+  }
+
   const messages = Object.values(form.errors).map(String);
   if (createTransaction.error) {
     messages.push(apiErrorMessage(createTransaction.error));
@@ -119,7 +137,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
       <Table.Tr
         ref={setEditorRow}
         className={classes.editor}
-        onKeyDown={saveOnEnter}
+        onKeyDown={handleEditorKeyDown}
       >
         <Table.Td>
           <DateInput
@@ -179,7 +197,11 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
           />
         </Table.Td>
       </Table.Tr>
-      <Table.Tr ref={setActionsRow} className={classes.editor}>
+      <Table.Tr
+        ref={setActionsRow}
+        className={classes.editor}
+        onKeyDown={cancelOnEscape}
+      >
         <Table.Td colSpan={COLUMN_COUNT}>
           <Group justify="space-between" wrap="nowrap">
             <Stack gap={2} role={messages.length > 0 ? "alert" : undefined}>

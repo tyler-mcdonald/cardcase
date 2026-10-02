@@ -347,6 +347,28 @@ describe("adding a transaction", () => {
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
   });
 
+  it("closes without saving when Escape is pressed", async () => {
+    await openNewTransaction();
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Description" }), {
+      key: "Escape",
+    });
+
+    expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("only closes the account dropdown when Escape is pressed in it", async () => {
+    await openNewTransaction();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    fireEvent.click(account);
+    await screen.findByRole("option", { name: "Starbucks" });
+    fireEvent.keyDown(account, { key: "Escape" });
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
+  });
+
   it("opens in place of the empty state", async () => {
     mockedListTransactions.mockReset();
     mockedListTransactions.mockResolvedValueOnce(makePage([]));
