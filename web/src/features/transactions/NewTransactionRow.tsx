@@ -52,9 +52,7 @@ function validate({
 }
 
 function signedAmount({ outflow, inflow }: NewTransactionValues): string {
-  return isPositive(outflow)
-    ? (-Number(outflow)).toFixed(2)
-    : Number(inflow).toFixed(2);
+  return (Number(inflow) - Number(outflow)).toFixed(2);
 }
 
 export function NewTransactionRow({ onClose }: { onClose: () => void }) {
