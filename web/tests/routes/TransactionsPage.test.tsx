@@ -221,6 +221,20 @@ describe("adding a transaction", () => {
     );
   });
 
+  it("picks the first matching account when Enter is pressed after searching", async () => {
+    await openNewTransaction();
+
+    const account = screen.getByRole("combobox", { name: "Account" });
+    account.focus();
+    fireEvent.click(account);
+    await screen.findByRole("option", { name: "Delta" });
+    fireEvent.change(account, { target: { value: "Star" } });
+    fireEvent.keyDown(account, { key: "Enter", code: "Enter" });
+
+    expect((account as HTMLInputElement).value).toBe("Starbucks");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
   it("clears the other amount when one is entered", async () => {
     await openNewTransaction();
 

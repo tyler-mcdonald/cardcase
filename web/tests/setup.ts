@@ -26,6 +26,8 @@ Object.defineProperty(window, "ResizeObserver", {
   value: ResizeObserverStub,
 });
 
+Element.prototype.scrollIntoView = () => {};
+
 afterEach(() => {
   cleanup();
 });
