@@ -35,10 +35,6 @@ function renderPage(route = "/") {
   return renderWithProviders(<TransactionsPage />, { route });
 }
 
-beforeEach(() => {
-  vi.stubGlobal("scrollTo", vi.fn());
-});
-
 it("shows each transaction's date, account, type, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
