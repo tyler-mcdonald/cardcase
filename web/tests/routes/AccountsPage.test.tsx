@@ -10,6 +10,7 @@ import {
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
 import { makeAccount } from "../features/accounts/factories";
+import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/accounts/api", () => ({
@@ -23,20 +24,6 @@ const mockedListAccounts = vi.mocked(listAccounts);
 const mockedCreateAccount = vi.mocked(createAccount);
 const mockedUpdateAccount = vi.mocked(updateAccount);
 const mockedDeleteAccount = vi.mocked(deleteAccount);
-
-function page(
-  results: Account[],
-  { count = results.length, hasNext = false } = {},
-) {
-  return {
-    count,
-    next: hasNext
-      ? new URL("/v1/accounts?page=next", import.meta.env.VITE_API_URL).href
-      : null,
-    previous: null,
-    results,
-  };
-}
 
 function renderPage(route = "/") {
   return renderWithProviders(<AccountsPage />, { route });
@@ -90,7 +77,7 @@ beforeEach(() => {
 describe("AccountsPage", () => {
   it("shows the user's accounts once loaded", async () => {
     mockedListAccounts.mockResolvedValueOnce(
-      page([
+      makePage([
         makeAccount({ name: "Starbucks" }),
         makeAccount({
           id: "2",
@@ -109,7 +96,7 @@ describe("AccountsPage", () => {
   });
 
   it("shows an empty message when there are no accounts", async () => {
-    mockedListAccounts.mockResolvedValueOnce(page([]));
+    mockedListAccounts.mockResolvedValueOnce(makePage([]));
 
     renderPage();
 
@@ -123,8 +110,8 @@ describe("AccountsPage", () => {
 
   it("creates an account and shows it in the list", async () => {
     mockedListAccounts
-      .mockResolvedValueOnce(page([]))
-      .mockResolvedValueOnce(page([makeAccount({ name: "Starbucks" })]));
+      .mockResolvedValueOnce(makePage([]))
+      .mockResolvedValueOnce(makePage([makeAccount({ name: "Starbucks" })]));
     mockedCreateAccount.mockResolvedValueOnce(
       makeAccount({ name: "Starbucks" }),
     );
@@ -146,7 +133,7 @@ describe("AccountsPage", () => {
       2: [makeAccount({ id: "2", name: "Amazon" })],
     };
     mockedListAccounts.mockImplementation(async (requestedPage) =>
-      page(accountsByPage[requestedPage]),
+      makePage(accountsByPage[requestedPage]),
     );
     mockedCreateAccount.mockResolvedValueOnce(newAccount);
 
@@ -160,7 +147,7 @@ describe("AccountsPage", () => {
   });
 
   it("keeps the modal open while the account is being created", async () => {
-    mockedListAccounts.mockResolvedValue(page([]));
+    mockedListAccounts.mockResolvedValue(makePage([]));
     mockedCreateAccount.mockReturnValueOnce(new Promise(() => {}));
 
     renderPage();
@@ -174,8 +161,10 @@ describe("AccountsPage", () => {
   it("edits an account and shows the change on the same page", async () => {
     const renamed = makeAccount({ id: "2", name: "Amazon Prime" });
     mockedListAccounts
-      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
-      .mockResolvedValueOnce(page([renamed]));
+      .mockResolvedValueOnce(
+        makePage([makeAccount({ id: "2", name: "Amazon" })]),
+      )
+      .mockResolvedValueOnce(makePage([renamed]));
     mockedUpdateAccount.mockResolvedValueOnce(renamed);
 
     renderPage("/?page=2");
@@ -191,7 +180,7 @@ describe("AccountsPage", () => {
 
   it("keeps the modal open while the account is being saved", async () => {
     mockedListAccounts.mockResolvedValue(
-      page([makeAccount({ name: "Amazon" })]),
+      makePage([makeAccount({ name: "Amazon" })]),
     );
     mockedUpdateAccount.mockReturnValueOnce(new Promise(() => {}));
 
@@ -205,9 +194,11 @@ describe("AccountsPage", () => {
 
   it("retrying a failed save doesn't overwrite a name changed elsewhere", async () => {
     mockedListAccounts
-      .mockResolvedValueOnce(page([makeAccount({ id: "2", name: "Amazon" })]))
+      .mockResolvedValueOnce(
+        makePage([makeAccount({ id: "2", name: "Amazon" })]),
+      )
       .mockResolvedValue(
-        page([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
+        makePage([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
       );
     mockedUpdateAccount
       .mockRejectedValueOnce(new ApiError("Server error", 500))
@@ -234,7 +225,7 @@ describe("AccountsPage", () => {
 
   it("clears a failed save's error when the account is reopened", async () => {
     mockedListAccounts.mockResolvedValue(
-      page([makeAccount({ id: "2", name: "Amazon" })]),
+      makePage([makeAccount({ id: "2", name: "Amazon" })]),
     );
     mockedUpdateAccount.mockRejectedValueOnce(
       new ApiError("Request failed (400)", 400),
@@ -255,13 +246,13 @@ describe("AccountsPage", () => {
   it("deletes an account and removes it from the list", async () => {
     mockedListAccounts
       .mockResolvedValueOnce(
-        page([
+        makePage([
           makeAccount({ id: "1", name: "Starbucks" }),
           makeAccount({ id: "2", name: "Amazon" }),
         ]),
       )
       .mockResolvedValueOnce(
-        page([makeAccount({ id: "1", name: "Starbucks" })]),
+        makePage([makeAccount({ id: "1", name: "Starbucks" })]),
       );
     mockedDeleteAccount.mockResolvedValueOnce(undefined);
 
@@ -280,12 +271,12 @@ describe("AccountsPage", () => {
   it("returns to the first page after deleting the last account on a page", async () => {
     mockedListAccounts.mockImplementation(async (requestedPage) => {
       if (requestedPage === 1) {
-        return page([makeAccount({ id: "1", name: "Starbucks" })]);
+        return makePage([makeAccount({ id: "1", name: "Starbucks" })]);
       }
       if (mockedDeleteAccount.mock.calls.length > 0) {
         throw new ApiError("Not found", 404);
       }
-      return page([makeAccount({ id: "2", name: "Amazon" })]);
+      return makePage([makeAccount({ id: "2", name: "Amazon" })]);
     });
     mockedDeleteAccount.mockResolvedValueOnce(undefined);
 
@@ -307,7 +298,7 @@ describe("AccountsPage", () => {
     expect(await screen.findByText("Couldn't load your accounts")).toBeTruthy();
 
     mockedListAccounts.mockResolvedValueOnce(
-      page([makeAccount({ name: "Amazon" })]),
+      makePage([makeAccount({ name: "Amazon" })]),
     );
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
@@ -316,7 +307,7 @@ describe("AccountsPage", () => {
 
   it("loads the page named in the URL", async () => {
     mockedListAccounts.mockResolvedValueOnce(
-      page([makeAccount({ name: "Target" })]),
+      makePage([makeAccount({ name: "Target" })]),
     );
 
     renderPage("/?page=3");
@@ -328,10 +319,13 @@ describe("AccountsPage", () => {
   it("paginates through the accounts", async () => {
     mockedListAccounts
       .mockResolvedValueOnce(
-        page([makeAccount({ name: "Starbucks" })], { count: 3, hasNext: true }),
+        makePage([makeAccount({ name: "Starbucks" })], {
+          count: 3,
+          hasNext: true,
+        }),
       )
       .mockResolvedValueOnce(
-        page([makeAccount({ id: "2", name: "Amazon" })], { count: 3 }),
+        makePage([makeAccount({ id: "2", name: "Amazon" })], { count: 3 }),
       );
 
     renderPage();
@@ -348,7 +342,7 @@ describe("AccountsPage", () => {
   it("falls back to the first page when the requested page doesn't exist", async () => {
     mockedListAccounts
       .mockRejectedValueOnce(new ApiError("Not found", 404))
-      .mockResolvedValueOnce(page([makeAccount({ name: "Starbucks" })]));
+      .mockResolvedValueOnce(makePage([makeAccount({ name: "Starbucks" })]));
 
     renderPage("/?page=9");
 

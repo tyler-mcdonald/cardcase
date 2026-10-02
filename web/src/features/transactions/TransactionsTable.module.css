@@ -1,0 +1,25 @@
+.table {
+  table-layout: fixed;
+}
+
+.date {
+  width: 130px;
+}
+
+.account {
+  width: 180px;
+}
+
+.accountType {
+  width: 130px;
+}
+
+.description {
+  overflow-wrap: anywhere;
+}
+
+.amount {
+  width: 120px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

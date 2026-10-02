@@ -6,32 +6,16 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { hasApiStatus } from "@/lib/api/errors";
-import { totalPages } from "@/lib/api/pagination";
+import { toPage } from "@/lib/api/pagination";
 import {
   createAccount,
   deleteAccount,
   listAccounts,
   updateAccount,
 } from "./api";
-import type { Paginated } from "@/lib/api/types";
-import type { Account, AccountUpdate } from "./types";
+import type { AccountUpdate } from "./types";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
-
-type AccountsResult = {
-  accounts: Account[];
-  totalPages: number;
-};
-
-function toAccountsResult(
-  response: Paginated<Account>,
-  page: number,
-): AccountsResult {
-  return {
-    accounts: response.results,
-    totalPages: totalPages(response, page),
-  };
-}
 
 function invalidateAccounts(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
@@ -40,7 +24,7 @@ function invalidateAccounts(queryClient: QueryClient) {
 export function accountsQuery(page: number) {
   return queryOptions({
     queryKey: [...ACCOUNTS_QUERY_KEY, page],
-    queryFn: async () => toAccountsResult(await listAccounts(page), page),
+    queryFn: async () => toPage(await listAccounts(page), page),
     placeholderData: keepPreviousData,
   });
 }

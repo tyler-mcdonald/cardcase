@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge, Card, Skeleton, Text, UnstyledButton } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
-import { ACCOUNT_TYPE_DISPLAY } from "./constants";
+import { AccountTypeBadge } from "./AccountTypeBadge";
 import { describeExpiry } from "./format";
 
 type AccountStyle = {
@@ -40,14 +40,7 @@ export function AccountCard({
       </div>
       <div aria-hidden className={classes.scrim} />
       <div className={classes.headerRow}>
-        <Badge
-          variant="light"
-          radius="xl"
-          size="sm"
-          className={classes.typeBadge}
-        >
-          {ACCOUNT_TYPE_DISPLAY[account.type].label}
-        </Badge>
+        <AccountTypeBadge type={account.type} className={classes.typeBadge} />
       </div>
       <div className={classes.footerRow}>
         <div className={classes.nameColumn}>

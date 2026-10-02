@@ -14,6 +14,7 @@ function renderLayout(route: string) {
       <Route element={<AppLayout />}>
         <Route index element={<div>Home content</div>} />
         <Route path="other" element={<div>Other content</div>} />
+        <Route path="transactions" element={<div>Transactions content</div>} />
       </Route>
     </Routes>,
     { route },
@@ -33,6 +34,16 @@ describe("AppLayout", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Cardcase" }));
 
+    screen.getByText("Home content");
+  });
+
+  it("navigates between accounts and transactions", () => {
+    renderLayout("/other");
+
+    fireEvent.click(screen.getByRole("link", { name: "Transactions" }));
+    screen.getByText("Transactions content");
+
+    fireEvent.click(screen.getByRole("link", { name: "Accounts" }));
     screen.getByText("Home content");
   });
 });
