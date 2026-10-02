@@ -39,6 +39,10 @@ function renderPage(route = "/") {
   return renderWithProviders(<TransactionsPage />, { route });
 }
 
+function save() {
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+}
+
 it("shows each transaction's date, account, type, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
@@ -199,10 +203,6 @@ describe("adding a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
       target: { value: amount },
     });
-  }
-
-  function save() {
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
   }
 
   it("saves an outflow as a negative amount", async () => {
@@ -518,10 +518,6 @@ describe("editing a transaction", () => {
 
   function inputValue(name: string) {
     return (screen.getByRole("textbox", { name }) as HTMLInputElement).value;
-  }
-
-  function save() {
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
   }
 
   it("prefills an outflow with the transaction's values", async () => {

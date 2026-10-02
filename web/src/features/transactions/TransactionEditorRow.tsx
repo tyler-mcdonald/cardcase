@@ -14,7 +14,10 @@ import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
+import {
+  type ClosableMutation,
+  useGuardedClose,
+} from "@/lib/hooks/use-guarded-close";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
 import {
@@ -54,11 +57,7 @@ function ErrorMessages({ messages }: { messages: string[] }) {
   );
 }
 
-type SaveMutation = {
-  isPending: boolean;
-  error: unknown;
-  reset: () => void;
-};
+type SaveMutation = ClosableMutation & { error: unknown };
 
 export function TransactionEditorRow({
   initialValues,

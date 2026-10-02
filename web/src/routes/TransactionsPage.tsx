@@ -16,26 +16,33 @@ import {
 import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
+type Editor = { kind: "new"; key: number } | { kind: "edit"; id: string };
+
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
   const isSaving = useIsSavingTransaction();
-  const [editorKey, setEditorKey] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const isAdding = editorKey !== null;
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const isAdding = editor?.kind === "new";
+  const editingId = editor?.kind === "edit" ? editor.id : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
-    setEditingId(null);
-    setEditorKey((key) => (key ?? 0) + 1);
+    setEditor((current) => ({
+      kind: "new",
+      key: current?.kind === "new" ? current.key + 1 : 1,
+    }));
   }
 
   function openEditTransaction(id: string) {
-    setEditorKey(null);
-    setEditingId(id);
+    setEditor({ kind: "edit", id });
+  }
+
+  function closeEditor() {
+    setEditor(null);
   }
 
   if (page > 1 && isMissingPage(error)) {
@@ -74,13 +81,10 @@ export function TransactionsPage() {
           transactions={data.items}
           editingId={editingId}
           onEdit={isSaving ? undefined : openEditTransaction}
-          onEditClose={() => setEditingId(null)}
+          onEditClose={closeEditor}
           newRow={
             isAdding && (
-              <NewTransactionRow
-                key={editorKey}
-                onClose={() => setEditorKey(null)}
-              />
+              <NewTransactionRow key={editor.key} onClose={closeEditor} />
             )
           }
         />
