@@ -98,7 +98,12 @@ export function TransactionsPage() {
       )}
 
       {data && (
-        <Pager total={data.totalPages} page={page} onChange={goToPage} />
+        <Pager
+          total={data.totalPages}
+          page={page}
+          onChange={goToPage}
+          disabled={isSaving}
+        />
       )}
     </Stack>
   );
