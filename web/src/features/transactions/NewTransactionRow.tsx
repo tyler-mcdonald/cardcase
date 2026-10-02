@@ -23,10 +23,9 @@ import { useCreateTransaction } from "./queries";
 type Amount = string | number;
 type AmountField = "outflow" | "inflow";
 
-const OPPOSITE_AMOUNT_FIELD: Record<AmountField, AmountField> = {
-  outflow: "inflow",
-  inflow: "outflow",
-};
+function oppositeAmountField(field: AmountField): AmountField {
+  return field === "outflow" ? "inflow" : "outflow";
+}
 
 type NewTransactionValues = {
   accountId: string | null;
@@ -131,7 +130,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     form.setFieldValue(field, value);
     form.clearFieldError("amount");
     if (value !== "") {
-      form.setFieldValue(OPPOSITE_AMOUNT_FIELD[field], "");
+      form.setFieldValue(oppositeAmountField(field), "");
     }
   }
 
