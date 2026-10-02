@@ -252,14 +252,15 @@ describe("adding a transaction", () => {
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
-  it("saves an inflow as a positive amount when Enter is pressed", async () => {
+  it("saves an inflow as a positive amount", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
     await openNewTransactionForm();
 
     await chooseAccount("Delta");
-    const inflow = screen.getByRole("textbox", { name: "Inflow" });
-    fireEvent.change(inflow, { target: { value: "150" } });
-    fireEvent.keyDown(inflow, { key: "Enter" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Inflow" }), {
+      target: { value: "150" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() =>
       expect(mockedCreateTransaction).toHaveBeenCalledWith("b", {
@@ -268,6 +269,18 @@ describe("adding a transaction", () => {
         occurred_on: "2026-09-30",
       }),
     );
+  });
+
+  it("saves when Enter is pressed", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Delta");
+    const inflow = screen.getByRole("textbox", { name: "Inflow" });
+    fireEvent.change(inflow, { target: { value: "150" } });
+    fireEvent.keyDown(inflow, { key: "Enter" });
+
+    await waitFor(() => expect(mockedCreateTransaction).toHaveBeenCalled());
   });
 
   it("clears the other amount when one is entered", async () => {
