@@ -14,3 +14,23 @@ naming *how* the other side implements that contract is not.
 - Good: a frontend test named `"resolves on the API's expected 401 response"`.
 - Fine either way: `const AUTH_API_BASE = "/_allauth/browser/v1"` — this is the
   contract's URL, not a description of backend internals.
+
+## PR conventions
+
+Open PRs with the `open-pr` skill. On top of it, PR titles in this repo use only these scopes:
+
+- `backend` — changes under `backend/`
+- `web` — changes under `web/`
+- `deps` — dependency updates
+- Omit the scope for changes outside `backend/` and `web/` (e.g. `CLAUDE.md`, `render.yaml`, `docs/`, `.github/`).
+
+If the change spans several scopes, use the closest option above (or omit the scope if none dominates), open the PR
+anyway, and flag it in your response: the scope you chose, what you considered instead, and why. Never invent a new
+scope.
+
+Examples:
+
+- `fix(backend): serve static assets with whitenoise`
+- `feat(web)!: rework auth provider API`
+- `chore(deps): update dependencies`
+- `docs: update claude instructions for PR titles`
