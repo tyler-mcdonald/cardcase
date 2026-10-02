@@ -195,7 +195,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     <>
       <Table.Tr
         ref={setEditorRow}
-        className={classes.editor}
+        className={classes.newTransactionRow}
         onKeyDown={handleEditorKeyDown}
       >
         <Table.Td>
@@ -247,7 +247,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
       </Table.Tr>
       <Table.Tr
         ref={setActionsRow}
-        className={classes.editor}
+        className={classes.newTransactionRow}
         onKeyDown={cancelOnEscape}
       >
         <Table.Td colSpan={COLUMN_COUNT}>

@@ -24,6 +24,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.editor {
+.newTransactionRow {
   background-color: var(--mantine-primary-color-light);
 }
