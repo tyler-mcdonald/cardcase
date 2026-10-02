@@ -41,7 +41,10 @@ export function TransactionsPage() {
         <Title order={1} size="h2">
           Transactions
         </Title>
-        <Button onClick={openNewTransaction} disabled={isCreating}>
+        <Button
+          onClick={openNewTransaction}
+          disabled={data === undefined || isCreating}
+        >
           Add transaction
         </Button>
       </Group>

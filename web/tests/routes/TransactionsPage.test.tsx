@@ -108,6 +108,17 @@ it("shows an error state and can retry", async () => {
   expect(await screen.findByText("Groceries")).toBeTruthy();
 });
 
+it("disables adding a transaction until the list has loaded", async () => {
+  mockedListTransactions.mockReturnValueOnce(new Promise(() => {}));
+  renderPage();
+
+  expect(
+    screen
+      .getByRole("button", { name: "Add transaction" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+});
+
 it("paginates through the transactions", async () => {
   mockedListTransactions
     .mockResolvedValueOnce(
