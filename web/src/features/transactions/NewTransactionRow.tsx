@@ -55,6 +55,17 @@ function signedAmount({ outflow, inflow }: NewTransactionValues): string {
   return (Number(inflow) - Number(outflow)).toFixed(2);
 }
 
+function toNewTransaction(values: NewTransactionValues) {
+  return {
+    accountId: values.accountId!,
+    input: {
+      amount: signedAmount(values),
+      description: values.description.trim(),
+      occurred_on: values.occurredOn!,
+    },
+  };
+}
+
 export function NewTransactionRow({ onClose }: { onClose: () => void }) {
   const createTransaction = useCreateTransaction();
   const [editorRow, setEditorRow] = useState<HTMLTableRowElement | null>(null);
@@ -78,17 +89,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
     if (createTransaction.isPending) {
       return;
     }
-    createTransaction.mutate(
-      {
-        accountId: values.accountId!,
-        input: {
-          amount: signedAmount(values),
-          description: values.description.trim(),
-          occurred_on: values.occurredOn!,
-        },
-      },
-      { onSuccess: onClose },
-    );
+    createTransaction.mutate(toNewTransaction(values), { onSuccess: onClose });
   });
 
   const cancel = useGuardedClose([createTransaction], onClose);
