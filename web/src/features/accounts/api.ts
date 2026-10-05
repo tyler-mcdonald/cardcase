@@ -3,9 +3,17 @@ import type { Paginated } from "@/lib/api/types";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 
 const ACCOUNTS_PATH = "/v1/accounts";
+const MAX_ACCOUNTS = 250;
 
 export function listAccounts(page: number) {
   return request<Paginated<Account>>("GET", `${ACCOUNTS_PATH}?page=${page}`);
+}
+
+export function listAllAccounts() {
+  return request<Paginated<Account>>(
+    "GET",
+    `${ACCOUNTS_PATH}?page_size=${MAX_ACCOUNTS}`,
+  );
 }
 
 export function createAccount(input: AccountInput) {

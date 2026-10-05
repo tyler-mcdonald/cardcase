@@ -9,3 +9,8 @@ export type Transaction = {
   created_at: string;
   updated_at: string;
 };
+
+export type TransactionInput = Pick<
+  Transaction,
+  "amount" | "description" | "occurred_on"
+>;
