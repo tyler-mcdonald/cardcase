@@ -14,4 +14,3 @@ naming *how* the other side implements that contract is not.
 - Good: a frontend test named `"resolves on the API's expected 401 response"`.
 - Fine either way: `const AUTH_API_BASE = "/_allauth/browser/v1"` — this is the
   contract's URL, not a description of backend internals.
-
