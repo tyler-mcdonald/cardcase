@@ -1,5 +1,5 @@
 import { localDateString } from "@/lib/format";
-import { splitOutflowAndInflow } from "./format";
+import { splitSignedAmount } from "./format";
 import type { Transaction, TransactionInput, TransactionUpdate } from "./types";
 
 export type Amount = string | number;
@@ -62,7 +62,7 @@ export function emptyTransactionForm(): TransactionFormValues {
 export function transactionFormFrom(
   transaction: Transaction,
 ): TransactionFormValues {
-  const { outflow, inflow } = splitOutflowAndInflow(transaction.amount);
+  const { outflow, inflow } = splitSignedAmount(transaction.amount);
   return {
     accountId: transaction.account.id,
     occurredOn: transaction.occurred_on,

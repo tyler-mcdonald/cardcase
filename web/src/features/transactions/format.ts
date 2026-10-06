@@ -3,7 +3,11 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export function splitOutflowAndInflow(amount: string): {
+/**
+ * Splits a signed amount into an unsigned outflow (negative amounts) or
+ * inflow (positive amounts); the other side, or both for zero, is null.
+ */
+export function splitSignedAmount(amount: string): {
   outflow: number | null;
   inflow: number | null;
 } {
@@ -22,6 +26,6 @@ export function formatOutflowAndInflow(amount: string): {
   outflow: string | null;
   inflow: string | null;
 } {
-  const { outflow, inflow } = splitOutflowAndInflow(amount);
+  const { outflow, inflow } = splitSignedAmount(amount);
   return { outflow: formatCurrency(outflow), inflow: formatCurrency(inflow) };
 }
