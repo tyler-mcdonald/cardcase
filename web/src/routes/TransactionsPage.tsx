@@ -17,7 +17,9 @@ import {
 import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
-type Editor = { kind: "new"; key: number } | ({ kind: "edit" } & EditTarget);
+type NewTransactionEditor = { kind: "new"; key: number };
+type EditTransactionEditor = { kind: "edit" } & EditTarget;
+type Editor = NewTransactionEditor | EditTransactionEditor;
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
