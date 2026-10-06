@@ -21,6 +21,17 @@ type NewTransactionEditor = { kind: "new"; key: number };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
 type Editor = NewTransactionEditor | EditTransactionEditor;
 
+function isEditedRowGone(
+  editor: Editor | null,
+  transactions: { id: string }[] | undefined,
+): boolean {
+  return (
+    editor?.kind === "edit" &&
+    transactions !== undefined &&
+    !transactions.some((transaction) => transaction.id === editor.id)
+  );
+}
+
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
@@ -28,11 +39,7 @@ export function TransactionsPage() {
   );
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
-  const isEditedRowGone =
-    editor?.kind === "edit" &&
-    data !== undefined &&
-    !data.items.some((transaction) => transaction.id === editor.id);
-  if (isEditedRowGone) {
+  if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
   const isAdding = editor?.kind === "new";
