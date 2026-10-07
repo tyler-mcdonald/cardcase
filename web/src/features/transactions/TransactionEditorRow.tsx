@@ -67,6 +67,7 @@ export function TransactionEditorRow({
   mutation,
   onSave,
   onClose,
+  onDelete,
 }: {
   initialValues: TransactionFormValues;
   lockedAccountName?: string;
@@ -74,6 +75,7 @@ export function TransactionEditorRow({
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
   onClose: () => void;
+  onDelete?: () => void;
 }) {
   const [editorRow, setEditorRow] = useState<HTMLTableRowElement | null>(null);
   const [actionsRow, setActionsRow] = useState<HTMLTableRowElement | null>(
@@ -235,7 +237,20 @@ export function TransactionEditorRow({
       >
         <Table.Td colSpan={COLUMN_COUNT}>
           <Group justify="space-between" wrap="nowrap">
-            <ErrorMessages messages={messages} />
+            <Group gap="sm" wrap="nowrap">
+              {onDelete && (
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="red"
+                  onClick={onDelete}
+                  disabled={mutation.isPending}
+                >
+                  Delete
+                </Button>
+              )}
+              <ErrorMessages messages={messages} />
+            </Group>
             <Group gap="xs" wrap="nowrap">
               <Button
                 size="xs"
