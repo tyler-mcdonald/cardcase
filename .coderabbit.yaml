@@ -1,6 +1,11 @@
 reviews:
   profile: chill
   poem: false
+  auto_review:
+    drafts: false
+    auto_incremental_review: false
+    base_branches:
+      - ".*"
   path_filters:
     - "!**/pnpm-lock.yaml"
     - "!**/uv.lock"
