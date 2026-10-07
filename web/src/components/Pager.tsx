@@ -5,10 +5,12 @@ export function Pager({
   total,
   page,
   onChange,
+  disabled,
 }: {
   total: number;
   page: number;
   onChange: (page: number) => void;
+  disabled?: boolean;
 }) {
   if (total <= 1) {
     return null;
@@ -18,6 +20,7 @@ export function Pager({
       total={total}
       value={page}
       onChange={onChange}
+      disabled={disabled}
       className={classes.pagination}
     />
   );

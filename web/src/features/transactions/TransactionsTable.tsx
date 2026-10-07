@@ -3,8 +3,10 @@ import { Skeleton, Table, Text } from "@mantine/core";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
+import { EditTransactionRow } from "./EditTransactionRow";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
+import type { TransactionField } from "./transaction-form";
 import type { Transaction } from "./types";
 
 const SKELETON_ROW_COUNT = 8;
@@ -32,37 +34,108 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
   );
 }
 
+export type EditTarget = { id: string; focusField: TransactionField };
+
+function EditableCell({
+  field,
+  onEdit,
+  className,
+  children,
+}: {
+  field: TransactionField;
+  onEdit?: (field: TransactionField) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Table.Td className={className} onClick={onEdit && (() => onEdit(field))}>
+      {children}
+    </Table.Td>
+  );
+}
+
+function TransactionRow({
+  transaction,
+  onEdit,
+}: {
+  transaction: Transaction;
+  onEdit?: (target: EditTarget) => void;
+}) {
+  const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
+  const editField =
+    onEdit &&
+    ((focusField: TransactionField) =>
+      onEdit({ id: transaction.id, focusField }));
+  return (
+    <Table.Tr className={onEdit && classes.clickableRow}>
+      <EditableCell field="occurredOn" onEdit={editField}>
+        {formatDate(transaction.occurred_on)}
+      </EditableCell>
+      <EditableCell field="accountId" onEdit={editField}>
+        <Text size="sm" truncate>
+          {transaction.account.name}
+        </Text>
+      </EditableCell>
+      <EditableCell field="accountId" onEdit={editField}>
+        <AccountTypeBadge type={transaction.account.type} />
+      </EditableCell>
+      <EditableCell
+        field="description"
+        onEdit={editField}
+        className={classes.description}
+      >
+        {transaction.description}
+      </EditableCell>
+      <EditableCell
+        field="outflow"
+        onEdit={editField}
+        className={classes.amount}
+      >
+        {outflow}
+      </EditableCell>
+      <EditableCell
+        field="inflow"
+        onEdit={editField}
+        className={classes.amount}
+      >
+        {inflow}
+      </EditableCell>
+    </Table.Tr>
+  );
+}
+
 export function TransactionsTable({
   transactions,
   newRow,
+  editTarget,
+  onEdit,
+  onEditClose,
 }: {
   transactions: Transaction[];
   newRow?: ReactNode;
+  editTarget: EditTarget | null;
+  onEdit?: (target: EditTarget) => void;
+  onEditClose: () => void;
 }) {
   return (
     <TransactionsTableFrame>
       {newRow}
-      {transactions.map((transaction) => {
-        const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
-        return (
-          <Table.Tr key={transaction.id}>
-            <Table.Td>{formatDate(transaction.occurred_on)}</Table.Td>
-            <Table.Td>
-              <Text size="sm" truncate>
-                {transaction.account.name}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <AccountTypeBadge type={transaction.account.type} />
-            </Table.Td>
-            <Table.Td className={classes.description}>
-              {transaction.description}
-            </Table.Td>
-            <Table.Td className={classes.amount}>{outflow}</Table.Td>
-            <Table.Td className={classes.amount}>{inflow}</Table.Td>
-          </Table.Tr>
-        );
-      })}
+      {transactions.map((transaction) =>
+        transaction.id === editTarget?.id ? (
+          <EditTransactionRow
+            key={transaction.id}
+            transaction={transaction}
+            focusField={editTarget.focusField}
+            onClose={onEditClose}
+          />
+        ) : (
+          <TransactionRow
+            key={transaction.id}
+            transaction={transaction}
+            onEdit={onEdit}
+          />
+        ),
+      )}
     </TransactionsTableFrame>
   );
 }
