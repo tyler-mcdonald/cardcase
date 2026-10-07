@@ -57,7 +57,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
-def test_create_account_without_expires_on_defaults_to_null(
+def test_create_account_defaults_expires_on_to_null(
     auth_client: Client,
 ) -> None:
     response = post(
