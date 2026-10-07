@@ -1,4 +1,4 @@
-.PHONY: setup check-uv-installed check-docker-installed install-dependencies docker-compose-up migrate-db
+.PHONY: setup check-uv-installed check-docker-installed install-dependencies docker-compose-up migrate-db dev
 .NOTPARALLEL:
 
 require = $(1) >/dev/null 2>&1 || { echo "$(2)"; exit 1; }
@@ -30,3 +30,6 @@ docker-compose-up:
 migrate-db:
 	@echo "==> Running Django migrations"
 	uv run manage.py migrate
+
+dev: .env
+	uv run manage.py runserver

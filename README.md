@@ -36,13 +36,13 @@ uv run --directory backend manage.py seed_dev --email you@example.com
 Start the Django server
 
 ```
-uv run --directory backend manage.py runserver
+make dev-backend
 ```
 
 Start the web dev server
 
 ```
-pnpm --dir web dev
+make dev-web
 ```
 
 ### Git Hooks
