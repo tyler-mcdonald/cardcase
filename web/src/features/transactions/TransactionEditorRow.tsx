@@ -1,13 +1,5 @@
 import { useState, type FocusEvent, type KeyboardEvent } from "react";
-import {
-  Button,
-  Group,
-  type NumberInputProps,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { Button, Group, Stack, Table, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
@@ -32,10 +24,6 @@ type AmountField = "outflow" | "inflow";
 
 function oppositeAmountField(field: AmountField): AmountField {
   return field === "outflow" ? "inflow" : "outflow";
-}
-
-function AmountInput(props: NumberInputProps) {
-  return <MoneyInput size="xs" min={0} allowNegative={false} {...props} />;
 }
 
 function ErrorMessages({ messages }: { messages: string[] }) {
@@ -216,10 +204,18 @@ export function TransactionEditorRow({
           />
         </Table.Td>
         <Table.Td>
-          <AmountInput aria-label="Outflow" {...amountInputProps("outflow")} />
+          <MoneyInput
+            aria-label="Outflow"
+            size="xs"
+            {...amountInputProps("outflow")}
+          />
         </Table.Td>
         <Table.Td>
-          <AmountInput aria-label="Inflow" {...amountInputProps("inflow")} />
+          <MoneyInput
+            aria-label="Inflow"
+            size="xs"
+            {...amountInputProps("inflow")}
+          />
         </Table.Td>
       </Table.Tr>
       <Table.Tr
