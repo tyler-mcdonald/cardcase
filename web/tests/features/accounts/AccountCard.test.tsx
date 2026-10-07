@@ -71,4 +71,20 @@ describe("AccountCard", () => {
 
     screen.getByText("-$12.34");
   });
+
+  it("shows a negative balance in red", () => {
+    renderCard(makeAccount({ balance: "-12.34" }));
+
+    expect(screen.getByText("-$12.34").style.color).toBe(
+      "var(--mantine-color-red-4)",
+    );
+  });
+
+  it("shows a positive balance in white", () => {
+    renderCard(makeAccount({ balance: "12.34" }));
+
+    expect(screen.getByText("$12.34").style.color).toBe(
+      "var(--mantine-color-white)",
+    );
+  });
 });
