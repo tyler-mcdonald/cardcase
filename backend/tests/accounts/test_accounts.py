@@ -433,6 +433,33 @@ def test_balance_is_sum_of_transactions(auth_client: Client, user: User) -> None
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("amounts", "expected_balance"),
+    [
+        (["25.00"], "25.00"),
+        (["-25.00"], "-25.00"),
+        (["0.01", "0.02"], "0.03"),
+        (["100.00", "-100.00"], "0.00"),
+        (["10.00", "-30.50"], "-20.50"),
+        (["-0.99", "-0.01"], "-1.00"),
+        (["99999999.99", "99999999.99"], "199999999.98"),
+        (["-99999999.99", "-99999999.99"], "-199999999.98"),
+        (["1.10", "2.20", "3.30", "-0.60"], "6.00"),
+    ],
+)
+def test_balance_sums_amounts(
+    auth_client: Client, user: User, amounts: list[str], expected_balance: str
+) -> None:
+    account = create_account(user)
+    for amount in amounts:
+        create_transaction(account, amount=amount)
+
+    response = get(auth_client, f"/accounts/{account.id}")
+
+    assert response.json()["balance"] == expected_balance
+
+
+@pytest.mark.django_db
 def test_negative_balance_is_returned_as_is(auth_client: Client, user: User) -> None:
     account = create_account(user)
     create_transaction(account, amount="-20.00")
