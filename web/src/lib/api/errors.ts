@@ -62,7 +62,7 @@ export function hasApiStatus(
   return error instanceof ApiError && error.status === status;
 }
 
-function isAlreadyDeleted(error: unknown): boolean {
+function isNotFound(error: unknown): boolean {
   if (!hasApiStatus(error, 404)) {
     return false;
   }
@@ -71,16 +71,16 @@ function isAlreadyDeleted(error: unknown): boolean {
 }
 
 /**
- * Awaits a delete request, treating an API 404 as success: the resource is
- * already gone, which is what the caller wanted. Other errors are rethrown.
+ * Awaits a request, treating an API 404 as success, e.g. a delete whose
+ * resource is already gone. Other errors are rethrown.
  */
-export async function ignoreAlreadyDeleted(
-  deletion: Promise<unknown>,
+export async function ignoreNotFound(
+  request: Promise<unknown>,
 ): Promise<void> {
   try {
-    await deletion;
+    await request;
   } catch (error) {
-    if (!isAlreadyDeleted(error)) {
+    if (!isNotFound(error)) {
       throw error;
     }
   }

@@ -5,7 +5,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { ignoreAlreadyDeleted } from "@/lib/api/errors";
+import { ignoreNotFound } from "@/lib/api/errors";
 import { toPage } from "@/lib/api/pagination";
 import {
   createAccount,
@@ -57,7 +57,7 @@ export function useUpdateAccount() {
 export function useDeleteAccount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => ignoreAlreadyDeleted(deleteAccount(id)),
+    mutationFn: (id: string) => ignoreNotFound(deleteAccount(id)),
     onSettled: () => {
       void invalidateAccounts(queryClient);
     },

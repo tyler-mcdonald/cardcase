@@ -6,7 +6,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { ignoreAlreadyDeleted } from "@/lib/api/errors";
+import { ignoreNotFound } from "@/lib/api/errors";
 import { toPage } from "@/lib/api/pagination";
 import {
   createTransaction,
@@ -84,7 +84,7 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationKey: DELETE_TRANSACTION_MUTATION_KEY,
     mutationFn: ({ accountId, id }: { accountId: string; id: string }) =>
-      ignoreAlreadyDeleted(deleteTransaction(accountId, id)),
+      ignoreNotFound(deleteTransaction(accountId, id)),
     onSuccess: () => invalidateTransactionsAndAccounts(queryClient),
   });
 }
