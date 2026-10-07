@@ -61,3 +61,25 @@ export function hasApiStatus(
 ): error is ApiError {
   return error instanceof ApiError && error.status === status;
 }
+
+function isNotFound(error: unknown): boolean {
+  if (!hasApiStatus(error, 404)) {
+    return false;
+  }
+  const body = error.body as { detail?: unknown } | null;
+  return typeof body?.detail === "string";
+}
+
+/**
+ * Awaits a request, treating an API 404 as success, e.g. a delete whose
+ * resource is already gone. Other errors are rethrown.
+ */
+export async function ignoreNotFound(request: Promise<unknown>): Promise<void> {
+  try {
+    await request;
+  } catch (error) {
+    if (!isNotFound(error)) {
+      throw error;
+    }
+  }
+}

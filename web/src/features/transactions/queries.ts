@@ -4,9 +4,16 @@ import {
   useIsMutating,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
+import { ignoreNotFound } from "@/lib/api/errors";
 import { toPage } from "@/lib/api/pagination";
-import { createTransaction, listTransactions, updateTransaction } from "./api";
+import {
+  createTransaction,
+  deleteTransaction,
+  listTransactions,
+  updateTransaction,
+} from "./api";
 import type { TransactionInput, TransactionUpdate } from "./types";
 
 const TRANSACTIONS_QUERY_KEY = ["transactions"] as const;
@@ -19,6 +26,17 @@ const UPDATE_TRANSACTION_MUTATION_KEY = [
   ...TRANSACTIONS_QUERY_KEY,
   "update",
 ] as const;
+const DELETE_TRANSACTION_MUTATION_KEY = [
+  ...TRANSACTIONS_QUERY_KEY,
+  "delete",
+] as const;
+
+function invalidateTransactionsAndAccounts(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
+  ]);
+}
 
 export function transactionsQuery(page: number) {
   return queryOptions({
@@ -57,11 +75,17 @@ export function useUpdateTransaction() {
       id: string;
       changes: TransactionUpdate;
     }) => updateTransaction(accountId, id, changes),
-    onSuccess: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
-        queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY }),
-      ]),
+    onSuccess: () => invalidateTransactionsAndAccounts(queryClient),
+  });
+}
+
+export function useDeleteTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: DELETE_TRANSACTION_MUTATION_KEY,
+    mutationFn: ({ accountId, id }: { accountId: string; id: string }) =>
+      ignoreNotFound(deleteTransaction(accountId, id)),
+    onSuccess: () => invalidateTransactionsAndAccounts(queryClient),
   });
 }
 

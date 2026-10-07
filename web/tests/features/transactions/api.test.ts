@@ -3,6 +3,7 @@ import { request } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
 import {
   createTransaction,
+  deleteTransaction,
   listTransactions,
   updateTransaction,
 } from "@/features/transactions/api";
@@ -89,6 +90,26 @@ describe("updateTransaction", () => {
 
     await expect(updateTransaction("42", "7", changes)).rejects.toMatchObject({
       status: 400,
+    });
+  });
+});
+
+describe("deleteTransaction", () => {
+  it("deletes the transaction from its account", async () => {
+    mockedRequest.mockResolvedValueOnce(undefined);
+
+    await deleteTransaction("42", "7");
+    expect(mockedRequest).toHaveBeenCalledWith(
+      "DELETE",
+      "/v1/accounts/42/transactions/7",
+    );
+  });
+
+  it("propagates request failures", async () => {
+    mockedRequest.mockRejectedValueOnce(new ApiError("Server error", 500));
+
+    await expect(deleteTransaction("42", "7")).rejects.toMatchObject({
+      status: 500,
     });
   });
 });
