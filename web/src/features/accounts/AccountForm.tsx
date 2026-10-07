@@ -18,18 +18,16 @@ export type AccountFormValues = AccountInput & {
   initial_balance?: string | number;
 };
 
+const requireInitialBalance = isNotEmpty("Initial balance is required");
+
 function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
   if (value === undefined) {
     return null;
   }
-  if (value === "") {
-    return "Initial balance is required";
-  }
-  const amount = Number(value);
-  if (Number.isNaN(amount)) {
+  if (Number.isNaN(Number(value))) {
     return "Initial balance must be a number";
   }
-  return amount < 0 ? "Initial balance can't be negative" : null;
+  return requireInitialBalance(value);
 }
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(

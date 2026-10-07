@@ -88,8 +88,9 @@ describe("CreateAccountModal", () => {
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
 
-  it("rejects a negative initial balance", async () => {
-    renderForm();
+  it("ignores a minus sign in the initial balance", async () => {
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
 
     fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
       target: { value: "Starbucks" },
@@ -102,10 +103,8 @@ describe("CreateAccountModal", () => {
     );
     submit();
 
-    expect(
-      await screen.findByText("Initial balance can't be negative"),
-    ).toBeTruthy();
-    expect(mockedCreateAccount).not.toHaveBeenCalled();
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({ initial_balance: "5.00" });
   });
 
   it("rejects a non-numeric initial balance", async () => {
@@ -117,7 +116,7 @@ describe("CreateAccountModal", () => {
     fireEvent.change(
       screen.getByRole("textbox", { name: /initial balance/i }),
       {
-        target: { value: "-" },
+        target: { value: "." },
       },
     );
     submit();
