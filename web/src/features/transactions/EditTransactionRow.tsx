@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useState } from "react";
 import { Modal } from "@mantine/core";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
@@ -12,10 +12,6 @@ import {
   type TransactionFormValues,
 } from "./transaction-form";
 import type { Transaction } from "./types";
-
-function keepClickInsideDialog(event: MouseEvent) {
-  event.stopPropagation();
-}
 
 export function EditTransactionRow({
   transaction,
@@ -67,7 +63,7 @@ export function EditTransactionRow({
       <Modal
         opened={confirmingDelete}
         onClose={closeDeleteDialog}
-        onClick={keepClickInsideDialog}
+        onClick={(event) => event.stopPropagation()}
         title="Delete this transaction?"
       >
         <DeleteConfirmation
