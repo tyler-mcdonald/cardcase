@@ -1,13 +1,15 @@
-from datetime import date
+from datetime import UTC, date, datetime
+from decimal import Decimal
 
 import pytest
-from django.db import connection
+import time_machine
+from django.db import DatabaseError, connection
 from django.test import Client
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from accounts import serializers
-from accounts.models import MAX_ACCOUNTS_PER_USER, Account
+from accounts.models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 from accounts.views import AccountPagination
 from tests.accounts.client import delete, get, patch, post, post_account
 from tests.accounts.factories import (
@@ -38,6 +40,7 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
             "description": "Birthday gift",
             "type": "gift_card",
             "expires_on": "2027-01-01",
+            "initial_balance": "0",
         },
     )
 
@@ -57,7 +60,11 @@ def test_create_account_success(auth_client: Client, user: User) -> None:
 def test_create_account_without_expires_on_defaults_to_null(
     auth_client: Client,
 ) -> None:
-    response = post(auth_client, "/accounts", {"name": "Delta", "type": "gift_card"})
+    response = post(
+        auth_client,
+        "/accounts",
+        {"name": "Delta", "type": "gift_card", "initial_balance": "0"},
+    )
 
     assert response.status_code == 201
     assert response.json()["expires_on"] is None
@@ -67,16 +74,104 @@ def test_create_account_without_expires_on_defaults_to_null(
 @pytest.mark.parametrize(
     "payload",
     [
-        {"type": "gift_card"},
-        {"name": "Amazon"},
-        {"name": "Amazon", "type": "not_a_real_type"},
+        {"type": "gift_card", "initial_balance": "0"},
+        {"name": "Amazon", "initial_balance": "0"},
+        {"name": "Amazon", "type": "not_a_real_type", "initial_balance": "0"},
+        {"name": "Amazon", "type": "gift_card"},
+        {"name": "Amazon", "type": "gift_card", "initial_balance": "-0.01"},
+        {"name": "Amazon", "type": "gift_card", "initial_balance": "1.001"},
+        {"name": "Amazon", "type": "gift_card", "initial_balance": "100000000.00"},
+        {"name": "Amazon", "type": "gift_card", "initial_balance": "abc"},
     ],
 )
 def test_create_account_validation_errors(
-    auth_client: Client, payload: dict[str, str]
+    auth_client: Client, user: User, payload: dict[str, str]
 ) -> None:
     response = post(auth_client, "/accounts", payload)
     assert response.status_code == 400
+    assert not Account.objects.filter(user=user).exists()
+
+
+@pytest.mark.django_db
+def test_create_account_with_initial_balance_creates_transaction(
+    auth_client: Client,
+) -> None:
+    with time_machine.travel(datetime(2026, 3, 4, 12, tzinfo=UTC), tick=False):
+        response = post(
+            auth_client,
+            "/accounts",
+            {"name": "Amazon", "type": "gift_card", "initial_balance": "100.00"},
+        )
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["balance"] == "100.00"
+    assert "initial_balance" not in payload
+    transactions = Transaction.objects.filter(account_id=payload["id"])
+    assert [(t.amount, t.description, t.occurred_on) for t in transactions] == [
+        (Decimal("100.00"), "Initial balance", date(2026, 3, 4))
+    ]
+
+
+@pytest.mark.django_db
+def test_create_account_with_zero_initial_balance_creates_no_transaction(
+    auth_client: Client,
+) -> None:
+    response = post_account(auth_client)
+
+    assert response.status_code == 201
+    assert response.json()["balance"] == "0.00"
+    assert not Transaction.objects.filter(account_id=response.json()["id"]).exists()
+
+
+@pytest.mark.django_db
+def test_create_account_is_rolled_back_when_initial_transaction_fails(
+    auth_client: Client, user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail(*args: object, **kwargs: object) -> None:
+        raise DatabaseError("boom")
+
+    monkeypatch.setattr(Transaction.objects, "create", fail)
+
+    with pytest.raises(DatabaseError):
+        post(
+            auth_client,
+            "/accounts",
+            {"name": "Amazon", "type": "gift_card", "initial_balance": "10.00"},
+        )
+
+    assert not Account.objects.filter(user=user).exists()
+
+
+@pytest.mark.django_db
+def test_update_rejects_initial_balance(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+
+    response = patch(
+        auth_client, f"/accounts/{account.id}", {"initial_balance": "50.00"}
+    )
+
+    assert response.status_code == 400
+    assert get(auth_client, f"/accounts/{account.id}").json()["balance"] == "0.00"
+
+
+@pytest.mark.django_db
+def test_initial_balance_transaction_can_be_edited_and_deleted(
+    auth_client: Client,
+) -> None:
+    account_id = post(
+        auth_client,
+        "/accounts",
+        {"name": "Amazon", "type": "gift_card", "initial_balance": "100.00"},
+    ).json()["id"]
+    transaction = Transaction.objects.get(account_id=account_id)
+    path = f"/accounts/{account_id}/transactions/{transaction.id}"
+
+    assert patch(auth_client, path, {"amount": "80.00"}).status_code == 200
+    assert get(auth_client, f"/accounts/{account_id}").json()["balance"] == "80.00"
+
+    assert delete(auth_client, path).status_code == 204
+    assert get(auth_client, f"/accounts/{account_id}").json()["balance"] == "0.00"
 
 
 @pytest.mark.django_db
@@ -470,14 +565,6 @@ def test_negative_balance_is_returned_as_is(auth_client: Client, user: User) -> 
 
 
 @pytest.mark.django_db
-def test_create_account_returns_zero_balance(auth_client: Client) -> None:
-    response = post_account(auth_client)
-
-    assert response.status_code == 201
-    assert response.json()["balance"] == "0.00"
-
-
-@pytest.mark.django_db
 def test_update_account_returns_balance(auth_client: Client, user: User) -> None:
     account = create_account(user)
     create_transaction(account, amount="30.00")
@@ -492,7 +579,12 @@ def test_balance_cannot_be_set(auth_client: Client) -> None:
     created = post(
         auth_client,
         "/accounts",
-        {"name": "Amazon", "type": "gift_card", "balance": "99.00"},
+        {
+            "name": "Amazon",
+            "type": "gift_card",
+            "initial_balance": "0",
+            "balance": "99.00",
+        },
     ).json()
     updated = patch(auth_client, f"/accounts/{created['id']}", {"balance": "99.00"})
 

@@ -10,5 +10,7 @@ patch = _client.patch
 delete = _client.delete
 
 post_account = partial(
-    post, path="/accounts", data={"name": "Amazon", "type": "gift_card"}
+    post,
+    path="/accounts",
+    data={"name": "Amazon", "type": "gift_card", "initial_balance": "0"},
 )
