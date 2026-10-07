@@ -74,9 +74,7 @@ function isNotFound(error: unknown): boolean {
  * Awaits a request, treating an API 404 as success, e.g. a delete whose
  * resource is already gone. Other errors are rethrown.
  */
-export async function ignoreNotFound(
-  request: Promise<unknown>,
-): Promise<void> {
+export async function ignoreNotFound(request: Promise<unknown>): Promise<void> {
   try {
     await request;
   } catch (error) {
