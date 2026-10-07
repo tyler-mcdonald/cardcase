@@ -61,3 +61,23 @@ export function hasApiStatus(
 ): error is ApiError {
   return error instanceof ApiError && error.status === status;
 }
+
+function isAlreadyDeleted(error: unknown): boolean {
+  if (!hasApiStatus(error, 404)) {
+    return false;
+  }
+  const body = error.body as { detail?: unknown } | null;
+  return typeof body?.detail === "string";
+}
+
+export async function ignoreAlreadyDeleted(
+  deletion: Promise<unknown>,
+): Promise<void> {
+  try {
+    await deletion;
+  } catch (error) {
+    if (!isAlreadyDeleted(error)) {
+      throw error;
+    }
+  }
+}
