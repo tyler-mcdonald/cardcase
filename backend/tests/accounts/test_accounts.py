@@ -10,7 +10,11 @@ from accounts import serializers
 from accounts.models import MAX_ACCOUNTS_PER_USER, Account
 from accounts.views import AccountPagination
 from tests.accounts.client import delete, get, patch, post, post_account
-from tests.accounts.factories import create_account, create_accounts
+from tests.accounts.factories import (
+    create_account,
+    create_accounts,
+    create_transaction,
+)
 from tests.client import csrf_token
 from users.models import User
 
@@ -400,3 +404,111 @@ def test_deleting_user_cascades_to_soft_deleted_accounts(user: User) -> None:
 )
 def test_malformed_id_returns_not_found(auth_client: Client, malformed_id: str) -> None:
     assert get(auth_client, f"/accounts/{malformed_id}").status_code == 404
+
+
+@pytest.mark.django_db
+def test_account_without_transactions_has_zero_balance(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+
+    response = get(auth_client, f"/accounts/{account.id}")
+
+    assert response.json()["balance"] == "0.00"
+
+
+@pytest.mark.django_db
+def test_balance_is_sum_of_transactions(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+    create_transaction(account, amount="50.00")
+    create_transaction(account, amount="-12.25")
+    create_transaction(account, amount="5.10", occurred_on="2999-01-01")
+    create_transaction(create_account(user), amount="100.00")
+
+    retrieved = get(auth_client, f"/accounts/{account.id}").json()
+    listed = get(auth_client, "/accounts").json()["results"]
+
+    assert retrieved["balance"] == "42.85"
+    assert {r["id"]: r["balance"] for r in listed}[str(account.id)] == "42.85"
+
+
+@pytest.mark.django_db
+def test_negative_balance_is_returned_as_is(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+    create_transaction(account, amount="-20.00")
+
+    response = get(auth_client, f"/accounts/{account.id}")
+
+    assert response.json()["balance"] == "-20.00"
+
+
+@pytest.mark.django_db
+def test_create_account_returns_zero_balance(auth_client: Client) -> None:
+    response = post_account(auth_client)
+
+    assert response.status_code == 201
+    assert response.json()["balance"] == "0.00"
+
+
+@pytest.mark.django_db
+def test_update_account_returns_balance(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+    create_transaction(account, amount="30.00")
+
+    response = patch(auth_client, f"/accounts/{account.id}", {"name": "Renamed"})
+
+    assert response.json()["balance"] == "30.00"
+
+
+@pytest.mark.django_db
+def test_balance_cannot_be_set(auth_client: Client, user: User) -> None:
+    created = post(
+        auth_client,
+        "/accounts",
+        {"name": "Amazon", "type": "gift_card", "balance": "99.00"},
+    ).json()
+    updated = patch(auth_client, f"/accounts/{created['id']}", {"balance": "99.00"})
+
+    assert created["balance"] == "0.00"
+    assert updated.json()["balance"] == "0.00"
+
+
+@pytest.mark.django_db
+def test_balance_reflects_transaction_changes(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+
+    def balance() -> str:
+        return str(get(auth_client, f"/accounts/{account.id}").json()["balance"])
+
+    created = post(
+        auth_client,
+        f"/accounts/{account.id}/transactions",
+        {"amount": "25.00", "occurred_on": "2026-01-01"},
+    ).json()
+    assert balance() == "25.00"
+
+    patch(
+        auth_client,
+        f"/accounts/{account.id}/transactions/{created['id']}",
+        {"amount": "-5.00"},
+    )
+    assert balance() == "-5.00"
+
+    delete(auth_client, f"/accounts/{account.id}/transactions/{created['id']}")
+    assert balance() == "0.00"
+
+
+@pytest.mark.django_db
+def test_list_balance_avoids_n_plus_one_queries(
+    auth_client: Client, user: User
+) -> None:
+    create_transaction(create_account(user))
+    with CaptureQueriesContext(connection) as one_account:
+        get(auth_client, "/accounts")
+
+    for _ in range(5):
+        create_transaction(create_account(user))
+    with CaptureQueriesContext(connection) as many_accounts:
+        get(auth_client, "/accounts")
+
+    assert len(many_accounts) == len(one_account)

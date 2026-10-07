@@ -6,6 +6,10 @@ from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
+    balance = serializers.DecimalField(
+        max_digits=None, decimal_places=2, read_only=True
+    )
+
     class Meta:
         model = Account
         fields: ClassVar[list[str]] = [
@@ -14,6 +18,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             "description",
             "type",
             "expires_on",
+            "balance",
             "created_at",
             "updated_at",
         ]

@@ -58,6 +58,7 @@
   - PATCH /accounts/{id}
     - { name?, description?, type?, expires_on? }
   - DELETE /accounts/{id}
+  - Every account response includes a read-only balance: the sum of its transactions' amounts
 - Transactions
   - GET /transactions
     - All of the user's transactions across their non-deleted accounts
