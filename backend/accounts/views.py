@@ -1,7 +1,8 @@
 from typing import Any
 
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import DecimalField, OuterRef, QuerySet, Subquery, Sum, Value
+from django.db.models.functions import Coalesce
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -36,7 +37,19 @@ class AccountViewSet(UserScopedViewSet):
     http_method_names = ("get", "post", "patch", "delete", "head", "options")
 
     def get_queryset(self) -> QuerySet[Account]:
-        return Account.objects.filter(user=self.user)
+        transactions_total = (
+            Transaction.objects.filter(account=OuterRef("pk"))
+            .order_by()
+            .values("account")
+            .annotate(total=Sum("amount"))
+            .values("total")
+        )
+        return Account.objects.filter(user=self.user).annotate(
+            balance=Coalesce(
+                Subquery(transactions_total),
+                Value(0, output_field=DecimalField()),
+            )
+        )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         with transaction.atomic():
@@ -44,7 +57,8 @@ class AccountViewSet(UserScopedViewSet):
             return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
-        serializer.save(user=self.user)
+        account = serializer.save(user=self.user)
+        serializer.instance = self.get_queryset().get(pk=account.pk)
 
     def perform_destroy(self, instance: Account) -> None:
         instance.soft_delete()
