@@ -3,7 +3,7 @@ import { Badge, Card, Skeleton, Text, UnstyledButton } from "@mantine/core";
 import classes from "./AccountCard.module.css";
 import type { Account } from "./types";
 import { AccountTypeBadge } from "./AccountTypeBadge";
-import { describeExpiry } from "./format";
+import { describeBalance, describeExpiry } from "./format";
 
 type AccountStyle = {
   artClass: string;
@@ -32,6 +32,7 @@ export function AccountCard({
 }) {
   const style = ACCOUNT_STYLE[account.type];
   const expiry = describeExpiry(account.expires_on);
+  const balance = describeBalance(account.balance);
 
   return (
     <Card radius="lg" p="md" withBorder className={classes.card}>
@@ -57,13 +58,8 @@ export function AccountCard({
             </Text>
           )}
         </div>
-        <Text
-          fw={700}
-          size="lg"
-          c="rgba(255,255,255,0.55)"
-          aria-label="Balance tracking isn't available yet"
-        >
-          —
+        <Text fw={700} size="lg" c={balance.negative ? "red.4" : "white"}>
+          {balance.label}
         </Text>
       </div>
       <UnstyledButton
