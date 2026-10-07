@@ -1,4 +1,4 @@
-.PHONY: setup check-node-installed check-pnpm-installed install-dependencies
+.PHONY: setup check-node-installed check-pnpm-installed install-dependencies dev
 .NOTPARALLEL:
 
 require = $(1) >/dev/null 2>&1 || { echo "$(2)"; exit 1; }
@@ -20,3 +20,6 @@ check-pnpm-installed:
 install-dependencies:
 	@echo "==> Installing dependencies"
 	pnpm install
+
+dev: .env
+	pnpm dev
