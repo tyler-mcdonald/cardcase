@@ -2,7 +2,6 @@ import { useState, type FocusEvent, type KeyboardEvent } from "react";
 import {
   Button,
   Group,
-  NumberInput,
   type NumberInputProps,
   Stack,
   Table,
@@ -12,8 +11,10 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
+import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { toAmountString } from "@/lib/format";
 import {
   type ClosableMutation,
   useGuardedClose,
@@ -34,16 +35,7 @@ function oppositeAmountField(field: AmountField): AmountField {
 }
 
 function AmountInput(props: NumberInputProps) {
-  return (
-    <NumberInput
-      size="xs"
-      min={0}
-      allowNegative={false}
-      decimalScale={2}
-      hideControls
-      {...props}
-    />
-  );
+  return <MoneyInput size="xs" min={0} allowNegative={false} {...props} />;
 }
 
 function ErrorMessages({ messages }: { messages: string[] }) {
@@ -110,7 +102,7 @@ export function TransactionEditorRow({
   function formatAmount(field: AmountField) {
     const value = form.values[field];
     if (value !== "") {
-      form.setFieldValue(field, Number(value).toFixed(2));
+      form.setFieldValue(field, toAmountString(value));
     }
   }
 

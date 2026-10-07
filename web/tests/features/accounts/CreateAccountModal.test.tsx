@@ -108,6 +108,26 @@ describe("CreateAccountModal", () => {
     expect(mockedCreateAccount).not.toHaveBeenCalled();
   });
 
+  it("rejects a non-numeric initial balance", async () => {
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /initial balance/i }),
+      {
+        target: { value: "-" },
+      },
+    );
+    submit();
+
+    expect(
+      await screen.findByText("Initial balance must be a number"),
+    ).toBeTruthy();
+    expect(mockedCreateAccount).not.toHaveBeenCalled();
+  });
+
   it("shows the API's error under the initial balance", async () => {
     mockedCreateAccount.mockRejectedValueOnce(
       new ApiError("Request failed (400)", 400, {

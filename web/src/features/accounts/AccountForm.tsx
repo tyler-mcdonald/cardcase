@@ -2,7 +2,6 @@ import {
   Button,
   Group,
   Input,
-  NumberInput,
   SegmentedControl,
   Stack,
   TextInput,
@@ -11,6 +10,7 @@ import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
+import { MoneyInput } from "@/components/MoneyInput";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
@@ -25,7 +25,11 @@ function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
   if (value === "") {
     return "Initial balance is required";
   }
-  return Number(value) < 0 ? "Initial balance can't be negative" : null;
+  const amount = Number(value);
+  if (Number.isNaN(amount)) {
+    return "Initial balance must be a number";
+  }
+  return amount < 0 ? "Initial balance can't be negative" : null;
 }
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
@@ -95,13 +99,11 @@ export function AccountForm({
           />
         </Input.Wrapper>
         {initialValues.initial_balance !== undefined && (
-          <NumberInput
+          <MoneyInput
             label="Initial balance"
             required
             prefix="$"
-            decimalScale={2}
             thousandSeparator=","
-            hideControls
             {...form.getInputProps("initial_balance")}
           />
         )}

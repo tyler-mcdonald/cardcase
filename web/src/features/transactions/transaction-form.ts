@@ -1,4 +1,4 @@
-import { localDateString } from "@/lib/format";
+import { localDateString, toAmountString } from "@/lib/format";
 import { splitSignedAmount } from "./format";
 import type { Transaction, TransactionInput, TransactionUpdate } from "./types";
 
@@ -36,7 +36,7 @@ export function validateTransactionForm({
 }
 
 function signedAmount({ outflow, inflow }: TransactionFormValues): string {
-  return (Number(inflow) - Number(outflow)).toFixed(2);
+  return toAmountString(Number(inflow) - Number(outflow));
 }
 
 export function toTransactionInput(
@@ -67,8 +67,8 @@ export function transactionFormFrom(
     accountId: transaction.account.id,
     occurredOn: transaction.occurred_on,
     description: transaction.description,
-    outflow: outflow?.toFixed(2) ?? "",
-    inflow: inflow?.toFixed(2) ?? "",
+    outflow: outflow === null ? "" : toAmountString(outflow),
+    inflow: inflow === null ? "" : toAmountString(inflow),
   };
 }
 
