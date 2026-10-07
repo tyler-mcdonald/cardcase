@@ -21,6 +21,7 @@ const account = makeAccount({
   type: "flight_credit",
   expires_on: "2026-12-31",
   description: "Cancelled flight",
+  balance: "250.00",
 });
 
 const onClose = vi.fn();
@@ -75,6 +76,16 @@ describe("EditAccountModal", () => {
       screen.getByRole<HTMLInputElement>("textbox", { name: /description/i })
         .value,
     ).toBe("Cancelled flight");
+  });
+
+  it("shows the balance read-only", () => {
+    renderForm();
+
+    const balance = screen.getByRole<HTMLInputElement>("textbox", {
+      name: /balance/i,
+    });
+    expect(balance.value).toBe("$250.00");
+    expect(balance.readOnly).toBe(true);
   });
 
   it("locks the account type", () => {

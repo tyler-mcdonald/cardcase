@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { describeExpiry, isExpired } from "@/features/accounts/format";
+import {
+  describeBalance,
+  describeExpiry,
+  isExpired,
+} from "@/features/accounts/format";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -43,6 +47,36 @@ describe("describeExpiry", () => {
     expect(describeExpiry("2026-01-01")).toEqual({
       label: "Expired Jan 1, 2026",
       expired: true,
+    });
+  });
+});
+
+describe("describeBalance", () => {
+  it("formats a positive balance as dollars", () => {
+    expect(describeBalance("1234.5")).toEqual({
+      label: "$1,234.50",
+      negative: false,
+    });
+  });
+
+  it("formats a zero balance as $0.00", () => {
+    expect(describeBalance("0.00")).toEqual({
+      label: "$0.00",
+      negative: false,
+    });
+  });
+
+  it("formats a negative zero balance as $0.00", () => {
+    expect(describeBalance("-0.00")).toEqual({
+      label: "$0.00",
+      negative: false,
+    });
+  });
+
+  it("formats a negative balance with a minus sign", () => {
+    expect(describeBalance("-12.34")).toEqual({
+      label: "-$12.34",
+      negative: true,
     });
   });
 });
