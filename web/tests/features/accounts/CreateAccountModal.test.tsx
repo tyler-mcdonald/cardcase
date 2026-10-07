@@ -49,7 +49,85 @@ describe("CreateAccountModal", () => {
       type: "flight_credit",
       description: "Cancelled flight",
       expires_on: null,
+      initial_balance: "0.00",
     });
+  });
+
+  it("submits the entered initial balance", async () => {
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /initial balance/i }),
+      {
+        target: { value: "100" },
+      },
+    );
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({ initial_balance: "100.00" });
+  });
+
+  it("requires an initial balance", () => {
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    const initialBalance = screen.getByRole<HTMLInputElement>("textbox", {
+      name: /initial balance/i,
+    });
+    fireEvent.change(initialBalance, { target: { value: "" } });
+    submit();
+
+    expect(initialBalance.validity.valueMissing).toBe(true);
+    expect(mockedCreateAccount).not.toHaveBeenCalled();
+  });
+
+  it("rejects a negative initial balance", async () => {
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /initial balance/i }),
+      {
+        target: { value: "-5" },
+      },
+    );
+    submit();
+
+    expect(
+      await screen.findByText("Initial balance can't be negative"),
+    ).toBeTruthy();
+    expect(mockedCreateAccount).not.toHaveBeenCalled();
+  });
+
+  it("shows the API's error under the initial balance", async () => {
+    mockedCreateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", 400, {
+        initial_balance: [
+          "Ensure that there are no more than 10 digits in total.",
+        ],
+      }),
+    );
+    renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks" },
+    });
+    submit();
+
+    expect(
+      await screen.findByText(
+        "Ensure that there are no more than 10 digits in total.",
+      ),
+    ).toBeTruthy();
   });
 
   it("submits the expiration date as a calendar date", async () => {

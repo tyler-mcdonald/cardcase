@@ -62,10 +62,11 @@ describe("createAccount", () => {
     type: "gift_card" as const,
     description: "",
     expires_on: "2026-12-31",
+    initial_balance: "100.00",
   };
 
   it("posts the new account", async () => {
-    const account = makeAccount(input);
+    const account = makeAccount({ name: input.name });
     mockedRequest.mockResolvedValueOnce(account);
 
     await expect(createAccount(input)).resolves.toEqual(account);
