@@ -77,7 +77,6 @@ def test_create_account_without_expires_on_defaults_to_null(
         {"type": "gift_card", "initial_balance": "0"},
         {"name": "Amazon", "initial_balance": "0"},
         {"name": "Amazon", "type": "not_a_real_type", "initial_balance": "0"},
-        {"name": "Amazon", "type": "gift_card"},
         {"name": "Amazon", "type": "gift_card", "initial_balance": "-0.01"},
         {"name": "Amazon", "type": "gift_card", "initial_balance": "1.001"},
         {"name": "Amazon", "type": "gift_card", "initial_balance": "100000000.00"},
@@ -114,10 +113,13 @@ def test_create_account_with_initial_balance_creates_transaction(
 
 
 @pytest.mark.django_db
-def test_create_account_with_zero_initial_balance_creates_no_transaction(
-    auth_client: Client,
+@pytest.mark.parametrize("extra", [{}, {"initial_balance": "0"}])
+def test_create_account_with_zero_or_omitted_initial_balance_creates_no_transaction(
+    auth_client: Client, extra: dict[str, str]
 ) -> None:
-    response = post_account(auth_client)
+    response = post(
+        auth_client, "/accounts", {"name": "Amazon", "type": "gift_card", **extra}
+    )
 
     assert response.status_code == 201
     assert response.json()["balance"] == "0.00"

@@ -17,6 +17,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         max_digits=_AMOUNT_FIELD.max_digits,
         decimal_places=_AMOUNT_FIELD.decimal_places,
         min_value=Decimal(0),
+        default=Decimal(0),
         write_only=True,
     )
 
