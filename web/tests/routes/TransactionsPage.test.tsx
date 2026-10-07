@@ -11,6 +11,7 @@ import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listAllAccounts } from "@/features/accounts/api";
 import {
   createTransaction,
+  deleteTransaction,
   listTransactions,
   updateTransaction,
 } from "@/features/transactions/api";
@@ -24,6 +25,7 @@ vi.mock("@/features/transactions/api", () => ({
   listTransactions: vi.fn(),
   createTransaction: vi.fn(),
   updateTransaction: vi.fn(),
+  deleteTransaction: vi.fn(),
 }));
 
 vi.mock("@/features/accounts/api", () => ({
@@ -33,6 +35,7 @@ vi.mock("@/features/accounts/api", () => ({
 const mockedListTransactions = vi.mocked(listTransactions);
 const mockedCreateTransaction = vi.mocked(createTransaction);
 const mockedUpdateTransaction = vi.mocked(updateTransaction);
+const mockedDeleteTransaction = vi.mocked(deleteTransaction);
 const mockedListAllAccounts = vi.mocked(listAllAccounts);
 
 function renderPage(route = "/") {
@@ -817,5 +820,136 @@ describe("editing a transaction", () => {
     expect(
       screen.getAllByRole("textbox", { name: "Description" }),
     ).toHaveLength(1);
+  });
+});
+
+describe("deleting a transaction", () => {
+  const latte = makeTransaction({
+    id: "latte-id",
+    account: { id: "starbucks-id", name: "Starbucks", type: "gift_card" },
+    description: "Latte",
+  });
+  const refund = makeTransaction({ id: "refund-id", description: "Refund" });
+
+  beforeEach(() => {
+    mockedListTransactions.mockResolvedValue(makePage([latte, refund]));
+  });
+
+  async function startDelete(route = "/") {
+    renderPage(route);
+    fireEvent.click(await screen.findByText(latte.description));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    return screen.findByRole("dialog", { name: "Delete this transaction?" });
+  }
+
+  function confirmDelete(dialog: HTMLElement) {
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+  }
+
+  it("isn't offered when adding a transaction", async () => {
+    mockedListAllAccounts.mockResolvedValue(makePage([]));
+    renderPage();
+    await screen.findByText(latte.description);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  });
+
+  it("asks for confirmation before deleting", async () => {
+    const dialog = await startDelete();
+
+    expect(within(dialog).getByText("This can't be undone.")).toBeTruthy();
+    expect(mockedDeleteTransaction).not.toHaveBeenCalled();
+  });
+
+  it("deletes the transaction and removes it from the table", async () => {
+    mockedDeleteTransaction.mockResolvedValueOnce(undefined);
+    const dialog = await startDelete();
+
+    mockedListTransactions.mockResolvedValue(makePage([refund]));
+    confirmDelete(dialog);
+
+    await waitFor(() =>
+      expect(screen.queryByText(latte.description)).toBeNull(),
+    );
+    expect(mockedDeleteTransaction).toHaveBeenCalledWith(
+      latte.account.id,
+      latte.id,
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+    expect(screen.getByText(refund.description)).toBeTruthy();
+  });
+
+  it("refreshes the accounts after deleting", async () => {
+    mockedDeleteTransaction.mockResolvedValueOnce(undefined);
+    const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
+    const dialog = await startDelete();
+
+    confirmDelete(dialog);
+
+    await waitFor(() =>
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["accounts"] }),
+    );
+  });
+
+  it("returns to the editor when deleting is cancelled", async () => {
+    const dialog = await startDelete();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+    expect(mockedDeleteTransaction).not.toHaveBeenCalled();
+  });
+
+  it("returns to the first page after deleting the last transaction on a page", async () => {
+    mockedListTransactions.mockImplementation(async (page) => {
+      if (page === 1) {
+        return makePage([refund], { count: 2, hasNext: true });
+      }
+      if (mockedDeleteTransaction.mock.calls.length > 0) {
+        throw new ApiError("Not found", 404);
+      }
+      return makePage([latte], { count: 2 });
+    });
+    mockedDeleteTransaction.mockResolvedValueOnce(undefined);
+    const dialog = await startDelete("/?page=2");
+
+    confirmDelete(dialog);
+
+    expect(await screen.findByText(refund.description)).toBeTruthy();
+    expect(screen.queryByText(latte.description)).toBeNull();
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(1);
+  });
+
+  it("treats a transaction that's already gone as deleted", async () => {
+    mockedDeleteTransaction.mockRejectedValueOnce(
+      new ApiError("Not found", 404, { detail: "Not found." }),
+    );
+    const dialog = await startDelete();
+
+    mockedListTransactions.mockResolvedValue(makePage([refund]));
+    confirmDelete(dialog);
+
+    await waitFor(() =>
+      expect(screen.queryByText(latte.description)).toBeNull(),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("shows an error in the dialog when deleting fails", async () => {
+    mockedDeleteTransaction.mockRejectedValueOnce(
+      new ApiError("Server error", 500),
+    );
+    const dialog = await startDelete();
+
+    confirmDelete(dialog);
+
+    expect((await within(dialog).findByRole("alert")).textContent).toBe(
+      GENERIC_ERROR,
+    );
+    expect(dialog.isConnected).toBe(true);
   });
 });

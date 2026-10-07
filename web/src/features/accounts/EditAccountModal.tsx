@@ -1,8 +1,7 @@
-import { Button, Group, Modal, Stack, Text } from "@mantine/core";
+import { Button, Modal } from "@mantine/core";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { FormError } from "@/components/FormError";
-import { apiErrorMessage } from "@/lib/api/errors";
+import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 import { AccountForm } from "./AccountForm";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
@@ -102,10 +101,9 @@ function EditAccountContent({
       <Modal.Body>
         {confirmingDelete && (
           <DeleteConfirmation
+            message="You'll lose access to this account and its transaction history. You can't undo this."
             isPending={deleteAccount.isPending}
-            errorMessage={
-              deleteAccount.error && apiErrorMessage(deleteAccount.error)
-            }
+            error={deleteAccount.error}
             onConfirm={() =>
               deleteAccount.mutate(account.id, { onSuccess: onClose })
             }
@@ -137,40 +135,5 @@ function EditAccountContent({
         </div>
       </Modal.Body>
     </>
-  );
-}
-
-function DeleteConfirmation({
-  isPending,
-  errorMessage,
-  onConfirm,
-  onCancel,
-}: {
-  isPending: boolean;
-  errorMessage: string | null;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <Stack>
-      <Text size="sm">
-        You'll lose access to this account and its transaction history. You
-        can't undo this.
-      </Text>
-      {errorMessage && <FormError message={errorMessage} />}
-      <Group justify="flex-end">
-        <Button
-          variant="default"
-          onClick={onCancel}
-          disabled={isPending}
-          autoFocus
-        >
-          Cancel
-        </Button>
-        <Button color="red" onClick={onConfirm} loading={isPending}>
-          Delete
-        </Button>
-      </Group>
-    </Stack>
   );
 }

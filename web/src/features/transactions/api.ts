@@ -30,3 +30,10 @@ export function updateTransaction(
     { body: JSON.stringify(changes) },
   );
 }
+
+export function deleteTransaction(accountId: string, id: string) {
+  return request<void>(
+    "DELETE",
+    `/v1/accounts/${accountId}/transactions/${id}`,
+  );
+}
