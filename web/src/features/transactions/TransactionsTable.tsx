@@ -39,13 +39,13 @@ export type EditTarget = { id: string; focusField: TransactionField };
 export function TransactionsTable({
   transactions,
   newRow,
-  editing,
+  editTarget,
   onEdit,
   onEditClose,
 }: {
   transactions: Transaction[];
   newRow?: ReactNode;
-  editing: EditTarget | null;
+  editTarget: EditTarget | null;
   onEdit?: (target: EditTarget) => void;
   onEditClose: () => void;
 }) {
@@ -53,12 +53,12 @@ export function TransactionsTable({
     <TransactionsTableFrame>
       {newRow}
       {transactions.map((transaction) => {
-        if (transaction.id === editing?.id) {
+        if (transaction.id === editTarget?.id) {
           return (
             <EditTransactionRow
               key={transaction.id}
               transaction={transaction}
-              focusField={editing.focusField}
+              focusField={editTarget.focusField}
               onClose={onEditClose}
             />
           );

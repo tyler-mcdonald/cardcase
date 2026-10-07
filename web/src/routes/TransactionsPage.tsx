@@ -43,7 +43,7 @@ export function TransactionsPage() {
     setEditor(null);
   }
   const isAdding = editor?.kind === "new";
-  const editing = editor?.kind === "edit" ? editor : null;
+  const editTarget = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
   const showTable = data !== undefined && !isEmpty;
 
@@ -96,7 +96,7 @@ export function TransactionsPage() {
       {showTable && (
         <TransactionsTable
           transactions={data.items}
-          editing={editing}
+          editTarget={editTarget}
           onEdit={isSaving ? undefined : openEditTransaction}
           onEditClose={() => closeEditor(editor)}
           newRow={
