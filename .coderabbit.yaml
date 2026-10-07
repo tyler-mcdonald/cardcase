@@ -1,0 +1,6 @@
+reviews:
+  profile: chill
+  poem: false
+  path_filters:
+    - "!**/pnpm-lock.yaml"
+    - "!**/uv.lock"
