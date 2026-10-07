@@ -72,19 +72,22 @@ export function transactionFormFrom(
   };
 }
 
+function isSameValue(
+  field: keyof TransactionInput,
+  a: string,
+  b: string,
+): boolean {
+  return field === "amount" ? Number(a) === Number(b) : a === b;
+}
+
 export function changedFields(
   transaction: Transaction,
   input: TransactionInput,
 ): TransactionUpdate {
-  const changes: TransactionUpdate = {};
-  if (Number(input.amount) !== Number(transaction.amount)) {
-    changes.amount = input.amount;
-  }
-  if (input.description !== transaction.description) {
-    changes.description = input.description;
-  }
-  if (input.occurred_on !== transaction.occurred_on) {
-    changes.occurred_on = input.occurred_on;
-  }
-  return changes;
+  const fields = Object.keys(input) as (keyof TransactionInput)[];
+  return Object.fromEntries(
+    fields
+      .filter((field) => !isSameValue(field, input[field], transaction[field]))
+      .map((field) => [field, input[field]]),
+  );
 }
