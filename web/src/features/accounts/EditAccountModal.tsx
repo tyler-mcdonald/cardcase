@@ -2,7 +2,6 @@ import { Button, Modal } from "@mantine/core";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
-import { apiErrorMessage } from "@/lib/api/errors";
 import { AccountForm } from "./AccountForm";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
@@ -104,9 +103,7 @@ function EditAccountContent({
           <DeleteConfirmation
             message="You'll lose access to this account and its transaction history. You can't undo this."
             isPending={deleteAccount.isPending}
-            errorMessage={
-              deleteAccount.error && apiErrorMessage(deleteAccount.error)
-            }
+            error={deleteAccount.error}
             onConfirm={() =>
               deleteAccount.mutate(account.id, { onSuccess: onClose })
             }

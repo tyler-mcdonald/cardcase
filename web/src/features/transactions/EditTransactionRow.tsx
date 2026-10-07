@@ -1,7 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import { Modal } from "@mantine/core";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
-import { apiErrorMessage } from "@/lib/api/errors";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { useDeleteTransaction, useUpdateTransaction } from "./queries";
 import { TransactionEditorRow } from "./TransactionEditorRow";
@@ -74,9 +73,7 @@ export function EditTransactionRow({
         <DeleteConfirmation
           message="This can't be undone."
           isPending={deleteTransaction.isPending}
-          errorMessage={
-            deleteTransaction.error && apiErrorMessage(deleteTransaction.error)
-          }
+          error={deleteTransaction.error}
           onConfirm={confirmDelete}
           onCancel={closeDeleteDialog}
         />
