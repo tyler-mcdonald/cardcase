@@ -70,6 +70,10 @@ function isAlreadyDeleted(error: unknown): boolean {
   return typeof body?.detail === "string";
 }
 
+/**
+ * Awaits a delete request, treating an API 404 as success: the resource is
+ * already gone, which is what the caller wanted. Other errors are rethrown.
+ */
 export async function ignoreAlreadyDeleted(
   deletion: Promise<unknown>,
 ): Promise<void> {
