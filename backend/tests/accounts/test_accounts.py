@@ -461,7 +461,7 @@ def test_update_account_returns_balance(auth_client: Client, user: User) -> None
 
 
 @pytest.mark.django_db
-def test_balance_cannot_be_set(auth_client: Client, user: User) -> None:
+def test_balance_cannot_be_set(auth_client: Client) -> None:
     created = post(
         auth_client,
         "/accounts",
