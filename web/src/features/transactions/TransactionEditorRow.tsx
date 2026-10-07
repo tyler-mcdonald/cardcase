@@ -6,7 +6,7 @@ import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { toAmountString } from "@/lib/format";
+import { toTwoDecimalString } from "@/lib/format";
 import {
   type ClosableMutation,
   useGuardedClose,
@@ -90,7 +90,7 @@ export function TransactionEditorRow({
   function formatAmount(field: AmountField) {
     const value = form.values[field];
     if (value !== "") {
-      form.setFieldValue(field, toAmountString(value));
+      form.setFieldValue(field, toTwoDecimalString(value));
     }
   }
 

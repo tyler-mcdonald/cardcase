@@ -25,6 +25,6 @@ export function localDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function toAmountString(amount: string | number): string {
+export function toTwoDecimalString(amount: string | number): string {
   return Number(amount).toFixed(2);
 }
