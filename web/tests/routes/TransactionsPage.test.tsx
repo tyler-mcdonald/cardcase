@@ -748,7 +748,21 @@ describe("editing a transaction", () => {
     );
   });
 
-  it("applies the same validation as creating", async () => {
+  it("requires a date", async () => {
+    await openEditor(latte.description);
+
+    const date = screen.getByRole("textbox", { name: "Date" });
+    fireEvent.change(date, { target: { value: "" } });
+    fireEvent.blur(date);
+    save();
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Date is required",
+    );
+    expect(mockedUpdateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("requires an outflow or an inflow", async () => {
     await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
