@@ -51,7 +51,8 @@
   - Get session / end session (log out)
 - Accounts
   - POST /accounts
-    - { name, description?, type, expires_on?, starting_balance }
+    - { name, description?, type, expires_on?, initial_balance? }
+    - initial_balance is write-only: a decimal >= 0, defaulting to 0; when > 0 it is saved as an "Initial balance" inflow transaction dated today
   - GET /accounts
     - ?page (default 1), ?page_size (default 50, max 250; larger values are clamped)
   - GET /accounts/{id}
