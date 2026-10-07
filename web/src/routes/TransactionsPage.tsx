@@ -21,6 +21,7 @@ type NewTransactionEditor = { kind: "new"; key: number };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
 type Editor = NewTransactionEditor | EditTransactionEditor;
 
+// True when the row being edited is no longer on the loaded page.
 function isEditedRowGone(
   editor: Editor | null,
   transactions: { id: string }[] | undefined,
