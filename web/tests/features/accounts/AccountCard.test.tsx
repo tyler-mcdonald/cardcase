@@ -54,12 +54,37 @@ describe("AccountCard", () => {
     screen.getByText("Expires Jan 1, 2027");
   });
 
-  it("reserves space for the balance with a placeholder", () => {
-    renderCard(makeAccount());
+  it("shows the balance formatted as dollars", () => {
+    renderCard(makeAccount({ balance: "1234.5" }));
 
-    const balance = screen.getByText("—");
-    expect(balance.getAttribute("aria-label")).toBe(
-      "Balance tracking isn't available yet",
+    screen.getByText("$1,234.50");
+  });
+
+  it("shows a zero balance as $0.00", () => {
+    renderCard(makeAccount({ balance: "0.00" }));
+
+    screen.getByText("$0.00");
+  });
+
+  it("shows a negative balance with a minus sign", () => {
+    renderCard(makeAccount({ balance: "-12.34" }));
+
+    screen.getByText("-$12.34");
+  });
+
+  it("shows a negative balance in red", () => {
+    renderCard(makeAccount({ balance: "-12.34" }));
+
+    expect(screen.getByText("-$12.34").style.color).toBe(
+      "var(--mantine-color-red-4)",
+    );
+  });
+
+  it("shows a positive balance in white", () => {
+    renderCard(makeAccount({ balance: "12.34" }));
+
+    expect(screen.getByText("$12.34").style.color).toBe(
+      "var(--mantine-color-white)",
     );
   });
 });

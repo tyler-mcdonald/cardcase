@@ -4,6 +4,7 @@ export type Account = {
   description: string;
   type: "gift_card" | "flight_credit";
   expires_on: string | null;
+  balance: string;
   created_at: string;
   updated_at: string;
 };
