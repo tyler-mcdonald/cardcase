@@ -521,16 +521,16 @@ describe("editing a transaction", () => {
   }
 
   it("prefills an outflow with the transaction's values", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     expect(inputValue("Date")).toBe("Sep 28, 2026");
-    expect(inputValue("Description")).toBe("Latte");
+    expect(inputValue("Description")).toBe(latte.description);
     expect(inputValue("Outflow")).toBe("4.75");
     expect(inputValue("Inflow")).toBe("");
   });
 
   it("prefills an inflow under Inflow", async () => {
-    await openEditor("Refund");
+    await openEditor(refund.description);
 
     expect(inputValue("Outflow")).toBe("");
     expect(inputValue("Inflow")).toBe("150.00");
@@ -549,7 +549,7 @@ describe("editing a transaction", () => {
   it("focuses the date when the account was clicked", async () => {
     renderPage();
 
-    fireEvent.click(await screen.findByText("Starbucks"));
+    fireEvent.click(await screen.findByText(latte.account.name));
 
     expect(document.activeElement).toBe(
       screen.getByRole("textbox", { name: "Date" }),
@@ -558,7 +558,7 @@ describe("editing a transaction", () => {
 
   it("disables Save while saving", async () => {
     mockedUpdateTransaction.mockReturnValueOnce(new Promise(() => {}));
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -573,7 +573,7 @@ describe("editing a transaction", () => {
   });
 
   it("closes without saving when clicking outside", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -585,16 +585,16 @@ describe("editing a transaction", () => {
   });
 
   it("shows the account but doesn't allow changing it", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     const account = screen.getByRole("textbox", { name: "Account" });
-    expect((account as HTMLInputElement).value).toBe("Starbucks");
+    expect((account as HTMLInputElement).value).toBe(latte.account.name);
     expect(account.hasAttribute("disabled")).toBe(true);
   });
 
   it("sends only the changed fields", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -603,8 +603,8 @@ describe("editing a transaction", () => {
 
     await waitFor(() =>
       expect(mockedUpdateTransaction).toHaveBeenCalledWith(
-        "starbucks-id",
-        "latte-id",
+        latte.account.id,
+        latte.id,
         { description: "Mocha" },
       ),
     );
@@ -612,7 +612,7 @@ describe("editing a transaction", () => {
 
   it("moves an amount from Outflow to Inflow", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Inflow" }), {
       target: { value: "4.75" },
@@ -621,15 +621,15 @@ describe("editing a transaction", () => {
 
     await waitFor(() =>
       expect(mockedUpdateTransaction).toHaveBeenCalledWith(
-        "starbucks-id",
-        "latte-id",
+        latte.account.id,
+        latte.id,
         { amount: "4.75" },
       ),
     );
   });
 
   it("closes without a request when nothing changed", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     save();
 
@@ -639,7 +639,7 @@ describe("editing a transaction", () => {
 
   it("saves when Enter is pressed", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     const description = screen.getByRole("textbox", { name: "Description" });
     fireEvent.change(description, { target: { value: "Mocha" } });
@@ -650,7 +650,7 @@ describe("editing a transaction", () => {
 
   it("closes and shows the updated row after saving", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -670,7 +670,7 @@ describe("editing a transaction", () => {
     );
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
     renderPage("/?page=2");
-    fireEvent.click(await screen.findByText("Latte"));
+    fireEvent.click(await screen.findByText(latte.description));
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -690,19 +690,19 @@ describe("editing a transaction", () => {
         ? makePage([latte, refund], { count: 3, hasNext: true })
         : makePage([coffee], { count: 3 }),
     );
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.click(screen.getByRole("button", { name: "2" }));
-    expect(await screen.findByText("Coffee")).toBeTruthy();
+    expect(await screen.findByText(coffee.description)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "1" }));
 
-    expect(await screen.findByText("Latte")).toBeTruthy();
+    expect(await screen.findByText(latte.description)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
   it("sends only the fields changed since the editor opened", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
-    await openEditor("Latte");
+    await openEditor(latte.description);
     mockedListTransactions.mockResolvedValue(
       makePage([
         { ...latte, description: "Renamed elsewhere" },
@@ -726,8 +726,8 @@ describe("editing a transaction", () => {
 
     await waitFor(() =>
       expect(mockedUpdateTransaction).toHaveBeenCalledWith(
-        "starbucks-id",
-        "latte-id",
+        latte.account.id,
+        latte.id,
         { amount: "-5.00" },
       ),
     );
@@ -736,7 +736,7 @@ describe("editing a transaction", () => {
   it("refreshes the accounts after saving", async () => {
     mockedUpdateTransaction.mockResolvedValueOnce(latte);
     const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -749,7 +749,7 @@ describe("editing a transaction", () => {
   });
 
   it("applies the same validation as creating", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Outflow" }), {
       target: { value: "" },
@@ -766,7 +766,7 @@ describe("editing a transaction", () => {
     mockedUpdateTransaction.mockRejectedValueOnce(
       new ApiError("Request failed (500)", 500),
     );
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -778,20 +778,20 @@ describe("editing a transaction", () => {
   });
 
   it("discards unsaved changes when another row is clicked", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
     });
-    fireEvent.click(screen.getByText("Refund"));
+    fireEvent.click(screen.getByText(refund.description));
 
-    expect(inputValue("Description")).toBe("Refund");
-    expect(screen.getByText("Latte")).toBeTruthy();
+    expect(inputValue("Description")).toBe(refund.description);
+    expect(screen.getByText(latte.description)).toBeTruthy();
     expect(mockedUpdateTransaction).not.toHaveBeenCalled();
   });
 
   it("discards unsaved changes when adding a transaction", async () => {
-    await openEditor("Latte");
+    await openEditor(latte.description);
 
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
@@ -799,7 +799,7 @@ describe("editing a transaction", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
 
     expect(inputValue("Description")).toBe("");
-    expect(screen.getByText("Latte")).toBeTruthy();
+    expect(screen.getByText(latte.description)).toBeTruthy();
     expect(
       screen.getAllByRole("textbox", { name: "Description" }),
     ).toHaveLength(1);
