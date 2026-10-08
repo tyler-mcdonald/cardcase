@@ -100,8 +100,6 @@ export function AccountForm({
           <MoneyInput
             label="Initial balance"
             required
-            prefix="$"
-            thousandSeparator=","
             {...form.getInputProps("initial_balance")}
           />
         )}

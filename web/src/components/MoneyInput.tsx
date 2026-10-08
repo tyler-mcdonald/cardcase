@@ -7,6 +7,8 @@ export function MoneyInput(props: NumberInputProps) {
       allowNegative={false}
       decimalScale={2}
       hideControls
+      prefix="$"
+      thousandSeparator=","
       {...props}
     />
   );

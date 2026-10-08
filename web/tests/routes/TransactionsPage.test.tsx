@@ -299,7 +299,7 @@ describe("adding a transaction", () => {
     fireEvent.change(inflow, { target: { value: "20" } });
 
     expect((outflow as HTMLInputElement).value).toBe("");
-    expect((inflow as HTMLInputElement).value).toBe("20");
+    expect((inflow as HTMLInputElement).value).toBe("$20");
   });
 
   it("formats an amount when it loses focus", async () => {
@@ -307,10 +307,10 @@ describe("adding a transaction", () => {
 
     const outflow = screen.getByRole("textbox", { name: "Outflow" });
     fireEvent.change(outflow, { target: { value: "4.5" } });
-    expect((outflow as HTMLInputElement).value).toBe("4.5");
+    expect((outflow as HTMLInputElement).value).toBe("$4.5");
     fireEvent.blur(outflow);
 
-    expect((outflow as HTMLInputElement).value).toBe("4.50");
+    expect((outflow as HTMLInputElement).value).toBe("$4.50");
   });
 
   it("opens the account dropdown when tabbed into and closes it when tabbing away", async () => {
@@ -528,7 +528,7 @@ describe("editing a transaction", () => {
 
     expect(inputValue("Date")).toBe("Sep 28, 2026");
     expect(inputValue("Description")).toBe(latte.description);
-    expect(inputValue("Outflow")).toBe("4.75");
+    expect(inputValue("Outflow")).toBe("$4.75");
     expect(inputValue("Inflow")).toBe("");
   });
 
@@ -536,7 +536,7 @@ describe("editing a transaction", () => {
     await openEditor(refund.description);
 
     expect(inputValue("Outflow")).toBe("");
-    expect(inputValue("Inflow")).toBe("150.00");
+    expect(inputValue("Inflow")).toBe("$150.00");
   });
 
   it("focuses the field that was clicked", async () => {
