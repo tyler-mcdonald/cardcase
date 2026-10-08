@@ -14,4 +14,6 @@ export type AccountInput = Pick<
   "name" | "description" | "type" | "expires_on"
 >;
 
+export type AccountCreateInput = AccountInput & { initial_balance: string };
+
 export type AccountUpdate = Partial<Omit<AccountInput, "type">>;

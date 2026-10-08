@@ -1,16 +1,25 @@
 import { Modal } from "@mantine/core";
-import { AccountForm } from "./AccountForm";
+import { AccountForm, type AccountFormValues } from "./AccountForm";
 import { useCreateAccount } from "./queries";
-import type { AccountInput } from "./types";
+import type { AccountCreateInput } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
+import { toTwoDecimalString } from "@/lib/format";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 
-const INITIAL_VALUES: AccountInput = {
+const INITIAL_VALUES: AccountFormValues = {
   name: "",
   type: "gift_card",
+  initial_balance: 0,
   expires_on: null,
   description: "",
 };
+
+function toCreateInput({
+  initial_balance,
+  ...values
+}: AccountFormValues): AccountCreateInput {
+  return { ...values, initial_balance: toTwoDecimalString(initial_balance!) };
+}
 
 export function CreateAccountModal({
   opened,
@@ -34,7 +43,9 @@ export function CreateAccountModal({
         fieldErrors={fieldErrors}
         formError={formError}
         onSubmit={(values) =>
-          createAccount.mutate(values, { onSuccess: onCreated })
+          createAccount.mutate(toCreateInput(values), {
+            onSuccess: onCreated,
+          })
         }
         onCancel={close}
       />

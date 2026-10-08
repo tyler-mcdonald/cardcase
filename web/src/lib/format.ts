@@ -24,3 +24,7 @@ export function localDateString(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+export function toTwoDecimalString(amount: string | number): string {
+  return Number(amount).toFixed(2);
+}

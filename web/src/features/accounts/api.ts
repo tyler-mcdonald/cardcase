@@ -1,6 +1,6 @@
 import { request } from "@/lib/api/client";
 import type { Paginated } from "@/lib/api/types";
-import type { Account, AccountInput, AccountUpdate } from "./types";
+import type { Account, AccountCreateInput, AccountUpdate } from "./types";
 
 const ACCOUNTS_PATH = "/v1/accounts";
 const MAX_ACCOUNTS = 250;
@@ -16,7 +16,7 @@ export function listAllAccounts() {
   );
 }
 
-export function createAccount(input: AccountInput) {
+export function createAccount(input: AccountCreateInput) {
   return request<Account>("POST", ACCOUNTS_PATH, {
     body: JSON.stringify(input),
   });

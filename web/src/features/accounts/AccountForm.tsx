@@ -10,8 +10,25 @@ import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
+import { MoneyInput } from "@/components/MoneyInput";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
+
+export type AccountFormValues = AccountInput & {
+  initial_balance?: string | number;
+};
+
+const requireInitialBalance = isNotEmpty("Initial balance is required");
+
+function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
+  if (value === undefined) {
+    return null;
+  }
+  if (Number.isNaN(Number(value))) {
+    return "Initial balance must be a number";
+  }
+  return requireInitialBalance(value);
+}
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
@@ -28,19 +45,22 @@ export function AccountForm({
   onCancel,
   secondaryAction,
 }: {
-  initialValues: AccountInput;
+  initialValues: AccountFormValues;
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
   fieldErrors: Record<string, string>;
   formError: string | null;
-  onSubmit: (values: AccountInput) => void;
+  onSubmit: (values: AccountFormValues) => void;
   onCancel: () => void;
   secondaryAction?: ReactNode;
 }) {
-  const form = useForm<AccountInput>({
+  const form = useForm<AccountFormValues>({
     initialValues,
-    validate: { name: isNotEmpty("Name is required") },
+    validate: {
+      name: isNotEmpty("Name is required"),
+      initial_balance: validateInitialBalance,
+    },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
   const { setErrors } = form;
@@ -76,6 +96,13 @@ export function AccountForm({
             {...typeInputProps}
           />
         </Input.Wrapper>
+        {initialValues.initial_balance !== undefined && (
+          <MoneyInput
+            label="Initial balance"
+            required
+            {...form.getInputProps("initial_balance")}
+          />
+        )}
         <DateInput
           label="Expiration date"
           description="Optional — leave blank if it doesn't expire."

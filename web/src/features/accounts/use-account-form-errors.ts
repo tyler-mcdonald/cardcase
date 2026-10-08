@@ -4,14 +4,15 @@
 
 import { useMemo } from "react";
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api/errors";
-import type { AccountInput } from "./types";
+import type { AccountCreateInput } from "./types";
 
 const FORM_FIELDS = [
   "name",
   "type",
   "expires_on",
   "description",
-] as const satisfies readonly (keyof AccountInput)[];
+  "initial_balance",
+] as const satisfies readonly (keyof AccountCreateInput)[];
 
 export function useAccountFormErrors(error: Error | null) {
   return useMemo(() => {
