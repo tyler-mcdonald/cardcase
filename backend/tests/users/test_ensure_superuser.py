@@ -36,6 +36,17 @@ def test_ensure_superuser_creates_passwordless_superuser() -> None:
     ).exists()
 
 
+def test_ensure_superuser_ignores_password_env_var(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "correct-horse-battery-staple")
+
+    call_command("ensure_superuser")
+
+    user = User.objects.get(email=EMAIL)
+    assert not user.has_usable_password()
+
+
 def test_ensure_superuser_skips_when_email_unset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -32,6 +32,8 @@ class Command(BaseCommand):
                     stderr=self.stderr,
                 )
                 user = User.objects.get(email__iexact=email)
+                user.set_unusable_password()
+                user.save(update_fields=["password"])
                 EmailAddress.objects.create(
                     user=user, email=user.email, verified=True, primary=True
                 )
