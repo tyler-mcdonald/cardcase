@@ -20,7 +20,7 @@ projects:
             runtime: python
             plan: free
             rootDir: backend
-            buildCommand: pip install uv && unset VIRTUAL_ENV && uv sync --frozen --no-dev && uv run python manage.py collectstatic --noinput && uv run python manage.py migrate
+            buildCommand: pip install uv && unset VIRTUAL_ENV && uv sync --frozen --no-dev && uv run python manage.py collectstatic --noinput && uv run python manage.py migrate && uv run python manage.py ensure_superuser
             startCommand: unset VIRTUAL_ENV && uv run gunicorn config.wsgi:application
             envVars:
               - key: DJANGO_SETTINGS_MODULE
@@ -28,6 +28,8 @@ projects:
               - key: SECRET_KEY
                 sync: false
               - key: RESEND_API_KEY
+                sync: false
+              - key: DJANGO_SUPERUSER_EMAIL
                 sync: false
               - key: DATABASE_URL
                 fromDatabase:
