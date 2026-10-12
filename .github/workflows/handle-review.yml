@@ -15,6 +15,6 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@handle-review-on-pr-reviews
+    uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
