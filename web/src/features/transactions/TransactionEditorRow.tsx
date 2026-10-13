@@ -1,4 +1,10 @@
-import { useState, type FocusEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+} from "react";
 import { Button, Group, Stack, Table, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -77,7 +83,18 @@ export function TransactionEditorRow({
 
   const cancel = useGuardedClose([mutation], onClose);
 
-  useClickOutside(cancel, ["click"], [editorRow, actionsRow]);
+  const mountedAt = useRef(Infinity);
+  useEffect(() => {
+    mountedAt.current = performance.now();
+  }, []);
+
+  function cancelOnOutsideClick(event: Event) {
+    if (event.timeStamp > mountedAt.current) {
+      cancel();
+    }
+  }
+
+  useClickOutside(cancelOnOutsideClick, ["click"], [editorRow, actionsRow]);
 
   function setAmount(field: AmountField, value: Amount) {
     form.setFieldValue(field, value);
