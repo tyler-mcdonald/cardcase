@@ -16,7 +16,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "").strip()
+        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "").strip().lower()
         if not email:
             self.stdout.write("DJANGO_SUPERUSER_EMAIL is not set; skipping.")
             return

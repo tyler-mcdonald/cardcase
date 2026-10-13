@@ -109,3 +109,21 @@ def test_superuser_can_log_in_by_code_with_signup_closed(
     auth.post(client, "/auth/code/confirm", {"code": match.group()})
 
     assert get_session(client).status_code == 200
+
+
+def test_superuser_with_mixed_case_email_can_log_in_by_code(
+    client: Client, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    settings.ALLOW_SIGNUP = False
+    monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "Admin@Example.com")
+    call_command("ensure_superuser")
+
+    assert User.objects.get().email == EMAIL
+    assert EmailAddress.objects.get().email == EMAIL
+
+    auth.post(client, "/auth/code/request", {"email": "Admin@Example.com"})
+    match = CODE_PATTERN.search(str(mail.outbox[-1].body))
+    assert match is not None
+    auth.post(client, "/auth/code/confirm", {"code": match.group()})
+
+    assert get_session(client).status_code == 200
