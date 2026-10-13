@@ -1,0 +1,9 @@
+inheritance: true
+reviews:
+  high_level_summary: false
+  review_status: false
+  auto_review:
+    enabled: false
+  path_filters:
+    - "!**/pnpm-lock.yaml"
+    - "!**/uv.lock"
