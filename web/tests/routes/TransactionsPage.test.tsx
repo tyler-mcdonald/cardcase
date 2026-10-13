@@ -46,6 +46,14 @@ function save() {
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
 }
 
+function clickOutside() {
+  fireEvent.click(screen.getByRole("heading", { name: "Transactions" }));
+}
+
+async function finishOpeningClick() {
+  await act(() => new Promise((resolve) => setTimeout(resolve)));
+}
+
 it("shows each transaction's date, account, type, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
@@ -443,10 +451,19 @@ describe("adding a transaction", () => {
     fireEvent.click(option);
     expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("heading", { name: "Transactions" }));
+    await finishOpeningClick();
+    clickOutside();
 
     expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
     expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("stays open through the click that opened it", async () => {
+    await openNewTransactionForm();
+
+    clickOutside();
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toBeTruthy();
   });
 
   it("closes without saving when Escape is pressed", async () => {
@@ -581,7 +598,8 @@ describe("editing a transaction", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
       target: { value: "Mocha" },
     });
-    fireEvent.click(screen.getByRole("heading", { name: "Transactions" }));
+    await finishOpeningClick();
+    clickOutside();
 
     expect(screen.queryByRole("textbox", { name: "Description" })).toBeNull();
     expect(mockedUpdateTransaction).not.toHaveBeenCalled();

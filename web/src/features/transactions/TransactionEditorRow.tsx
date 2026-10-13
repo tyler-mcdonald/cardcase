@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useRef,
   useState,
   type FocusEvent,
   type KeyboardEvent,
@@ -83,18 +82,13 @@ export function TransactionEditorRow({
 
   const cancel = useGuardedClose([mutation], onClose);
 
-  const mountedAt = useRef(Infinity);
+  const [openingClickDone, setOpeningClickDone] = useState(false);
   useEffect(() => {
-    mountedAt.current = performance.now();
+    const timer = setTimeout(() => setOpeningClickDone(true));
+    return () => clearTimeout(timer);
   }, []);
 
-  function cancelOnOutsideClick(event: Event) {
-    if (event.timeStamp > mountedAt.current) {
-      cancel();
-    }
-  }
-
-  useClickOutside(cancelOnOutsideClick, ["click"], [editorRow, actionsRow]);
+  useClickOutside(cancel, ["click"], [editorRow, actionsRow], openingClickDone);
 
   function setAmount(field: AmountField, value: Amount) {
     form.setFieldValue(field, value);
