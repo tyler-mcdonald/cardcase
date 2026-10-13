@@ -4,6 +4,3 @@ reviews:
   review_status: false
   auto_review:
     enabled: false
-  path_filters:
-    - "!**/pnpm-lock.yaml"
-    - "!**/uv.lock"
