@@ -1,4 +1,9 @@
-import { useState, type FocusEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+} from "react";
 import { Button, Group, Stack, Table, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -77,7 +82,13 @@ export function TransactionEditorRow({
 
   const cancel = useGuardedClose([mutation], onClose);
 
-  useClickOutside(cancel, ["click"], [editorRow, actionsRow]);
+  const [openingClickDone, setOpeningClickDone] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setOpeningClickDone(true));
+    return () => clearTimeout(timer);
+  }, []);
+
+  useClickOutside(cancel, ["click"], [editorRow, actionsRow], openingClickDone);
 
   function setAmount(field: AmountField, value: Amount) {
     form.setFieldValue(field, value);
