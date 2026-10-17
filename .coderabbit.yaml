@@ -1,4 +1,2 @@
+# Inherits shared settings from https://github.com/tyler-mcdonald/coderabbit/blob/main/.coderabbit.yaml
 inheritance: true
-reviews:
-  auto_review:
-    enabled: false
