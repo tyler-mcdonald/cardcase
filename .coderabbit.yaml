@@ -1,2 +1,2 @@
-# Inherits shared settings from tyler-mcdonald/coderabbit
+# Inherits shared settings from https://github.com/tyler-mcdonald/coderabbit/blob/main/.coderabbit.yaml
 inheritance: true
