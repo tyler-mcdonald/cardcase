@@ -1,0 +1,5 @@
+Welcome to cardcase! Enter this code to finish creating your account:
+
+{{ code }}
+
+If you didn't sign up, you can ignore this email.
