@@ -247,6 +247,19 @@ def test_request_code_does_not_create_duplicate_for_mixed_case_user_email(
 
 
 @pytest.mark.django_db
+def test_request_code_sends_login_code_to_mixed_case_user_email(
+    client: Client,
+) -> None:
+    User.objects.create_user(email="Alice@example.com")
+
+    _request_code(client, "alice@example.com")
+
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == ["alice@example.com"]
+    _extract_code_from_email()
+
+
+@pytest.mark.django_db
 def test_request_code_when_user_creation_races_matches_new_email_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

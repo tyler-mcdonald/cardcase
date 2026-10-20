@@ -16,12 +16,15 @@ class RequestLoginOrSignupCodeView(RequestLoginCodeView):  # type: ignore[misc]
             email
             and self.input._user is None
             and get_adapter(request).is_open_for_signup(request)
-            and not User.objects.filter(email__iexact=email).exists()
         ):
-            try:
-                self.input._user = _create_unverified_user(request, email)
-            except IntegrityError:
-                pass
+            existing = User.objects.filter(email__iexact=email).first()
+            if existing is None:
+                try:
+                    self.input._user = _create_unverified_user(request, email)
+                except IntegrityError:
+                    pass
+            elif existing.is_active:
+                self.input._user = existing
         return super().post(request, *args, **kwargs)  # type: ignore[no-any-return]
 
 
