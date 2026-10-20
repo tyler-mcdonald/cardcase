@@ -1,0 +1,5 @@
+Your cardcase login code is:
+
+{{ code }}
+
+If you didn't try to log in, you can ignore this email.
