@@ -33,13 +33,17 @@ describe("AccountCard", () => {
     renderCard(makeAccount({ name: "Starbucks", type: "gift_card" }));
 
     screen.getByText("Starbucks");
-    screen.getByText("Gift card");
+    expect(screen.getByRole("img", { name: "Gift card" }).textContent).toBe(
+      "🎁",
+    );
   });
 
-  it("shows the flight credit label", () => {
+  it("shows the flight credit emoji", () => {
     renderCard(makeAccount({ type: "flight_credit" }));
 
-    screen.getByText("Flight credit");
+    expect(screen.getByRole("img", { name: "Flight credit" }).textContent).toBe(
+      "✈️",
+    );
   });
 
   it("shows an expired badge for a past expiration date", () => {
