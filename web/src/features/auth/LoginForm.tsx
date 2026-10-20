@@ -34,8 +34,8 @@ export function LoginForm() {
 
   return (
     <main>
-      <Paper withBorder shadow="sm" p="xl" radius="md">
-        <Title order={1} size="h2" ta="center" mb="lg">
+      <Paper withBorder shadow="sm" px="xl" py={48} radius="md">
+        <Title order={1} size="h2" ta="center" mb="xl">
           Welcome to cardcase
         </Title>
         {step === "email" ? (
