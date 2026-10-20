@@ -82,7 +82,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -186,6 +186,7 @@ ACCOUNT_LOGIN_BY_CODE_FORMAT = {"length": 6, "numeric": True, "dashed": False}
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
 ALLOW_SIGNUP = env.bool("ALLOW_SIGNUP", default=False)  # blocking until ready for users
 
