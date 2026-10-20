@@ -38,6 +38,14 @@ describe("AccountCard", () => {
     );
   });
 
+  it("clamps the account name to two lines", () => {
+    renderCard(makeAccount({ name: "Starbucks" }));
+
+    const name = screen.getByText("Starbucks");
+    expect(name.hasAttribute("data-line-clamp")).toBe(true);
+    expect(name.style.getPropertyValue("--text-line-clamp")).toBe("2");
+  });
+
   it("shows the flight credit emoji", () => {
     renderCard(makeAccount({ type: "flight_credit" }));
 

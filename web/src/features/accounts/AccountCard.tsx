@@ -48,7 +48,7 @@ export function AccountCard({
         </span>
       </div>
       <div className={classes.nameRow}>
-        <Text fw={700} fz="xl" lineClamp={2} c={style.nameColor}>
+        <Text fw={700} fz="xl" lh={1.15} lineClamp={2} c={style.nameColor}>
           {account.name}
         </Text>
       </div>
