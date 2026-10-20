@@ -260,12 +260,13 @@ def test_request_code_sends_login_code_to_mixed_case_user_email(
 
 
 @pytest.mark.django_db
-def test_request_code_when_user_creation_races_matches_new_email_response(
+def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
 
-    def raise_integrity_error(*args: Any) -> User:
+    def raise_integrity_error(request: HttpRequest, email: str) -> User:
+        User.objects.create_user(email=email)
         raise IntegrityError
 
     monkeypatch.setattr("users.views._create_unverified_user", raise_integrity_error)
@@ -275,6 +276,8 @@ def test_request_code_when_user_creation_races_matches_new_email_response(
 
     assert raced_response.status_code == new_response.status_code
     assert raced_response.json() == new_response.json()  # type: ignore[attr-defined]
+    assert mail.outbox[-1].to == ["raced@example.com"]
+    _extract_code_from_email()
 
 
 @pytest.mark.django_db
