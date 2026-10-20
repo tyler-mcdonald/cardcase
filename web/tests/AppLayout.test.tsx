@@ -32,7 +32,7 @@ describe("AppLayout", () => {
   it("links the brand back home", () => {
     renderLayout("/other");
 
-    fireEvent.click(screen.getByRole("link", { name: "Cardcase" }));
+    fireEvent.click(screen.getByRole("link", { name: "cardcase" }));
 
     screen.getByText("Home content");
   });
