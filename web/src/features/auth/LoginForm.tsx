@@ -35,7 +35,7 @@ export function LoginForm() {
   return (
     <main>
       <Paper withBorder shadow="sm" p="xl" radius="md">
-        <Title order={1} ta="center" mb="lg">
+        <Title order={1} size="h2" ta="center" mb="lg">
           Welcome to cardcase
         </Title>
         {step === "email" ? (
