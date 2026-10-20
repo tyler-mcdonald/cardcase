@@ -11,9 +11,6 @@
 .art {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .artGiftCard {
@@ -47,13 +44,21 @@
 }
 
 .footerRow {
-  align-items: flex-end;
+  align-items: center;
 }
 
-.typeBadge {
-  background: rgba(0, 0, 0, 0.55);
-  color: white;
-  backdrop-filter: blur(4px);
+.typeEmoji {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.nameRow {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .cardButton {
@@ -61,16 +66,4 @@
   inset: 0;
   border-radius: inherit;
   cursor: pointer;
-}
-
-.nameColumn {
-  min-width: 0;
-}
-
-.planeIcon {
-  opacity: 0.5;
-}
-
-.monogram {
-  opacity: 0.35;
 }
