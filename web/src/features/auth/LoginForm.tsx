@@ -1,5 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Button, PinInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import {
+  Button,
+  Paper,
+  PinInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
@@ -26,7 +34,7 @@ export function LoginForm() {
 
   return (
     <main>
-      <Stack gap="xs" align="center" mb={40}>
+      <Stack gap="xs" align="center" mb="xl">
         <Title order={1} ta="center">
           cardcase
         </Title>
@@ -35,23 +43,25 @@ export function LoginForm() {
           accounts.
         </Text>
       </Stack>
-      {step === "email" ? (
-        <EmailStep
-          email={email}
-          onEmailChange={setEmail}
-          onSubmit={handleRequestCode}
-          submitting={submitting}
-        />
-      ) : (
-        <CodeStep
-          email={email}
-          code={code}
-          onCodeChange={setCode}
-          onSubmit={handleConfirmCode}
-          submitting={submitting}
-        />
-      )}
-      {error && <FormError mt="md" message={apiErrorMessage(error)} />}
+      <Paper withBorder p="xl" radius="md">
+        {step === "email" ? (
+          <EmailStep
+            email={email}
+            onEmailChange={setEmail}
+            onSubmit={handleRequestCode}
+            submitting={submitting}
+          />
+        ) : (
+          <CodeStep
+            email={email}
+            code={code}
+            onCodeChange={setCode}
+            onSubmit={handleConfirmCode}
+            submitting={submitting}
+          />
+        )}
+        {error && <FormError mt="md" message={apiErrorMessage(error)} />}
+      </Paper>
     </main>
   );
 }
@@ -81,7 +91,7 @@ function EmailStep({
           value={email}
           onChange={(event) => onEmailChange(event.target.value)}
         />
-        <Button type="submit" size="md" loading={submitting} fullWidth>
+        <Button type="submit" size="md" fz="sm" loading={submitting} fullWidth>
           Continue with email
         </Button>
       </Stack>
@@ -122,6 +132,7 @@ function CodeStep({
         <Button
           type="submit"
           size="md"
+          fz="sm"
           loading={submitting}
           disabled={code.length !== 6 || submitting}
           fullWidth
