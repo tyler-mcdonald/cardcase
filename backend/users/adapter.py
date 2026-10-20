@@ -2,8 +2,11 @@ from typing import Any
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailAddress
+from allauth.account.utils import filter_users_by_email
 from django.conf import settings
 from django.http import HttpRequest
+
+from users.models import User
 
 
 class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
@@ -14,13 +17,21 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
         if template_prefix == "account/email/login_code":
-            address = self._pending_signup_address(email)
-            if address is not None:
+            user = self._pending_signup_user(email)
+            if user is not None:
                 template_prefix = "account/email/email_confirmation_signup"
-                context = {**context, "user": address.user}
+                context = {**context, "user": user}
         super().send_mail(template_prefix, email, context)
 
-    def _pending_signup_address(self, email: str) -> EmailAddress | None:
+    def _pending_signup_user(self, email: str) -> User | None:
         if not self.is_open_for_signup(self.request):
             return None
-        return EmailAddress.objects.filter(email__iexact=email, verified=False).first()
+        users = filter_users_by_email(email, is_active=True, prefer_verified=True)
+        if len(users) != 1:
+            return None
+        user: User = users[0]
+        if EmailAddress.objects.filter(
+            user=user, email__iexact=email, verified=False
+        ).exists():
+            return user
+        return None

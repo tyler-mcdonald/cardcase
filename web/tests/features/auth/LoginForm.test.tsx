@@ -8,6 +8,14 @@ afterEach(() => {
 });
 
 describe("LoginForm", () => {
+  it("offers both login and signup in its heading", () => {
+    renderWithProviders(<LoginForm />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Log in or sign up" }),
+    ).toBeTruthy();
+  });
+
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
     vi.stubGlobal(
       "fetch",

@@ -7,6 +7,7 @@ import time_machine
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponseBase
 from django.test import Client
 from pytest_django import Settings
@@ -213,6 +214,69 @@ def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
         == "too_many_login_attempts"
     )
     assert User.objects.filter(email=NEW_USER_EMAIL).count() == 1
+
+
+@pytest.mark.django_db
+def test_request_code_for_deactivated_user_matches_new_email_response(
+    existing_user: User,
+) -> None:
+    existing_user.is_active = False
+    existing_user.save(update_fields=["is_active"])
+
+    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    mail.outbox.clear()
+    deactivated_response = _request_code(
+        Client(enforce_csrf_checks=True), existing_user.email
+    )
+
+    assert deactivated_response.status_code == new_response.status_code
+    assert deactivated_response.json() == new_response.json()  # type: ignore[attr-defined]
+    assert User.objects.filter(email__iexact=existing_user.email).count() == 1
+    assert not CODE_PATTERN.search(str(mail.outbox[-1].body))
+
+
+@pytest.mark.django_db
+def test_request_code_does_not_create_duplicate_for_mixed_case_user_email(
+    client: Client,
+) -> None:
+    User.objects.create_user(email="Alice@example.com")
+
+    _request_code(client, "alice@example.com")
+
+    assert User.objects.filter(email__iexact="alice@example.com").count() == 1
+
+
+@pytest.mark.django_db
+def test_request_code_when_user_creation_races_matches_new_email_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+
+    def raise_integrity_error(*args: Any) -> User:
+        raise IntegrityError
+
+    monkeypatch.setattr("users.views._create_unverified_user", raise_integrity_error)
+    raced_response = _request_code(
+        Client(enforce_csrf_checks=True), "raced@example.com"
+    )
+
+    assert raced_response.status_code == new_response.status_code
+    assert raced_response.json() == new_response.json()  # type: ignore[attr-defined]
+
+
+@pytest.mark.django_db
+def test_verified_user_gets_login_code_email_when_another_user_has_unverified_address(
+    client: Client, existing_user: User
+) -> None:
+    other = User.objects.create_user(email="other@example.com")
+    EmailAddress.objects.create(
+        user=other, email=existing_user.email, verified=False, primary=False
+    )
+
+    _request_code(client, existing_user.email)
+
+    assert len(mail.outbox) == 1
+    assert "Confirm" not in mail.outbox[0].subject
 
 
 @pytest.mark.django_db
