@@ -36,7 +36,7 @@ export function LoginForm() {
     <main>
       <Paper withBorder shadow="sm" p="xl" radius="md">
         <Title order={1} ta="center" mb="lg">
-          Log in or sign up
+          Welcome to cardcase
         </Title>
         {step === "email" ? (
           <EmailStep
@@ -74,6 +74,9 @@ function EmailStep({
   return (
     <form onSubmit={onSubmit}>
       <Stack>
+        <Text c="dimmed" size="sm" ta="center">
+          Log in or create an account with your email
+        </Text>
         <TextInput
           id="email"
           label="Email"
@@ -84,7 +87,7 @@ function EmailStep({
           onChange={(event) => onEmailChange(event.target.value)}
         />
         <Button type="submit" loading={submitting} fullWidth>
-          Send login code
+          Continue with email
         </Button>
       </Stack>
     </form>

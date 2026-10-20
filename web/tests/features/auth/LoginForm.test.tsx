@@ -8,11 +8,17 @@ afterEach(() => {
 });
 
 describe("LoginForm", () => {
-  it("offers both login and signup in its heading", () => {
+  it("welcomes the user and offers both login and signup", () => {
     renderWithProviders(<LoginForm />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Log in or sign up" }),
+      screen.getByRole("heading", { level: 1, name: "Welcome to cardcase" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Log in or create an account with your email"),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Continue with email" }),
     ).toBeTruthy();
   });
 
@@ -36,14 +42,19 @@ describe("LoginForm", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "me@example.com" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /send login code/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with email/i }),
+    );
 
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /confirm/i })).toBeTruthy(),
     );
     expect(screen.getByText("me@example.com", { exact: false })).toBeTruthy();
     expect(
-      screen.queryByRole("button", { name: /send login code/i }),
+      screen.queryByRole("button", { name: /continue with email/i }),
+    ).toBeNull();
+    expect(
+      screen.queryByText("Log in or create an account with your email"),
     ).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
   });
