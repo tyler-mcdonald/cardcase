@@ -36,7 +36,7 @@ export function LoginForm() {
     <main>
       <Paper withBorder shadow="sm" p="xl" radius="md">
         <Title order={1} ta="center" mb="lg">
-          Log in
+          Log in or sign up
         </Title>
         {step === "email" ? (
           <EmailStep

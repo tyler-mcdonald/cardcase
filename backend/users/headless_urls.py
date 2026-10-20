@@ -2,6 +2,8 @@ from allauth.headless.account import views
 from allauth.headless.constants import Client
 from django.urls import include, path
 
+from users.views import RequestLoginOrSignupCodeView
+
 urlpatterns = [
     path(
         "browser/v1/",
@@ -13,7 +15,7 @@ urlpatterns = [
                 ),
                 path(
                     "auth/code/request",
-                    views.RequestLoginCodeView.as_api_view(client=Client.BROWSER),
+                    RequestLoginOrSignupCodeView.as_api_view(client=Client.BROWSER),
                 ),
                 path(
                     "auth/code/confirm",

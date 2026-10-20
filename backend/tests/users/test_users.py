@@ -129,15 +129,90 @@ def existing_user(db: None) -> User:
 
 
 @pytest.mark.django_db
-def test_request_code_for_unknown_email_does_not_create_user_or_send_code(
-    client: Client,
+def test_request_code_for_unknown_email_does_not_create_user_or_send_code_when_signup_disabled(
+    client: Client, settings: Settings
 ) -> None:
+    settings.ALLOW_SIGNUP = False
+
     response = _request_code(client, NEW_USER_EMAIL)
 
     assert not _new_user_exists()
     assert len(mail.outbox) == 1
     assert "code" not in mail.outbox[0].body.lower()
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_request_code_for_new_email_creates_unverified_user_and_sends_welcome_code(
+    client: Client,
+) -> None:
+    response = _request_code(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 401
+    assert _new_user_exists()
+    assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
+    assert len(mail.outbox) == 1
+    assert "Confirm" in mail.outbox[0].subject
+    _extract_code_from_email()
+
+
+@pytest.mark.django_db
+def test_confirming_code_for_new_email_verifies_email_and_creates_session(
+    client: Client,
+) -> None:
+    response = _login(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 200
+    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
+
+
+@pytest.mark.django_db
+def test_resending_code_for_new_email_sends_welcome_email(client: Client) -> None:
+    _request_code(client, NEW_USER_EMAIL)
+
+    _resend_code(client)
+
+    assert len(mail.outbox) == 2
+    assert "Confirm" in mail.outbox[-1].subject
+
+
+@pytest.mark.django_db
+def test_existing_user_gets_login_code_email(
+    client: Client, existing_user: User
+) -> None:
+    _request_code(client, existing_user.email)
+
+    assert len(mail.outbox) == 1
+    assert "Confirm" not in mail.outbox[0].subject
+
+
+@pytest.mark.django_db
+def test_request_code_response_is_the_same_for_new_and_existing_emails(
+    existing_user: User,
+) -> None:
+    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    existing_response = _request_code(
+        Client(enforce_csrf_checks=True), existing_user.email
+    )
+
+    assert new_response.status_code == existing_response.status_code
+    assert new_response.json() == existing_response.json()  # type: ignore[attr-defined]
+
+
+@pytest.mark.django_db
+def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
+    for _ in range(3):
+        _request_code(client, NEW_USER_EMAIL)
+
+    response = _request_code(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 400
+    assert (
+        response.json()["errors"][0]["code"]  # type: ignore[attr-defined]
+        == "too_many_login_attempts"
+    )
+    assert User.objects.filter(email=NEW_USER_EMAIL).count() == 1
 
 
 @pytest.mark.django_db
