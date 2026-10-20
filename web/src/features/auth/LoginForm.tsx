@@ -74,12 +74,10 @@ function EmailStep({
   return (
     <form onSubmit={onSubmit}>
       <Stack>
-        <Text c="dimmed" size="sm" ta="center">
-          Log in or create an account with your email
-        </Text>
         <TextInput
           id="email"
-          label="Email"
+          aria-label="Email"
+          placeholder="Enter your email"
           type="email"
           autoComplete="email"
           required
