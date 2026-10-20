@@ -8,11 +8,11 @@ afterEach(() => {
 });
 
 describe("LoginForm", () => {
-  it("welcomes the user and offers to continue with email", () => {
+  it("shows the app name and offers to continue with email", () => {
     renderWithProviders(<LoginForm />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Welcome to cardcase" }),
+      screen.getByRole("heading", { level: 1, name: "cardcase" }),
     ).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Continue with email" }),

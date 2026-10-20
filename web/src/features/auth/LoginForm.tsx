@@ -1,13 +1,5 @@
 import { useState, type FormEvent } from "react";
-import {
-  Button,
-  Paper,
-  PinInput,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { Button, PinInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
@@ -34,28 +26,32 @@ export function LoginForm() {
 
   return (
     <main>
-      <Paper withBorder shadow="sm" px="xl" py={48} radius="md">
-        <Title order={1} size="h2" ta="center" mb="xl">
-          Welcome to cardcase
+      <Stack gap="xs" align="center" mb={40}>
+        <Title order={1} ta="center">
+          cardcase
         </Title>
-        {step === "email" ? (
-          <EmailStep
-            email={email}
-            onEmailChange={setEmail}
-            onSubmit={handleRequestCode}
-            submitting={submitting}
-          />
-        ) : (
-          <CodeStep
-            email={email}
-            code={code}
-            onCodeChange={setCode}
-            onSubmit={handleConfirmCode}
-            submitting={submitting}
-          />
-        )}
-        {error && <FormError mt="md" message={apiErrorMessage(error)} />}
-      </Paper>
+        <Text c="gray.7" ta="center">
+          Store and track gift cards, flight credits, and other cash-like
+          accounts.
+        </Text>
+      </Stack>
+      {step === "email" ? (
+        <EmailStep
+          email={email}
+          onEmailChange={setEmail}
+          onSubmit={handleRequestCode}
+          submitting={submitting}
+        />
+      ) : (
+        <CodeStep
+          email={email}
+          code={code}
+          onCodeChange={setCode}
+          onSubmit={handleConfirmCode}
+          submitting={submitting}
+        />
+      )}
+      {error && <FormError mt="md" message={apiErrorMessage(error)} />}
     </main>
   );
 }
@@ -73,18 +69,19 @@ function EmailStep({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <Stack>
+      <Stack gap="sm">
         <TextInput
           id="email"
           aria-label="Email"
           placeholder="Enter your email"
+          size="md"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(event) => onEmailChange(event.target.value)}
         />
-        <Button type="submit" loading={submitting} fullWidth>
+        <Button type="submit" size="md" loading={submitting} fullWidth>
           Continue with email
         </Button>
       </Stack>
@@ -124,6 +121,7 @@ function CodeStep({
         />
         <Button
           type="submit"
+          size="md"
           loading={submitting}
           disabled={code.length !== 6 || submitting}
           fullWidth

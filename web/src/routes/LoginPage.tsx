@@ -11,7 +11,7 @@ export function LoginPage() {
   }
 
   return (
-    <Container size={420} pt="15vh">
+    <Container size={372} pt="15vh">
       <LoginForm />
     </Container>
   );
