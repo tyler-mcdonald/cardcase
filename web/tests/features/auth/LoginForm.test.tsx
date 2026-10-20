@@ -8,6 +8,17 @@ afterEach(() => {
 });
 
 describe("LoginForm", () => {
+  it("shows the app name and offers to continue with email", () => {
+    renderWithProviders(<LoginForm />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "cardcase" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Continue with email" }),
+    ).toBeTruthy();
+  });
+
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
     vi.stubGlobal(
       "fetch",
@@ -28,14 +39,19 @@ describe("LoginForm", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "me@example.com" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /send login code/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with email/i }),
+    );
 
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /confirm/i })).toBeTruthy(),
     );
     expect(screen.getByText("me@example.com", { exact: false })).toBeTruthy();
     expect(
-      screen.queryByRole("button", { name: /send login code/i }),
+      screen.queryByRole("button", { name: /continue with email/i }),
+    ).toBeNull();
+    expect(
+      screen.queryByText("Log in or create an account with your email"),
     ).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
   });

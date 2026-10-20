@@ -34,10 +34,16 @@ export function LoginForm() {
 
   return (
     <main>
-      <Paper withBorder shadow="sm" p="xl" radius="md">
-        <Title order={1} ta="center" mb="lg">
-          Log in
+      <Stack gap="xs" align="center" mb="xl">
+        <Title order={1} ta="center">
+          cardcase
         </Title>
+        <Text c="gray.7" ta="center">
+          Store and track gift cards, flight credits, and other cash-like
+          accounts.
+        </Text>
+      </Stack>
+      <Paper withBorder p="xl" radius="md">
         {step === "email" ? (
           <EmailStep
             email={email}
@@ -73,18 +79,20 @@ function EmailStep({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <Stack>
+      <Stack gap="sm">
         <TextInput
           id="email"
-          label="Email"
+          aria-label="Email"
+          placeholder="Enter your email"
+          size="md"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(event) => onEmailChange(event.target.value)}
         />
-        <Button type="submit" loading={submitting} fullWidth>
-          Send login code
+        <Button type="submit" size="md" fz="sm" loading={submitting} fullWidth>
+          Continue with email
         </Button>
       </Stack>
     </form>
@@ -123,6 +131,8 @@ function CodeStep({
         />
         <Button
           type="submit"
+          size="md"
+          fz="sm"
           loading={submitting}
           disabled={code.length !== 6 || submitting}
           fullWidth
