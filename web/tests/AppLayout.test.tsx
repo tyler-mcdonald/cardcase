@@ -2,6 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { describe, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
+import { APP_NAME } from "@/lib/constants";
 import { renderWithProviders } from "./render";
 
 vi.mock("@/features/auth/UserMenu", () => ({
@@ -32,7 +33,7 @@ describe("AppLayout", () => {
   it("links the brand back home", () => {
     renderLayout("/other");
 
-    fireEvent.click(screen.getByRole("link", { name: "Cardcase" }));
+    fireEvent.click(screen.getByRole("link", { name: APP_NAME }));
 
     screen.getByText("Home content");
   });

@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Shared backend for Card Case"
+description = "Shared backend for cardcase"
 requires-python = ">=3.13"
 dependencies = [
     "django>=6.1,<7.0",
