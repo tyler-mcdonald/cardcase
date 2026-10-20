@@ -44,11 +44,11 @@
 }
 
 .footerRow {
-  align-items: flex-end;
+  align-items: center;
 }
 
 .typeEmoji {
-  font-size: 22px;
+  font-size: 19px;
   line-height: 1;
 }
 
