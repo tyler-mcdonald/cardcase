@@ -102,6 +102,10 @@ def _has_code(message: EmailMessage) -> bool:
     return CODE_PATTERN.search(str(message.body)) is not None
 
 
+def _is_welcome_email(message: EmailMessage) -> bool:
+    return "Confirm" in message.subject
+
+
 def _login(client: Client, email: str) -> "Response":
     _request_code(client, email)
     return _confirm_code(client, _extract_code_from_email())
@@ -161,7 +165,7 @@ def test_request_code_for_new_email_creates_unverified_user_and_sends_welcome_co
     assert _new_user_exists()
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
     assert len(mail.outbox) == 1
-    assert "Confirm" in mail.outbox[0].subject
+    assert _is_welcome_email(mail.outbox[0])
     assert _has_code(mail.outbox[0])
 
 
@@ -183,7 +187,7 @@ def test_resending_code_for_new_email_sends_welcome_email(client: Client) -> Non
     _resend_code(client)
 
     assert len(mail.outbox) == 2
-    assert "Confirm" in mail.outbox[-1].subject
+    assert _is_welcome_email(mail.outbox[-1])
 
 
 @pytest.mark.django_db
@@ -193,7 +197,7 @@ def test_existing_user_gets_login_code_email(
     _request_code(client, existing_user.email)
 
     assert len(mail.outbox) == 1
-    assert "Confirm" not in mail.outbox[0].subject
+    assert not _is_welcome_email(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -297,7 +301,7 @@ def test_verified_user_gets_login_code_email_when_another_user_has_unverified_ad
     _request_code(client, existing_user.email)
 
     assert len(mail.outbox) == 1
-    assert "Confirm" not in mail.outbox[0].subject
+    assert not _is_welcome_email(mail.outbox[0])
 
 
 @pytest.mark.django_db
