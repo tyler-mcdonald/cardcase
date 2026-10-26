@@ -204,13 +204,13 @@ def test_existing_user_gets_login_code_email(
 def test_request_code_response_is_the_same_for_new_and_existing_emails(
     existing_user: User,
 ) -> None:
-    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
-    existing_response = _request_code(
+    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    existing_user_response = _request_code(
         Client(enforce_csrf_checks=True), existing_user.email
     )
 
-    assert new_response.status_code == existing_response.status_code
-    assert new_response.json() == existing_response.json()
+    assert new_user_response.status_code == existing_user_response.status_code
+    assert new_user_response.json() == existing_user_response.json()
 
 
 @pytest.mark.django_db
@@ -232,14 +232,14 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
     existing_user.is_active = False
     existing_user.save(update_fields=["is_active"])
 
-    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
     mail.outbox.clear()
-    deactivated_response = _request_code(
+    deactivated_user_response = _request_code(
         Client(enforce_csrf_checks=True), existing_user.email
     )
 
-    assert deactivated_response.status_code == new_response.status_code
-    assert deactivated_response.json() == new_response.json()
+    assert deactivated_user_response.status_code == new_user_response.status_code
+    assert deactivated_user_response.json() == new_user_response.json()
     assert User.objects.filter(email__iexact=existing_user.email).count() == 1
     assert not _has_code(mail.outbox[-1])
 
@@ -272,19 +272,19 @@ def test_request_code_sends_login_code_to_mixed_case_user_email(
 def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    new_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
 
     def raise_integrity_error(request: HttpRequest, email: str) -> User:
         User.objects.create_user(email=email)
         raise IntegrityError
 
     monkeypatch.setattr("users.views._create_unverified_user", raise_integrity_error)
-    raced_response = _request_code(
+    raced_user_response = _request_code(
         Client(enforce_csrf_checks=True), "raced@example.com"
     )
 
-    assert raced_response.status_code == new_response.status_code
-    assert raced_response.json() == new_response.json()
+    assert raced_user_response.status_code == new_user_response.status_code
+    assert raced_user_response.json() == new_user_response.json()
     assert mail.outbox[-1].to == ["raced@example.com"]
     assert _has_code(mail.outbox[-1])
 
