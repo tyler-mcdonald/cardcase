@@ -20,11 +20,16 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
         if template_prefix == LOGIN_CODE_EMAIL:
-            user = self._unverified_new_user(email)
-            if user is not None:
-                template_prefix = SIGNUP_WELCOME_EMAIL
-                context = {**context, "user": user}
+            template_prefix, context = self._login_code_or_welcome_email(email, context)
         super().send_mail(template_prefix, email, context)
+
+    def _login_code_or_welcome_email(
+        self, email: str, context: dict[str, Any]
+    ) -> tuple[str, dict[str, Any]]:
+        user = self._unverified_new_user(email)
+        if user is None:
+            return LOGIN_CODE_EMAIL, context
+        return SIGNUP_WELCOME_EMAIL, {**context, "user": user}
 
     def _unverified_new_user(self, email: str) -> User | None:
         if not self.is_open_for_signup(self.request):
