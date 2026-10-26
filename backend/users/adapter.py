@@ -8,6 +8,9 @@ from django.http import HttpRequest
 
 from users.models import User
 
+LOGIN_CODE_EMAIL = "account/email/login_code"
+SIGNUP_WELCOME_EMAIL = "account/email/email_confirmation_signup"
+
 
 class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def is_open_for_signup(self, request: HttpRequest) -> bool:
@@ -16,10 +19,10 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def send_mail(
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
-        if template_prefix == "account/email/login_code":
+        if template_prefix == LOGIN_CODE_EMAIL:
             user = self._unverified_new_user(email)
             if user is not None:
-                template_prefix = "account/email/email_confirmation_signup"
+                template_prefix = SIGNUP_WELCOME_EMAIL
                 context = {**context, "user": user}
         super().send_mail(template_prefix, email, context)
 
