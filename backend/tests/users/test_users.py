@@ -245,7 +245,7 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
 
 
 @pytest.mark.django_db
-def test_request_code_does_not_create_duplicate_for_mixed_case_user_email(
+def test_request_code_reuses_existing_user_matched_case_insensitively(
     client: Client,
 ) -> None:
     User.objects.create_user(email="Alice@example.com")
