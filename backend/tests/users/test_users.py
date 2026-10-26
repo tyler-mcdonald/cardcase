@@ -1,6 +1,6 @@
 import re
 from datetime import timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import time_machine
@@ -8,7 +8,7 @@ from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
 from django.db import IntegrityError
-from django.http import HttpRequest, HttpResponseBase
+from django.http import HttpRequest
 from django.test import Client
 from pytest_django import Settings
 
@@ -16,6 +16,9 @@ from tests.client import AUTH_BASE, get_session, scoped
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as Response
 
 _client = scoped(AUTH_BASE)
 get = _client.get
@@ -72,19 +75,19 @@ def test_check_passes_when_signup_disabled_or_frontend_url_configured(
     assert check_frontend_url_configured_for_signup(None) == []
 
 
-def _logout(client: Client) -> HttpResponseBase:
+def _logout(client: Client) -> "Response":
     return delete(client, "/auth/session")
 
 
-def _request_code(client: Client, email: str) -> HttpResponseBase:
+def _request_code(client: Client, email: str) -> "Response":
     return post(client, "/auth/code/request", {"email": email})
 
 
-def _resend_code(client: Client) -> HttpResponseBase:
+def _resend_code(client: Client) -> "Response":
     return post(client, "/auth/code/resend", {})
 
 
-def _confirm_code(client: Client, code: str) -> HttpResponseBase:
+def _confirm_code(client: Client, code: str) -> "Response":
     return post(client, "/auth/code/confirm", {"code": code})
 
 
@@ -94,24 +97,24 @@ def _extract_code_from_email() -> str:
     return match.group()
 
 
-def _login(client: Client, email: str) -> HttpResponseBase:
+def _login(client: Client, email: str) -> "Response":
     _request_code(client, email)
     return _confirm_code(client, _extract_code_from_email())
 
 
-def _signup(client: Client, email: str, **extra: Any) -> HttpResponseBase:
+def _signup(client: Client, email: str, **extra: Any) -> "Response":
     return post(client, "/auth/signup", {"email": email, **extra})
 
 
-def _verify_email(client: Client, key: str) -> HttpResponseBase:
+def _verify_email(client: Client, key: str) -> "Response":
     return post(client, "/auth/email/verify", {"key": key})
 
 
-def _resend_email_verification(client: Client) -> HttpResponseBase:
+def _resend_email_verification(client: Client) -> "Response":
     return post(client, "/auth/email/verify/resend", {})
 
 
-def _signup_and_verify(client: Client, email: str) -> HttpResponseBase:
+def _signup_and_verify(client: Client, email: str) -> "Response":
     _signup(client, email)
     return _verify_email(client, _extract_code_from_email())
 
@@ -164,7 +167,7 @@ def test_confirming_code_for_new_email_verifies_email_and_creates_session(
     response = _login(client, NEW_USER_EMAIL)
 
     assert response.status_code == 200
-    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert response.json()["meta"]["is_authenticated"] is True
     assert EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
 
 
@@ -198,7 +201,7 @@ def test_request_code_response_is_the_same_for_new_and_existing_emails(
     )
 
     assert new_response.status_code == existing_response.status_code
-    assert new_response.json() == existing_response.json()  # type: ignore[attr-defined]
+    assert new_response.json() == existing_response.json()
 
 
 @pytest.mark.django_db
@@ -209,10 +212,7 @@ def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
     response = _request_code(client, NEW_USER_EMAIL)
 
     assert response.status_code == 400
-    assert (
-        response.json()["errors"][0]["code"]  # type: ignore[attr-defined]
-        == "too_many_login_attempts"
-    )
+    assert response.json()["errors"][0]["code"] == "too_many_login_attempts"
     assert User.objects.filter(email=NEW_USER_EMAIL).count() == 1
 
 
@@ -230,7 +230,7 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
     )
 
     assert deactivated_response.status_code == new_response.status_code
-    assert deactivated_response.json() == new_response.json()  # type: ignore[attr-defined]
+    assert deactivated_response.json() == new_response.json()
     assert User.objects.filter(email__iexact=existing_user.email).count() == 1
     assert not CODE_PATTERN.search(str(mail.outbox[-1].body))
 
@@ -275,7 +275,7 @@ def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     )
 
     assert raced_response.status_code == new_response.status_code
-    assert raced_response.json() == new_response.json()  # type: ignore[attr-defined]
+    assert raced_response.json() == new_response.json()
     assert mail.outbox[-1].to == ["raced@example.com"]
     _extract_code_from_email()
 
@@ -302,7 +302,7 @@ def test_login_for_existing_user_creates_session(
     response = _login(client, existing_user.email)
 
     assert response.status_code == 200
-    payload = response.json()  # type: ignore[attr-defined]
+    payload = response.json()
     assert payload["data"]["user"]["id"]
 
 
@@ -315,7 +315,7 @@ def test_requesting_code_while_authenticated_returns_current_session(
     response = _request_code(client, existing_user.email)
 
     assert response.status_code == 200
-    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert response.json()["meta"]["is_authenticated"] is True
 
 
 @pytest.mark.django_db
@@ -355,10 +355,7 @@ def test_fourth_code_request_in_one_minute_is_rate_limited(
     response = _request_code(client, existing_user.email)
 
     assert response.status_code == 400
-    assert (
-        response.json()["errors"][0]["code"]  # type: ignore[attr-defined]
-        == "too_many_login_attempts"
-    )
+    assert response.json()["errors"][0]["code"] == "too_many_login_attempts"
 
 
 @pytest.mark.django_db
@@ -410,10 +407,7 @@ def test_signup_endpoint_creates_unverified_user_pending_email_verification(
     assert response.status_code == 401
     assert _new_user_exists()
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
-    flow_ids = [
-        f["id"]
-        for f in response.json()["data"]["flows"]  # type: ignore[attr-defined]
-    ]
+    flow_ids = [f["id"] for f in response.json()["data"]["flows"]]
     assert "verify_email" in flow_ids
 
 
@@ -422,7 +416,7 @@ def test_signup_then_verify_email_grants_session(client: Client) -> None:
     response = _signup_and_verify(client, NEW_USER_EMAIL)
 
     assert response.status_code == 200
-    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert response.json()["meta"]["is_authenticated"] is True
     assert get_session(client).status_code == 200
 
 
@@ -476,9 +470,7 @@ def test_logout_invalidates_the_session(client: Client, existing_user: User) -> 
     response = _logout(client)
 
     assert response.status_code == 401
-    assert (
-        response.json()["meta"]["is_authenticated"] is False  # type: ignore[attr-defined]
-    )
+    assert response.json()["meta"]["is_authenticated"] is False
     assert get_session(client).status_code == 401
 
 
