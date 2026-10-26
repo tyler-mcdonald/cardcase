@@ -7,6 +7,7 @@ import time_machine
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
+from django.core.mail import EmailMessage
 from django.db import IntegrityError
 from django.http import HttpRequest
 from django.test import Client
@@ -97,6 +98,10 @@ def _extract_code_from_email() -> str:
     return match.group()
 
 
+def _has_code(message: EmailMessage) -> bool:
+    return CODE_PATTERN.search(str(message.body)) is not None
+
+
 def _login(client: Client, email: str) -> "Response":
     _request_code(client, email)
     return _confirm_code(client, _extract_code_from_email())
@@ -157,7 +162,7 @@ def test_request_code_for_new_email_creates_unverified_user_and_sends_welcome_co
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
     assert len(mail.outbox) == 1
     assert "Confirm" in mail.outbox[0].subject
-    _extract_code_from_email()
+    assert _has_code(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -232,7 +237,7 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
     assert deactivated_response.status_code == new_response.status_code
     assert deactivated_response.json() == new_response.json()
     assert User.objects.filter(email__iexact=existing_user.email).count() == 1
-    assert not CODE_PATTERN.search(str(mail.outbox[-1].body))
+    assert not _has_code(mail.outbox[-1])
 
 
 @pytest.mark.django_db
@@ -256,7 +261,7 @@ def test_request_code_sends_login_code_to_mixed_case_user_email(
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["alice@example.com"]
-    _extract_code_from_email()
+    assert _has_code(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -277,7 +282,7 @@ def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     assert raced_response.status_code == new_response.status_code
     assert raced_response.json() == new_response.json()
     assert mail.outbox[-1].to == ["raced@example.com"]
-    _extract_code_from_email()
+    assert _has_code(mail.outbox[-1])
 
 
 @pytest.mark.django_db
