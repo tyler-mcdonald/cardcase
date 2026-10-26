@@ -17,13 +17,13 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
         if template_prefix == "account/email/login_code":
-            user = self._pending_signup_user(email)
+            user = self._unverified_new_user(email)
             if user is not None:
                 template_prefix = "account/email/email_confirmation_signup"
                 context = {**context, "user": user}
         super().send_mail(template_prefix, email, context)
 
-    def _pending_signup_user(self, email: str) -> User | None:
+    def _unverified_new_user(self, email: str) -> User | None:
         if not self.is_open_for_signup(self.request):
             return None
         users = filter_users_by_email(email, is_active=True, prefer_verified=True)
