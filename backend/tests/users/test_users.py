@@ -51,6 +51,7 @@ def test_open_for_signup_reflects_allow_signup_flag(
 def test_check_flags_signup_open_with_placeholder_frontend_url(
     settings: Settings,
 ) -> None:
+    settings.DEBUG = False
     settings.ALLOW_SIGNUP = True
     settings.FRONTEND_URL = "http://localhost:3000"
 
@@ -60,15 +61,17 @@ def test_check_flags_signup_open_with_placeholder_frontend_url(
 
 
 @pytest.mark.parametrize(
-    ("allow_signup", "frontend_url"),
+    ("debug", "allow_signup", "frontend_url"),
     [
-        (False, "http://localhost:3000"),
-        (True, "https://app.cardcase.example"),
+        (False, False, "http://localhost:3000"),
+        (False, True, "https://app.cardcase.example"),
+        (True, True, "http://localhost:3000"),
     ],
 )
-def test_check_passes_when_signup_disabled_or_frontend_url_configured(
-    settings: Settings, allow_signup: bool, frontend_url: str
+def test_check_passes_when_debug_signup_disabled_or_frontend_url_configured(
+    settings: Settings, debug: bool, allow_signup: bool, frontend_url: str
 ) -> None:
+    settings.DEBUG = debug
     settings.ALLOW_SIGNUP = allow_signup
     settings.FRONTEND_URL = frontend_url
 
