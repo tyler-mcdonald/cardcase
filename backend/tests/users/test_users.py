@@ -290,6 +290,8 @@ def test_request_code_when_user_creation_races_sends_code_to_winning_user(
 def test_verified_user_gets_login_code_email_when_another_user_has_unverified_address(
     client: Client, existing_user: User
 ) -> None:
+    """An unverified copy of a verified user's address on another account must
+    not make the verified owner look like a pending signup."""
     other = User.objects.create_user(email="other@example.com")
     EmailAddress.objects.create(
         user=other, email=existing_user.email, verified=False, primary=False
