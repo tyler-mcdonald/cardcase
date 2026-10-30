@@ -198,6 +198,34 @@ def test_resending_code_for_new_email_sends_welcome_email(client: Client) -> Non
 
 
 @pytest.mark.django_db
+def test_request_code_for_new_email_in_mixed_case_sends_welcome_code(
+    client: Client,
+) -> None:
+    _request_code(client, "New@Example.com")
+
+    assert _count_users_with_email(NEW_USER_EMAIL) == 1
+    assert len(mail.outbox) == 1
+    assert _is_welcome_email(mail.outbox[0])
+    assert _email_contains_code(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_unverified_user_gets_login_code_email_when_signup_disabled(
+    client: Client, settings: Settings
+) -> None:
+    """A pending signup that returns after signup is closed is sent an ordinary
+    login code rather than a welcome to an account they can no longer create."""
+    _request_code(client, NEW_USER_EMAIL)
+    mail.outbox.clear()
+    settings.ALLOW_SIGNUP = False
+
+    _request_code(Client(), NEW_USER_EMAIL)
+
+    assert len(mail.outbox) == 1
+    assert _is_login_code_email(mail.outbox[0])
+
+
+@pytest.mark.django_db
 def test_existing_user_gets_login_code_email(
     client: Client, existing_user: User
 ) -> None:
