@@ -1,6 +1,7 @@
 import { Anchor, Container, Group } from "@mantine/core";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { UserMenu } from "@/features/auth/UserMenu";
+import { APP_NAME } from "@/lib/constants";
 import classes from "./AppLayout.module.css";
 
 const NAV_LINKS = [
@@ -21,7 +22,7 @@ export function AppLayout() {
             c="inherit"
             underline="never"
           >
-            Cardcase
+            {APP_NAME}
           </Anchor>
           <Group component="nav" gap="md">
             {NAV_LINKS.map(({ to, label }) => (

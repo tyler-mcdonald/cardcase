@@ -303,6 +303,22 @@ def test_login_for_existing_user_creates_session(
 
 
 @pytest.mark.django_db
+def test_login_code_email_wording(client: Client, existing_user: User) -> None:
+    _request_code(client, existing_user.email)
+
+    message = mail.outbox[-1]
+    code = _extract_code_from_email()
+    assert message.subject == "Your cardcase login code"
+    assert message.body == (
+        "Your cardcase login code is:\n"
+        "\n"
+        f"{code}\n"
+        "\n"
+        "If you didn't try to log in, you can ignore this email."
+    )
+
+
+@pytest.mark.django_db
 def test_requesting_code_while_authenticated_returns_current_session(
     client: Client, existing_user: User
 ) -> None:
@@ -405,6 +421,22 @@ def test_signup_endpoint_creates_unverified_user_pending_email_verification(
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
     flow_ids = [f["id"] for f in response.json()["data"]["flows"]]
     assert "verify_email" in flow_ids
+
+
+@pytest.mark.django_db
+def test_signup_verification_email_wording(client: Client) -> None:
+    _signup(client, NEW_USER_EMAIL)
+
+    message = mail.outbox[-1]
+    code = _extract_code_from_email()
+    assert message.subject == "Confirm your email for cardcase"
+    assert message.body == (
+        "Welcome to cardcase! Enter this code to finish creating your account:\n"
+        "\n"
+        f"{code}\n"
+        "\n"
+        "If you didn't sign up, you can ignore this email."
+    )
 
 
 @pytest.mark.django_db
