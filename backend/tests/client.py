@@ -6,6 +6,8 @@ from django.test import Client
 
 
 class ApiResponse(Protocol):
+    """The parts of a test client response the API tests read."""
+
     status_code: int
 
     def json(self) -> Any: ...

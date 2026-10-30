@@ -17,8 +17,7 @@ class RequestLoginOrSignupCodeView(RequestLoginCodeView):  # type: ignore[misc]
 
     def _is_signup(self, request: HttpRequest) -> bool:
         return bool(
-            not request.user.is_authenticated
-            and self.input.cleaned_data.get("email")
+            self.input.cleaned_data.get("email")
             and self.input._user is None
             and get_adapter(request).is_open_for_signup(request)
         )
@@ -36,6 +35,7 @@ def _find_or_create_unverified_user(request: HttpRequest, email: str) -> User | 
     try:
         return _create_unverified_user(request, email)
     except IntegrityError:
+        # A concurrent request created this user between the lookup and insert.
         return _find_user(email)
 
 

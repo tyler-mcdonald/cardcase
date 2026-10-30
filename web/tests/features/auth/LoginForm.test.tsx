@@ -50,6 +50,9 @@ describe("LoginForm", () => {
     expect(
       screen.queryByRole("button", { name: /continue with email/i }),
     ).toBeNull();
+    expect(
+      screen.queryByText("Log in or create an account with your email"),
+    ).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
   });
 });
