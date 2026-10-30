@@ -95,7 +95,7 @@ def _extract_code_from_email() -> str:
     return match.group()
 
 
-def _has_code(message: EmailMessage) -> bool:
+def _email_contains_code(message: EmailMessage) -> bool:
     return CODE_PATTERN.search(str(message.body)) is not None
 
 
@@ -163,7 +163,7 @@ def test_request_code_for_new_email_creates_unverified_user_and_sends_welcome_co
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
     assert len(mail.outbox) == 1
     assert _is_welcome_email(mail.outbox[0])
-    assert _has_code(mail.outbox[0])
+    assert _email_contains_code(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -234,7 +234,7 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
     assert deactivated_user_response.status_code == new_user_response.status_code
     assert deactivated_user_response.json() == new_user_response.json()
     assert User.objects.filter(email__iexact=existing_user.email).count() == 1
-    assert not _has_code(mail.outbox[-1])
+    assert not _email_contains_code(mail.outbox[-1])
 
 
 @pytest.mark.django_db
@@ -248,7 +248,7 @@ def test_request_code_logs_in_existing_user_matched_case_insensitively(
     assert User.objects.filter(email__iexact="alice@example.com").count() == 1
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["alice@example.com"]
-    assert _has_code(mail.outbox[0])
+    assert _email_contains_code(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -273,7 +273,7 @@ def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     assert raced_user_response.status_code == new_user_response.status_code
     assert raced_user_response.json() == new_user_response.json()
     assert mail.outbox[-1].to == ["raced@example.com"]
-    assert _has_code(mail.outbox[-1])
+    assert _email_contains_code(mail.outbox[-1])
 
 
 @pytest.mark.django_db
