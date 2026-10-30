@@ -1,10 +1,16 @@
 # cardcase
 
-![status](https://img.shields.io/badge/status-under%20construction-yellow)
-
-> 🚧 This project is under active development and not yet feature-complete.
-
 A virtual case to store and track gift cards 🎁, flight credits ✈️, and other cash-like accounts 💸.
+
+Try it at [app.cardcase.jtm-dev.com](https://app.cardcase.jtm-dev.com).
+
+## Screenshots
+
+![Accounts page](docs/images/accounts.png)
+
+![Transactions page](docs/images/transactions.png)
+
+![Login form](docs/images/login.png)
 
 ## Development
 
