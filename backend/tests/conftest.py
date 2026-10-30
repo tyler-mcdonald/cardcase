@@ -10,6 +10,12 @@ def client() -> Client:
     return Client(enforce_csrf_checks=True)
 
 
+@pytest.fixture
+def other_client() -> Client:
+    """A second client with its own session, for comparing independent requests."""
+    return Client(enforce_csrf_checks=True)
+
+
 @pytest.fixture(autouse=True)
 def _clear_cache() -> None:
     cache.clear()

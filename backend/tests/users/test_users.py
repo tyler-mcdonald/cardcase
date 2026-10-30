@@ -199,12 +199,10 @@ def test_existing_user_gets_login_code_email(
 
 @pytest.mark.django_db
 def test_request_code_response_is_the_same_for_new_and_existing_emails(
-    existing_user: User,
+    client: Client, other_client: Client, existing_user: User
 ) -> None:
-    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
-    existing_user_response = _request_code(
-        Client(enforce_csrf_checks=True), existing_user.email
-    )
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
+    existing_user_response = _request_code(other_client, existing_user.email)
 
     assert new_user_response.status_code == existing_user_response.status_code
     assert new_user_response.json() == existing_user_response.json()
@@ -224,16 +222,14 @@ def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
 
 @pytest.mark.django_db
 def test_request_code_for_deactivated_user_matches_new_email_response(
-    existing_user: User,
+    client: Client, other_client: Client, existing_user: User
 ) -> None:
     existing_user.is_active = False
     existing_user.save(update_fields=["is_active"])
 
-    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
     mail.outbox.clear()
-    deactivated_user_response = _request_code(
-        Client(enforce_csrf_checks=True), existing_user.email
-    )
+    deactivated_user_response = _request_code(other_client, existing_user.email)
 
     assert deactivated_user_response.status_code == new_user_response.status_code
     assert deactivated_user_response.json() == new_user_response.json()
@@ -257,14 +253,14 @@ def test_request_code_logs_in_existing_user_matched_case_insensitively(
 
 @pytest.mark.django_db
 def test_request_code_when_user_creation_races_sends_code_to_winning_user(
-    monkeypatch: pytest.MonkeyPatch,
+    client: Client, other_client: Client, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Two concurrent requests for the same new email can both find no user and
     both try to create one; the slower insert fails on the unique email. The
     losing request must still send a login code to the user the other request
     created, with the usual response, instead of erroring or sending nothing.
     """
-    new_user_response = _request_code(Client(enforce_csrf_checks=True), NEW_USER_EMAIL)
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
 
     def raise_integrity_error(request: HttpRequest, email: str) -> User:
         # Simulate losing the race: the other request's user lands first.
@@ -272,9 +268,7 @@ def test_request_code_when_user_creation_races_sends_code_to_winning_user(
         raise IntegrityError
 
     monkeypatch.setattr("users.views._create_unverified_user", raise_integrity_error)
-    raced_user_response = _request_code(
-        Client(enforce_csrf_checks=True), "raced@example.com"
-    )
+    raced_user_response = _request_code(other_client, "raced@example.com")
 
     assert raced_user_response.status_code == new_user_response.status_code
     assert raced_user_response.json() == new_user_response.json()
