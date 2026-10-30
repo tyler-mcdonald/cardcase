@@ -135,6 +135,10 @@ def _new_user_exists() -> bool:
     return User.objects.filter(email=NEW_USER_EMAIL).exists()
 
 
+def _count_users_with_email(email: str) -> int:
+    return User.objects.filter(email__iexact=email).count()
+
+
 @pytest.fixture
 def existing_user(db: None) -> User:
     user = User.objects.create_user(email="existing@example.com")
@@ -223,7 +227,7 @@ def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
 
     assert response.status_code == 400
     assert response.json()["errors"][0]["code"] == "too_many_login_attempts"
-    assert User.objects.filter(email=NEW_USER_EMAIL).count() == 1
+    assert _count_users_with_email(NEW_USER_EMAIL) == 1
 
 
 @pytest.mark.django_db
@@ -239,7 +243,7 @@ def test_request_code_for_deactivated_user_matches_new_email_response(
 
     assert deactivated_user_response.status_code == new_user_response.status_code
     assert deactivated_user_response.json() == new_user_response.json()
-    assert User.objects.filter(email__iexact=existing_user.email).count() == 1
+    assert _count_users_with_email(existing_user.email) == 1
     assert not _email_contains_code(mail.outbox[-1])
 
 
@@ -251,7 +255,7 @@ def test_request_code_logs_in_existing_user_matched_case_insensitively(
 
     _request_code(client, "alice@example.com")
 
-    assert User.objects.filter(email__iexact="alice@example.com").count() == 1
+    assert _count_users_with_email("alice@example.com") == 1
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["alice@example.com"]
     assert _email_contains_code(mail.outbox[0])
