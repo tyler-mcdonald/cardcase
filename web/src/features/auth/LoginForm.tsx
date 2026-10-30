@@ -1,13 +1,5 @@
 import { useState, type FormEvent } from "react";
-import {
-  Button,
-  Paper,
-  PinInput,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { Button, PinInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
@@ -34,28 +26,32 @@ export function LoginForm() {
 
   return (
     <main>
-      <Paper withBorder shadow="sm" p="xl" radius="md">
-        <Title order={1} ta="center" mb="lg">
-          Log in
+      <Stack gap="xs" align="center" mb="xl">
+        <Title order={1} ta="center">
+          cardcase
         </Title>
-        {step === "email" ? (
-          <EmailStep
-            email={email}
-            onEmailChange={setEmail}
-            onSubmit={handleRequestCode}
-            submitting={submitting}
-          />
-        ) : (
-          <CodeStep
-            email={email}
-            code={code}
-            onCodeChange={setCode}
-            onSubmit={handleConfirmCode}
-            submitting={submitting}
-          />
-        )}
-        {error && <FormError mt="md" message={apiErrorMessage(error)} />}
-      </Paper>
+        <Text c="gray.7" ta="center">
+          Store and track gift cards, flight credits, and other cash-like
+          accounts.
+        </Text>
+      </Stack>
+      {step === "email" ? (
+        <EmailStep
+          email={email}
+          onEmailChange={setEmail}
+          onSubmit={handleRequestCode}
+          submitting={submitting}
+        />
+      ) : (
+        <CodeStep
+          email={email}
+          code={code}
+          onCodeChange={setCode}
+          onSubmit={handleConfirmCode}
+          submitting={submitting}
+        />
+      )}
+      {error && <FormError mt="md" message={apiErrorMessage(error)} />}
     </main>
   );
 }
@@ -76,15 +72,17 @@ function EmailStep({
       <Stack>
         <TextInput
           id="email"
-          label="Email"
+          aria-label="Email"
+          placeholder="Enter your email"
+          size="md"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(event) => onEmailChange(event.target.value)}
         />
-        <Button type="submit" loading={submitting} fullWidth>
-          Send login code
+        <Button type="submit" size="md" fz="sm" loading={submitting} fullWidth>
+          Continue with email
         </Button>
       </Stack>
     </form>
@@ -123,6 +121,8 @@ function CodeStep({
         />
         <Button
           type="submit"
+          size="md"
+          fz="sm"
           loading={submitting}
           disabled={code.length !== 6 || submitting}
           fullWidth

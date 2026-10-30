@@ -7,11 +7,13 @@ import time_machine
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailAddress
 from django.core import mail
-from django.http import HttpRequest, HttpResponseBase
+from django.core.mail import EmailMessage
+from django.db import IntegrityError
+from django.http import HttpRequest
 from django.test import Client
 from pytest_django import Settings
 
-from tests.client import AUTH_BASE, get_session, scoped
+from tests.client import AUTH_BASE, ApiResponse, get_session, scoped
 from users.adapter import AccountAdapter
 from users.checks import check_frontend_url_configured_for_signup
 from users.models import User
@@ -22,6 +24,8 @@ post = _client.post
 delete = _client.delete
 
 NEW_USER_EMAIL = "new@example.com"
+LOGIN_CODE_EMAIL_SUBJECT = "Your cardcase login code"
+WELCOME_EMAIL_SUBJECT = "Confirm your email for cardcase"
 CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")
 
 # allauth hardcodes the confirm_email rate limit to "1/10s/key" when
@@ -71,19 +75,19 @@ def test_check_passes_when_signup_disabled_or_frontend_url_configured(
     assert check_frontend_url_configured_for_signup(None) == []
 
 
-def _logout(client: Client) -> HttpResponseBase:
+def _logout(client: Client) -> ApiResponse:
     return delete(client, "/auth/session")
 
 
-def _request_code(client: Client, email: str) -> HttpResponseBase:
+def _request_code(client: Client, email: str) -> ApiResponse:
     return post(client, "/auth/code/request", {"email": email})
 
 
-def _resend_code(client: Client) -> HttpResponseBase:
+def _resend_code(client: Client) -> ApiResponse:
     return post(client, "/auth/code/resend", {})
 
 
-def _confirm_code(client: Client, code: str) -> HttpResponseBase:
+def _confirm_code(client: Client, code: str) -> ApiResponse:
     return post(client, "/auth/code/confirm", {"code": code})
 
 
@@ -93,30 +97,46 @@ def _extract_code_from_email() -> str:
     return match.group()
 
 
-def _login(client: Client, email: str) -> HttpResponseBase:
+def _email_contains_code(message: EmailMessage) -> bool:
+    return CODE_PATTERN.search(str(message.body)) is not None
+
+
+def _is_welcome_email(message: EmailMessage) -> bool:
+    return message.subject == WELCOME_EMAIL_SUBJECT
+
+
+def _is_login_code_email(message: EmailMessage) -> bool:
+    return message.subject == LOGIN_CODE_EMAIL_SUBJECT
+
+
+def _login(client: Client, email: str) -> ApiResponse:
     _request_code(client, email)
     return _confirm_code(client, _extract_code_from_email())
 
 
-def _signup(client: Client, email: str, **extra: Any) -> HttpResponseBase:
+def _signup(client: Client, email: str, **extra: Any) -> ApiResponse:
     return post(client, "/auth/signup", {"email": email, **extra})
 
 
-def _verify_email(client: Client, key: str) -> HttpResponseBase:
+def _verify_email(client: Client, key: str) -> ApiResponse:
     return post(client, "/auth/email/verify", {"key": key})
 
 
-def _resend_email_verification(client: Client) -> HttpResponseBase:
+def _resend_email_verification(client: Client) -> ApiResponse:
     return post(client, "/auth/email/verify/resend", {})
 
 
-def _signup_and_verify(client: Client, email: str) -> HttpResponseBase:
+def _signup_and_verify(client: Client, email: str) -> ApiResponse:
     _signup(client, email)
     return _verify_email(client, _extract_code_from_email())
 
 
 def _new_user_exists() -> bool:
     return User.objects.filter(email=NEW_USER_EMAIL).exists()
+
+
+def _count_users_with_email(email: str) -> int:
+    return User.objects.filter(email__iexact=email).count()
 
 
 @pytest.fixture
@@ -129,9 +149,11 @@ def existing_user(db: None) -> User:
 
 
 @pytest.mark.django_db
-def test_request_code_for_unknown_email_does_not_create_user_or_send_code(
-    client: Client,
+def test_request_code_for_unknown_email_does_not_create_user_or_send_code_when_signup_disabled(
+    client: Client, settings: Settings
 ) -> None:
+    settings.ALLOW_SIGNUP = False
+
     response = _request_code(client, NEW_USER_EMAIL)
 
     assert not _new_user_exists()
@@ -141,13 +163,182 @@ def test_request_code_for_unknown_email_does_not_create_user_or_send_code(
 
 
 @pytest.mark.django_db
+def test_request_code_for_new_email_creates_unverified_user_and_sends_welcome_code(
+    client: Client,
+) -> None:
+    response = _request_code(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 401
+    assert _new_user_exists()
+    assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
+    assert len(mail.outbox) == 1
+    assert _is_welcome_email(mail.outbox[0])
+    assert _email_contains_code(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_confirming_code_for_new_email_verifies_email_and_creates_session(
+    client: Client,
+) -> None:
+    response = _login(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 200
+    assert response.json()["meta"]["is_authenticated"] is True
+    assert EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
+
+
+@pytest.mark.django_db
+def test_resending_code_for_new_email_sends_welcome_email(client: Client) -> None:
+    _request_code(client, NEW_USER_EMAIL)
+
+    _resend_code(client)
+
+    assert len(mail.outbox) == 2
+    assert _is_welcome_email(mail.outbox[-1])
+
+
+@pytest.mark.django_db
+def test_request_code_for_new_email_in_mixed_case_sends_welcome_code(
+    client: Client,
+) -> None:
+    _request_code(client, "New@Example.com")
+
+    assert _count_users_with_email(NEW_USER_EMAIL) == 1
+    assert len(mail.outbox) == 1
+    assert _is_welcome_email(mail.outbox[0])
+    assert _email_contains_code(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_unverified_user_gets_login_code_email_when_signup_disabled(
+    client: Client, settings: Settings
+) -> None:
+    """A pending signup that returns after signup is closed is sent an ordinary
+    login code rather than a welcome to an account they can no longer create."""
+    _request_code(client, NEW_USER_EMAIL)
+    mail.outbox.clear()
+    settings.ALLOW_SIGNUP = False
+
+    _request_code(Client(), NEW_USER_EMAIL)
+
+    assert len(mail.outbox) == 1
+    assert _is_login_code_email(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_existing_user_gets_login_code_email(
+    client: Client, existing_user: User
+) -> None:
+    _request_code(client, existing_user.email)
+
+    assert len(mail.outbox) == 1
+    assert _is_login_code_email(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_request_code_response_is_the_same_for_new_and_existing_emails(
+    client: Client, other_client: Client, existing_user: User
+) -> None:
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
+    existing_user_response = _request_code(other_client, existing_user.email)
+
+    assert new_user_response.status_code == existing_user_response.status_code
+    assert new_user_response.json() == existing_user_response.json()
+
+
+@pytest.mark.django_db
+def test_code_requests_for_new_email_are_rate_limited(client: Client) -> None:
+    for _ in range(3):
+        _request_code(client, NEW_USER_EMAIL)
+
+    response = _request_code(client, NEW_USER_EMAIL)
+
+    assert response.status_code == 400
+    assert response.json()["errors"][0]["code"] == "too_many_login_attempts"
+    assert _count_users_with_email(NEW_USER_EMAIL) == 1
+
+
+@pytest.mark.django_db
+def test_request_code_for_deactivated_user_matches_new_email_response(
+    client: Client, other_client: Client, existing_user: User
+) -> None:
+    existing_user.is_active = False
+    existing_user.save(update_fields=["is_active"])
+
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
+    mail.outbox.clear()
+    deactivated_user_response = _request_code(other_client, existing_user.email)
+
+    assert deactivated_user_response.status_code == new_user_response.status_code
+    assert deactivated_user_response.json() == new_user_response.json()
+    assert _count_users_with_email(existing_user.email) == 1
+    assert not _email_contains_code(mail.outbox[-1])
+
+
+@pytest.mark.django_db
+def test_request_code_logs_in_existing_user_matched_case_insensitively(
+    client: Client,
+) -> None:
+    User.objects.create_user(email="Alice@example.com")
+
+    _request_code(client, "alice@example.com")
+
+    assert _count_users_with_email("alice@example.com") == 1
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == ["alice@example.com"]
+    assert _email_contains_code(mail.outbox[0])
+
+
+@pytest.mark.django_db
+def test_request_code_when_user_creation_races_sends_code_to_winning_user(
+    client: Client, other_client: Client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Two concurrent requests for the same new email can both find no user and
+    both try to create one; the slower insert fails on the unique email. The
+    losing request must still send a login code to the user the other request
+    created, with the usual response, instead of erroring or sending nothing.
+    """
+    new_user_response = _request_code(client, NEW_USER_EMAIL)
+
+    def raise_integrity_error(request: HttpRequest, email: str) -> User:
+        # Simulate losing the race: the other request's user lands first.
+        User.objects.create_user(email=email)
+        raise IntegrityError
+
+    monkeypatch.setattr("users.views._create_unverified_user", raise_integrity_error)
+    raced_user_response = _request_code(other_client, "raced@example.com")
+
+    assert raced_user_response.status_code == new_user_response.status_code
+    assert raced_user_response.json() == new_user_response.json()
+    assert mail.outbox[-1].to == ["raced@example.com"]
+    assert _email_contains_code(mail.outbox[-1])
+
+
+@pytest.mark.django_db
+def test_verified_user_gets_login_code_email_when_another_user_has_unverified_address(
+    client: Client, existing_user: User
+) -> None:
+    """An unverified copy of a verified user's address on another account must
+    not make the verified owner look like a pending signup."""
+    other = User.objects.create_user(email="other@example.com")
+    EmailAddress.objects.create(
+        user=other, email=existing_user.email, verified=False, primary=False
+    )
+
+    _request_code(client, existing_user.email)
+
+    assert len(mail.outbox) == 1
+    assert _is_login_code_email(mail.outbox[0])
+
+
+@pytest.mark.django_db
 def test_login_for_existing_user_creates_session(
     client: Client, existing_user: User
 ) -> None:
     response = _login(client, existing_user.email)
 
     assert response.status_code == 200
-    payload = response.json()  # type: ignore[attr-defined]
+    payload = response.json()
     assert payload["data"]["user"]["id"]
 
 
@@ -157,7 +348,7 @@ def test_login_code_email_wording(client: Client, existing_user: User) -> None:
 
     message = mail.outbox[-1]
     code = _extract_code_from_email()
-    assert message.subject == "Your cardcase login code"
+    assert message.subject == LOGIN_CODE_EMAIL_SUBJECT
     assert message.body == (
         "Your cardcase login code is:\n"
         "\n"
@@ -176,7 +367,7 @@ def test_requesting_code_while_authenticated_returns_current_session(
     response = _request_code(client, existing_user.email)
 
     assert response.status_code == 200
-    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert response.json()["meta"]["is_authenticated"] is True
 
 
 @pytest.mark.django_db
@@ -216,10 +407,7 @@ def test_fourth_code_request_in_one_minute_is_rate_limited(
     response = _request_code(client, existing_user.email)
 
     assert response.status_code == 400
-    assert (
-        response.json()["errors"][0]["code"]  # type: ignore[attr-defined]
-        == "too_many_login_attempts"
-    )
+    assert response.json()["errors"][0]["code"] == "too_many_login_attempts"
 
 
 @pytest.mark.django_db
@@ -271,10 +459,7 @@ def test_signup_endpoint_creates_unverified_user_pending_email_verification(
     assert response.status_code == 401
     assert _new_user_exists()
     assert not EmailAddress.objects.get(email=NEW_USER_EMAIL).verified
-    flow_ids = [
-        f["id"]
-        for f in response.json()["data"]["flows"]  # type: ignore[attr-defined]
-    ]
+    flow_ids = [f["id"] for f in response.json()["data"]["flows"]]
     assert "verify_email" in flow_ids
 
 
@@ -284,7 +469,7 @@ def test_signup_verification_email_wording(client: Client) -> None:
 
     message = mail.outbox[-1]
     code = _extract_code_from_email()
-    assert message.subject == "Confirm your email for cardcase"
+    assert message.subject == WELCOME_EMAIL_SUBJECT
     assert message.body == (
         "Welcome to cardcase! Enter this code to finish creating your account:\n"
         "\n"
@@ -299,7 +484,7 @@ def test_signup_then_verify_email_grants_session(client: Client) -> None:
     response = _signup_and_verify(client, NEW_USER_EMAIL)
 
     assert response.status_code == 200
-    assert response.json()["meta"]["is_authenticated"] is True  # type: ignore[attr-defined]
+    assert response.json()["meta"]["is_authenticated"] is True
     assert get_session(client).status_code == 200
 
 
@@ -353,9 +538,7 @@ def test_logout_invalidates_the_session(client: Client, existing_user: User) -> 
     response = _logout(client)
 
     assert response.status_code == 401
-    assert (
-        response.json()["meta"]["is_authenticated"] is False  # type: ignore[attr-defined]
-    )
+    assert response.json()["meta"]["is_authenticated"] is False
     assert get_session(client).status_code == 401
 
 
