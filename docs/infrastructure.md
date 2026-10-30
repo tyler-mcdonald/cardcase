@@ -5,5 +5,5 @@
 
 ## Domains
 
-- Root domain is `cardcase.jtm-dev.com`, DNS managed via [Cloudflare](https://www.cloudflare.com/)
-- Backend hosted at `api.cardcase.jtm-dev.com`
+- Root domain is `cardcase.app`, frontend hosted there, DNS managed via [Cloudflare](https://www.cloudflare.com/)
+- Backend hosted at `api.cardcase.app`
