@@ -24,6 +24,8 @@ post = _client.post
 delete = _client.delete
 
 NEW_USER_EMAIL = "new@example.com"
+LOGIN_CODE_EMAIL_SUBJECT = "Your cardcase login code"
+WELCOME_EMAIL_SUBJECT = "Confirm your email for cardcase"
 CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")
 
 # allauth hardcodes the confirm_email rate limit to "1/10s/key" when
@@ -100,7 +102,11 @@ def _email_contains_code(message: EmailMessage) -> bool:
 
 
 def _is_welcome_email(message: EmailMessage) -> bool:
-    return "Confirm" in message.subject
+    return message.subject == WELCOME_EMAIL_SUBJECT
+
+
+def _is_login_code_email(message: EmailMessage) -> bool:
+    return message.subject == LOGIN_CODE_EMAIL_SUBJECT
 
 
 def _login(client: Client, email: str) -> ApiResponse:
@@ -194,7 +200,7 @@ def test_existing_user_gets_login_code_email(
     _request_code(client, existing_user.email)
 
     assert len(mail.outbox) == 1
-    assert not _is_welcome_email(mail.outbox[0])
+    assert _is_login_code_email(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -288,7 +294,7 @@ def test_verified_user_gets_login_code_email_when_another_user_has_unverified_ad
     _request_code(client, existing_user.email)
 
     assert len(mail.outbox) == 1
-    assert not _is_welcome_email(mail.outbox[0])
+    assert _is_login_code_email(mail.outbox[0])
 
 
 @pytest.mark.django_db
@@ -308,7 +314,7 @@ def test_login_code_email_wording(client: Client, existing_user: User) -> None:
 
     message = mail.outbox[-1]
     code = _extract_code_from_email()
-    assert message.subject == "Your cardcase login code"
+    assert message.subject == LOGIN_CODE_EMAIL_SUBJECT
     assert message.body == (
         "Your cardcase login code is:\n"
         "\n"
@@ -429,7 +435,7 @@ def test_signup_verification_email_wording(client: Client) -> None:
 
     message = mail.outbox[-1]
     code = _extract_code_from_email()
-    assert message.subject == "Confirm your email for cardcase"
+    assert message.subject == WELCOME_EMAIL_SUBJECT
     assert message.body == (
         "Welcome to cardcase! Enter this code to finish creating your account:\n"
         "\n"
