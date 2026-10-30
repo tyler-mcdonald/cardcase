@@ -255,15 +255,9 @@ def test_request_code_logs_in_existing_user_matched_case_insensitively(
 def test_request_code_when_user_creation_races_sends_code_to_winning_user(
     client: Client, other_client: Client, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Two concurrent requests for the same new email can both find no user and
-    both try to create one; the slower insert fails on the unique email. The
-    losing request must still send a login code to the user the other request
-    created, with the usual response, instead of erroring or sending nothing.
-    """
     new_user_response = _request_code(client, NEW_USER_EMAIL)
 
     def raise_integrity_error(request: HttpRequest, email: str) -> User:
-        # Simulate losing the race: the other request's user lands first.
         User.objects.create_user(email=email)
         raise IntegrityError
 

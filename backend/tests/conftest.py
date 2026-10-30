@@ -12,7 +12,6 @@ def client() -> Client:
 
 @pytest.fixture
 def other_client() -> Client:
-    """A second client with its own session, for comparing independent requests."""
     return Client(enforce_csrf_checks=True)
 
 
