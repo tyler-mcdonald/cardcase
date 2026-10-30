@@ -2,6 +2,7 @@
 
 - Services and database hosted on [Render](https://render.com/), defined via [render.yaml](../render.yaml)
 - Email Service via [Resend](https://resend.com/)
+- An uptime monitor pings the backend every 5 minutes so the free Render service doesn't spin down
 
 ## Domains
 
