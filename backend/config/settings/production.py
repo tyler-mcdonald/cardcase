@@ -17,8 +17,8 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-SESSION_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
-CSRF_COOKIE_DOMAIN = ".cardcase.jtm-dev.com"
+SESSION_COOKIE_DOMAIN = ".cardcase.app"
+CSRF_COOKIE_DOMAIN = ".cardcase.app"
 
 # Start as short as possible and ramp up to the standard 31536000 (1 year)
 # once HTTPS is confirmed stable in production.
@@ -39,4 +39,4 @@ MAILERS = {
 
 # Do not change this unless you've updated the domain with the provider,
 # which should happen rarely, if ever.
-DEFAULT_FROM_EMAIL = "noreply@mail.cardcase.jtm-dev.com"
+DEFAULT_FROM_EMAIL = "noreply@mail.cardcase.app"
