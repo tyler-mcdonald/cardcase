@@ -45,6 +45,6 @@ def _find_user(email: str) -> User | None:
 
 @transaction.atomic
 def _create_unverified_user(request: HttpRequest, email: str) -> User:
-    user = User.objects.create_user(email=email.lower())
+    user = User.objects.create_user(email=email)
     setup_user_email(request, user, [])
     return user
