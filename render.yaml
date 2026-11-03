@@ -21,11 +21,13 @@ projects:
             plan: free
             rootDir: backend
             autoDeployTrigger: checksPass
+            # Migrations run in the build because preDeployCommand requires a paid plan
             buildCommand: >-
               pip install uv &&
               unset VIRTUAL_ENV &&
               uv sync --frozen --no-dev &&
               uv run python manage.py collectstatic --noinput &&
+              uv run python manage.py check_email &&
               uv run python manage.py migrate &&
               uv run python manage.py ensure_superuser
             startCommand: unset VIRTUAL_ENV && uv run gunicorn config.wsgi:application
