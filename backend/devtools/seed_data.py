@@ -35,7 +35,7 @@ GENERATED_SPEND_DAYS_AGO_RANGE = (0, 120)
 def sample_transactions(today: date) -> dict[str, list[tuple[str, str, date]]]:
     return {
         "Amazon": [
-            ("100.00", "Birthday gift", today - timedelta(days=120)),
+            ("250.00", "Birthday gift", today - timedelta(days=120)),
             ("-23.99", "Phone case", today - timedelta(days=60)),
             ("-12.49", "Kindle book", today - timedelta(days=7)),
         ],
@@ -45,7 +45,7 @@ def sample_transactions(today: date) -> dict[str, list[tuple[str, str, date]]]:
             ("-30.00", "Checked bag fee", today - timedelta(days=45)),
         ],
         "Starbucks": [
-            ("50.00", "Gift card reload", today - timedelta(days=100)),
+            ("200.00", "Gift card reload", today - timedelta(days=100)),
             ("-5.45", "Latte", today - timedelta(days=3)),
             ("-8.90", "Breakfast sandwich and coffee", today),
         ],
