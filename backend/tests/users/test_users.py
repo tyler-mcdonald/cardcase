@@ -25,7 +25,7 @@ delete = _client.delete
 
 NEW_USER_EMAIL = "new@example.com"
 LOGIN_CODE_EMAIL_SUBJECT = "Your cardcase login code"
-WELCOME_EMAIL_SUBJECT = "Confirm your email for cardcase"
+WELCOME_EMAIL_SUBJECT = "Your cardcase signup code"
 CODE_PATTERN = re.compile(r"\d{6}|[A-Z0-9]{4}-[A-Z0-9]{4}")
 
 # allauth hardcodes the confirm_email rate limit to "1/10s/key" when
@@ -474,12 +474,21 @@ def test_signup_verification_email_wording(client: Client) -> None:
     code = _extract_code_from_email()
     assert message.subject == WELCOME_EMAIL_SUBJECT
     assert message.body == (
-        "Welcome to cardcase! Enter this code to finish creating your account:\n"
+        "Welcome to cardcase!\n"
+        "\n"
+        f"Use this code to verify {NEW_USER_EMAIL} and finish signing up:\n"
         "\n"
         f"{code}\n"
         "\n"
-        "If you didn't sign up, you can ignore this email."
+        "If this wasn't you, you can ignore this email."
     )
+
+
+@pytest.mark.django_db
+def test_signup_code_email_does_not_escape_email(client: Client) -> None:
+    _request_code(client, "o'neil@example.com")
+
+    assert "verify o'neil@example.com and" in mail.outbox[-1].body
 
 
 @pytest.mark.django_db
