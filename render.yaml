@@ -29,6 +29,8 @@ projects:
               uv run python manage.py migrate &&
               uv run python manage.py ensure_superuser
             startCommand: unset VIRTUAL_ENV && uv run gunicorn config.wsgi:application
+            domains:
+              - api.cardcase.app
             envVars:
               - key: DJANGO_SETTINGS_MODULE
                 value: config.settings.production
@@ -43,9 +45,9 @@ projects:
                   name: cardcase-db
                   property: connectionString
               - key: DJANGO_ALLOWED_HOSTS
-                value: api.cardcase.jtm-dev.com
+                value: api.cardcase.app
               - key: FRONTEND_URL
-                value: https://app.cardcase.jtm-dev.com
+                value: https://cardcase.app
 
           - type: web
             name: cardcase-web
@@ -59,7 +61,7 @@ projects:
                 source: /*
                 destination: /index.html
             domains:
-              - app.cardcase.jtm-dev.com
+              - cardcase.app
             envVars:
               - key: VITE_API_URL
-                value: https://api.cardcase.jtm-dev.com
+                value: https://api.cardcase.app
