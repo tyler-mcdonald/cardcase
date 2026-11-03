@@ -27,7 +27,7 @@ projects:
               unset VIRTUAL_ENV &&
               uv sync --frozen --no-dev &&
               uv run python manage.py collectstatic --noinput &&
-              uv run python manage.py check_email &&
+              uv run python manage.py verify_email_sending &&
               uv run python manage.py migrate &&
               uv run python manage.py ensure_superuser
             startCommand: unset VIRTUAL_ENV && uv run gunicorn config.wsgi:application
