@@ -3,7 +3,9 @@
 - Services and database hosted on [Render](https://render.com/), defined via [render.yaml](../render.yaml)
 - Email Service via [Resend](https://resend.com/)
 
-## Domains
+## URLs
 
-- Root domain is `cardcase.app`, frontend hosted there, DNS managed via [Cloudflare](https://www.cloudflare.com/)
-- Backend hosted at `api.cardcase.app`
+- Frontend: <https://cardcase.app>
+- Backend: <https://api.cardcase.app>
+
+DNS is managed via [Cloudflare](https://www.cloudflare.com/).
