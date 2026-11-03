@@ -2,7 +2,7 @@
 
 A virtual case to store and track gift cards 🎁, flight credits ✈️, and other cash-like accounts 💸.
 
-Try it at [app.cardcase.jtm-dev.com](https://app.cardcase.jtm-dev.com).
+Try it at [cardcase.app](https://cardcase.app).
 
 ## Screenshots
 
