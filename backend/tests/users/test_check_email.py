@@ -6,13 +6,15 @@ from django.core.mail.backends.locmem import EmailBackend
 from django.core.management import CommandError, call_command
 from pytest_django import Settings
 
+from users.management.commands.check_email import DEFAULT_RECIPIENT
+
 
 def test_check_email_sends_from_default_address(settings: Settings) -> None:
     call_command("check_email")
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].from_email == settings.DEFAULT_FROM_EMAIL
-    assert mail.outbox[0].to == ["delivered+build-check@resend.dev"]
+    assert mail.outbox[0].to == [DEFAULT_RECIPIENT]
 
 
 def test_check_email_sends_to_override_address() -> None:
@@ -28,4 +30,14 @@ def test_check_email_raises_when_send_fails(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(EmailBackend, "send_messages", fail)
 
     with pytest.raises(CommandError, match="domain not verified"):
+        call_command("check_email")
+
+
+def test_check_email_raises_when_nothing_sent(monkeypatch: pytest.MonkeyPatch) -> None:
+    def send_none(self: EmailBackend, messages: Any) -> int:
+        return 0
+
+    monkeypatch.setattr(EmailBackend, "send_messages", send_none)
+
+    with pytest.raises(CommandError, match="Failed to send email"):
         call_command("check_email")
