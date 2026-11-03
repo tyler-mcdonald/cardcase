@@ -23,7 +23,9 @@ def test_verify_email_sending_sends_to_override_address() -> None:
     assert mail.outbox[0].to == ["someone@example.com"]
 
 
-def test_verify_email_sending_raises_when_send_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_email_sending_raises_when_send_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def fail(self: EmailBackend, messages: Any) -> int:
         raise RuntimeError("domain not verified")
 
@@ -33,7 +35,9 @@ def test_verify_email_sending_raises_when_send_fails(monkeypatch: pytest.MonkeyP
         call_command("verify_email_sending")
 
 
-def test_verify_email_sending_raises_when_nothing_sent(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_email_sending_raises_when_nothing_sent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def send_none(self: EmailBackend, messages: Any) -> int:
         return 0
 
