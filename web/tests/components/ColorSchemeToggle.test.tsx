@@ -22,6 +22,33 @@ function renderFirstPass() {
   );
 }
 
+function openMenu() {
+  fireEvent.click(screen.getByRole("button", { name: "Color scheme" }));
+}
+
+function choose(name: string) {
+  openMenu();
+  fireEvent.click(screen.getByRole("menuitem", { name }));
+}
+
+function appliedScheme() {
+  return document.documentElement.getAttribute("data-mantine-color-scheme");
+}
+
+function triggerIcon() {
+  return screen
+    .getByRole("button", { name: "Color scheme" })
+    .querySelector("[data-icon]")
+    ?.getAttribute("data-icon");
+}
+
+function checkedItem() {
+  return screen
+    .getAllByRole("menuitem")
+    .filter((item) => item.querySelector('[data-icon="check"]'))
+    .map((item) => item.textContent);
+}
+
 afterEach(() => {
   window.matchMedia = originalMatchMedia;
   window.localStorage.clear();
@@ -29,34 +56,77 @@ afterEach(() => {
 });
 
 describe("ColorSchemeToggle", () => {
-  it("switches between light and dark", () => {
+  it("lists Light, Dark and System under a Theme label", () => {
+    renderWithProviders(<ColorSchemeToggle />);
+    openMenu();
+
+    screen.getByText("Theme");
+    expect(
+      screen.getAllByRole("menuitem").map((item) => item.textContent),
+    ).toEqual(["Light", "Dark", "System"]);
+  });
+
+  it("switches to dark", () => {
     renderWithProviders(<ColorSchemeToggle />);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Switch to dark mode" }),
-    );
-    expect(
-      document.documentElement.getAttribute("data-mantine-color-scheme"),
-    ).toBe("dark");
+    choose("Dark");
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Switch to light mode" }),
+    expect(appliedScheme()).toBe("dark");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "dark",
     );
-    expect(
-      document.documentElement.getAttribute("data-mantine-color-scheme"),
-    ).toBe("light");
+    expect(triggerIcon()).toBe("moon");
+  });
+
+  it("switches to light", () => {
+    window.localStorage.setItem("mantine-color-scheme-value", "dark");
+    renderWithProviders(<ColorSchemeToggle />);
+
+    choose("Light");
+
+    expect(appliedScheme()).toBe("light");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "light",
+    );
+    expect(triggerIcon()).toBe("sun");
+  });
+
+  it("switches to system and follows the OS", () => {
+    mockOsDark();
+    window.localStorage.setItem("mantine-color-scheme-value", "light");
+    renderWithProviders(<ColorSchemeToggle />);
+
+    choose("System");
+
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "auto",
+    );
+    expect(appliedScheme()).toBe("dark");
+    expect(triggerIcon()).toBe("moon");
+  });
+
+  it("marks only the saved choice with a check", () => {
+    renderWithProviders(<ColorSchemeToggle />);
+
+    choose("Dark");
+    openMenu();
+    expect(checkedItem()).toEqual(["Dark"]);
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "System" }));
+    openMenu();
+    expect(checkedItem()).toEqual(["System"]);
   });
 
   it("follows a dark OS setting on its first render", () => {
     mockOsDark();
 
-    expect(renderFirstPass()).toContain('aria-label="Switch to light mode"');
+    expect(renderFirstPass()).toContain('data-icon="moon"');
   });
 
   it("uses a saved preference over the OS setting", () => {
     mockOsDark();
     window.localStorage.setItem("mantine-color-scheme-value", "light");
 
-    expect(renderFirstPass()).toContain('aria-label="Switch to dark mode"');
+    expect(renderFirstPass()).toContain('data-icon="sun"');
   });
 });
