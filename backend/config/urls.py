@@ -25,4 +25,5 @@ urlpatterns = [
     ),
     path("_allauth/", include("users.headless_urls")),
     path("v1/", include("accounts.urls")),
+    path("v1/", include("demo.urls")),
 ]

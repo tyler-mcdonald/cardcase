@@ -3,9 +3,12 @@ from typing import Any
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailAddress
 from allauth.account.utils import filter_users_by_email
+from allauth.headless.adapter import DefaultHeadlessAdapter
 from django.conf import settings
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.http import HttpRequest
 
+from demo.services import is_demo_email
 from users.models import User
 
 LOGIN_CODE_EMAIL_TEMPLATE = "account/email/login_code"
@@ -19,6 +22,8 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def send_mail(
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
+        if is_demo_email(email):
+            return
         if template_prefix == LOGIN_CODE_EMAIL_TEMPLATE:
             template_prefix, context = self._login_code_or_welcome_email(email, context)
         super().send_mail(template_prefix, email, context)
@@ -43,3 +48,9 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
         ).exists():
             return user
         return None
+
+
+class HeadlessAdapter(DefaultHeadlessAdapter):  # type: ignore[misc]
+    def serialize_user(self, user: AbstractBaseUser) -> dict[str, Any]:
+        data: dict[str, Any] = super().serialize_user(user)
+        return {**data, "is_demo": isinstance(user, User) and user.is_demo}
