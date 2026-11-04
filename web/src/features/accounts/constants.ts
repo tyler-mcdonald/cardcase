@@ -3,7 +3,7 @@ import type { Account } from "./types";
 
 type AccountTypeDisplay = {
   label: string;
-  color?: MantineColor;
+  color: MantineColor;
 };
 
 export const ACCOUNT_TYPE_DISPLAY: Record<Account["type"], AccountTypeDisplay> =
