@@ -22,12 +22,12 @@ function renderFirstPass() {
   );
 }
 
-function openMenu() {
+function openThemeMenu() {
   fireEvent.click(screen.getByRole("button", { name: "Color scheme" }));
 }
 
 function choose(name: string) {
-  openMenu();
+  openThemeMenu();
   fireEvent.click(screen.getByRole("menuitemradio", { name }));
 }
 
@@ -63,7 +63,7 @@ afterEach(() => {
 describe("ThemeToggle", () => {
   it("lists Light, Dark and System under a Theme label", () => {
     renderWithProviders(<ThemeToggle />);
-    openMenu();
+    openThemeMenu();
 
     screen.getByText("Theme");
     expect(
@@ -114,7 +114,7 @@ describe("ThemeToggle", () => {
     renderWithProviders(<ThemeToggle />);
 
     choose("Dark");
-    openMenu();
+    openThemeMenu();
     expect(checkedItem()).toEqual(["Dark"]);
     expect(uncheckedItems()).toEqual(["Light", "System"]);
     expect(
@@ -124,7 +124,7 @@ describe("ThemeToggle", () => {
     ).not.toBeNull();
 
     fireEvent.click(screen.getByRole("menuitemradio", { name: "System" }));
-    openMenu();
+    openThemeMenu();
     expect(checkedItem()).toEqual(["System"]);
     expect(uncheckedItems()).toEqual(["Light", "Dark"]);
   });
