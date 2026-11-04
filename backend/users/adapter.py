@@ -8,11 +8,11 @@ from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.http import HttpRequest
 
-from demo.services import is_demo_email
 from users.models import User
 
 LOGIN_CODE_EMAIL_TEMPLATE = "account/email/login_code"
 SIGNUP_WELCOME_EMAIL_TEMPLATE = "account/email/email_confirmation_signup"
+UNDELIVERABLE_EMAIL_SUFFIX = ".invalid"
 
 
 class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
@@ -22,7 +22,7 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def send_mail(
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
-        if is_demo_email(email):
+        if email.lower().endswith(UNDELIVERABLE_EMAIL_SUFFIX):
             return
         if template_prefix == LOGIN_CODE_EMAIL_TEMPLATE:
             template_prefix, context = self._login_code_or_welcome_email(email, context)

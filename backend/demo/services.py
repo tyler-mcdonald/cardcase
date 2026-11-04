@@ -11,10 +11,6 @@ DEMO_EMAIL_DOMAIN = "demo.invalid"
 DEMO_LIFETIME = timedelta(hours=24)
 
 
-def is_demo_email(email: str) -> bool:
-    return email.lower().endswith(f"@{DEMO_EMAIL_DOMAIN}")
-
-
 def delete_expired_demo_users() -> None:
     cutoff = timezone.now() - DEMO_LIFETIME
     User.objects.filter(is_demo=True, created_at__lt=cutoff).delete()
