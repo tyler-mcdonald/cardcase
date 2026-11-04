@@ -30,8 +30,32 @@ const OPTIONS: {
   { value: "auto", label: "System", icon: desktopIcon },
 ];
 
-export function ThemeToggle() {
+function ThemeOptions() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
+
+  return (
+    <Menu.RadioGroup
+      value={colorScheme}
+      onChange={(value) => setColorScheme(value as MantineColorScheme)}
+    >
+      {OPTIONS.map((option) => (
+        <Menu.RadioItem
+          key={option.value}
+          value={option.value}
+          checkIcon={<IconCheck size={14} aria-hidden data-icon="check" />}
+          closeMenuOnClick
+        >
+          <Group gap="xs" wrap="nowrap">
+            {option.icon}
+            {option.label}
+          </Group>
+        </Menu.RadioItem>
+      ))}
+    </Menu.RadioGroup>
+  );
+}
+
+export function ThemeToggle() {
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: false,
   });
@@ -45,24 +69,7 @@ export function ThemeToggle() {
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Theme</Menu.Label>
-        <Menu.RadioGroup
-          value={colorScheme}
-          onChange={(value) => setColorScheme(value as MantineColorScheme)}
-        >
-          {OPTIONS.map((option) => (
-            <Menu.RadioItem
-              key={option.value}
-              value={option.value}
-              checkIcon={<IconCheck size={14} aria-hidden data-icon="check" />}
-              closeMenuOnClick
-            >
-              <Group gap="xs" wrap="nowrap">
-                {option.icon}
-                {option.label}
-              </Group>
-            </Menu.RadioItem>
-          ))}
-        </Menu.RadioGroup>
+        <ThemeOptions />
       </Menu.Dropdown>
     </Menu>
   );
