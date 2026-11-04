@@ -18,6 +18,7 @@ const ICON_SIZE = 16;
 
 const sunIcon = <IconSun size={ICON_SIZE} aria-hidden data-icon="sun" />;
 const moonIcon = <IconMoon size={ICON_SIZE} aria-hidden data-icon="moon" />;
+const desktopIcon = <IconDeviceDesktop size={ICON_SIZE} aria-hidden />;
 
 const OPTIONS: {
   value: MantineColorScheme;
@@ -26,11 +27,7 @@ const OPTIONS: {
 }[] = [
   { value: "light", label: "Light", icon: sunIcon },
   { value: "dark", label: "Dark", icon: moonIcon },
-  {
-    value: "auto",
-    label: "System",
-    icon: <IconDeviceDesktop size={ICON_SIZE} aria-hidden />,
-  },
+  { value: "auto", label: "System", icon: desktopIcon },
 ];
 
 export function ThemeToggle() {
