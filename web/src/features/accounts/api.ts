@@ -1,9 +1,8 @@
 import { request } from "@/lib/api/client";
-import { v1 } from "@/lib/api/endpoints";
+import { accounts } from "@/lib/api/endpoints";
 import type { Paginated } from "@/lib/api/types";
 import type { Account, AccountCreateInput, AccountUpdate } from "./types";
 
-const accounts = v1.path("accounts");
 const MAX_ACCOUNTS = 250;
 
 export function listAccounts(page: number) {

@@ -26,3 +26,5 @@ export function endpoint(base: string): Endpoint {
 }
 
 export const v1 = endpoint("/v1");
+export const accounts = v1.path("accounts");
+export const transactions = v1.path("transactions");
