@@ -7,19 +7,19 @@ import { describeBalance, describeExpiry } from "./format";
 type AccountStyle = {
   artClass: string;
   emoji: string;
-  nameColor: string;
+  accountNameClass: string;
 };
 
 const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   gift_card: {
     artClass: classes.artGiftCard,
     emoji: "🎁",
-    nameColor: "var(--mantine-color-gray-light-color)",
+    accountNameClass: classes.nameGiftCard,
   },
   flight_credit: {
     artClass: classes.artFlightCredit,
     emoji: "✈️",
-    nameColor: "var(--mantine-color-violet-light-color)",
+    accountNameClass: classes.nameFlightCredit,
   },
 };
 
@@ -55,7 +55,7 @@ export function AccountCard({
           lineClamp={2}
           ta="center"
           w="100%"
-          c={style.nameColor}
+          className={style.accountNameClass}
         >
           {account.name}
         </Text>
@@ -66,11 +66,16 @@ export function AccountCard({
             {expiry.label}
           </Badge>
         ) : (
-          <Text size="xs" c="rgba(255,255,255,0.78)">
+          <Text size="xs" className={classes.expiry}>
             {expiry.label}
           </Text>
         )}
-        <Text fw={700} size="lg" c={balance.negative ? "red.4" : "white"}>
+        <Text
+          fw={700}
+          size="lg"
+          className={classes.balance}
+          data-negative={balance.negative || undefined}
+        >
           {balance.label}
         </Text>
       </div>

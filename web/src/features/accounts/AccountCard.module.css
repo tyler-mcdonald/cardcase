@@ -5,7 +5,11 @@
   justify-content: space-between;
   overflow: hidden;
   position: relative;
-  color: white;
+  color: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="dark"] .card {
+  color: var(--mantine-color-text);
 }
 
 .art {
@@ -21,12 +25,68 @@
   background-color: var(--mantine-color-violet-light);
 }
 
+[data-mantine-color-scheme="dark"] .artFlightCredit {
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-color-violet-light) 55%,
+    transparent
+  );
+}
+
+.nameGiftCard {
+  color: var(--mantine-color-gray-light-color);
+}
+
+[data-mantine-color-scheme="dark"] .nameGiftCard {
+  color: var(--mantine-color-gray-5);
+}
+
+.nameFlightCredit {
+  color: var(--mantine-color-violet-light-color);
+}
+
+[data-mantine-color-scheme="dark"] .nameFlightCredit {
+  color: color-mix(
+    in srgb,
+    var(--mantine-color-violet-light-color) 60%,
+    var(--mantine-color-text)
+  );
+}
+
+.expiry {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+[data-mantine-color-scheme="dark"] .expiry {
+  color: var(--mantine-color-dimmed);
+}
+
+.balance[data-negative] {
+  color: var(--mantine-color-red-4);
+}
+
+[data-mantine-color-scheme="dark"] .balance[data-negative] {
+  color: color-mix(
+    in srgb,
+    var(--mantine-color-red-4) 70%,
+    var(--mantine-color-text)
+  );
+}
+
 .scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.72),
+    rgba(0, 0, 0, 0) 62%
+  );
+}
+
+[data-mantine-color-scheme="dark"] .scrim {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55),
     rgba(0, 0, 0, 0) 62%
   );
 }

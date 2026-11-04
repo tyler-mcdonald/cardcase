@@ -87,16 +87,16 @@ describe("AccountCard", () => {
   it("shows a negative balance in red", () => {
     renderCard(makeAccount({ balance: "-12.34" }));
 
-    expect(screen.getByText("-$12.34").style.color).toBe(
-      "var(--mantine-color-red-4)",
+    expect(screen.getByText("-$12.34").hasAttribute("data-negative")).toBe(
+      true,
     );
   });
 
-  it("shows a positive balance in white", () => {
+  it("does not mark a positive balance as negative", () => {
     renderCard(makeAccount({ balance: "12.34" }));
 
-    expect(screen.getByText("$12.34").style.color).toBe(
-      "var(--mantine-color-white)",
+    expect(screen.getByText("$12.34").hasAttribute("data-negative")).toBe(
+      false,
     );
   });
 });
