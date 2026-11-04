@@ -30,7 +30,7 @@ export function LoginForm() {
         <Title order={1} ta="center">
           cardcase
         </Title>
-        <Text c="gray.7" ta="center">
+        <Text c="dimmed" ta="center">
           Store and track gift cards, flight credits, and other cash-like
           accounts.
         </Text>
