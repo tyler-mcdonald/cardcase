@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Group,
   Menu,
   useComputedColorScheme,
   useMantineColorScheme,
@@ -108,18 +109,24 @@ export function ColorSchemeToggle() {
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Theme</Menu.Label>
-        {OPTIONS.map((option) => (
-          <Menu.Item
-            key={option.value}
-            leftSection={option.icon}
-            rightSection={
-              colorScheme === option.value ? <CheckIcon /> : undefined
-            }
-            onClick={() => setColorScheme(option.value)}
-          >
-            {option.label}
-          </Menu.Item>
-        ))}
+        <Menu.RadioGroup
+          value={colorScheme}
+          onChange={(value) => setColorScheme(value as MantineColorScheme)}
+        >
+          {OPTIONS.map((option) => (
+            <Menu.RadioItem
+              key={option.value}
+              value={option.value}
+              checkIcon={<CheckIcon />}
+              closeMenuOnClick
+            >
+              <Group gap="xs" wrap="nowrap">
+                {option.icon}
+                {option.label}
+              </Group>
+            </Menu.RadioItem>
+          ))}
+        </Menu.RadioGroup>
       </Menu.Dropdown>
     </Menu>
   );

@@ -28,7 +28,7 @@ function openMenu() {
 
 function choose(name: string) {
   openMenu();
-  fireEvent.click(screen.getByRole("menuitem", { name }));
+  fireEvent.click(screen.getByRole("menuitemradio", { name }));
 }
 
 function appliedScheme() {
@@ -44,8 +44,13 @@ function triggerIcon() {
 
 function checkedItem() {
   return screen
-    .getAllByRole("menuitem")
-    .filter((item) => item.querySelector('[data-icon="check"]'))
+    .getAllByRole("menuitemradio", { checked: true })
+    .map((item) => item.textContent);
+}
+
+function uncheckedItems() {
+  return screen
+    .getAllByRole("menuitemradio", { checked: false })
     .map((item) => item.textContent);
 }
 
@@ -62,7 +67,7 @@ describe("ColorSchemeToggle", () => {
 
     screen.getByText("Theme");
     expect(
-      screen.getAllByRole("menuitem").map((item) => item.textContent),
+      screen.getAllByRole("menuitemradio").map((item) => item.textContent),
     ).toEqual(["Light", "Dark", "System"]);
   });
 
@@ -105,16 +110,23 @@ describe("ColorSchemeToggle", () => {
     expect(triggerIcon()).toBe("moon");
   });
 
-  it("marks only the saved choice with a check", () => {
+  it("marks only the saved choice as checked", () => {
     renderWithProviders(<ColorSchemeToggle />);
 
     choose("Dark");
     openMenu();
     expect(checkedItem()).toEqual(["Dark"]);
+    expect(uncheckedItems()).toEqual(["Light", "System"]);
+    expect(
+      screen
+        .getByRole("menuitemradio", { name: "Dark" })
+        .querySelector('[data-icon="check"]'),
+    ).not.toBeNull();
 
-    fireEvent.click(screen.getByRole("menuitem", { name: "System" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "System" }));
     openMenu();
     expect(checkedItem()).toEqual(["System"]);
+    expect(uncheckedItems()).toEqual(["Light", "Dark"]);
   });
 
   it("follows a dark OS setting on its first render", () => {
