@@ -1,8 +1,10 @@
 .navLink {
   color: var(--mantine-color-dimmed);
+  border-bottom: 2px solid transparent;
 }
 
 .navLink[aria-current="page"] {
-  color: var(--mantine-color-text);
+  color: var(--mantine-color-cobalt-text);
+  border-bottom-color: var(--mantine-color-cobalt-text);
   font-weight: 600;
 }
