@@ -94,7 +94,7 @@ const OPTIONS: {
   { value: "auto", label: "System", icon: <MonitorIcon /> },
 ];
 
-export function ColorSchemeToggle() {
+export function ThemeToggle() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: false,

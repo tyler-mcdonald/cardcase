@@ -2,7 +2,7 @@ import { MantineProvider } from "@mantine/core";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ColorSchemeToggle } from "@/components/ColorSchemeToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { renderWithProviders } from "../render";
 
 const originalMatchMedia = window.matchMedia;
@@ -17,7 +17,7 @@ function mockOsDark() {
 function renderFirstPass() {
   return renderToStaticMarkup(
     <MantineProvider env="test" defaultColorScheme="auto">
-      <ColorSchemeToggle />
+      <ThemeToggle />
     </MantineProvider>,
   );
 }
@@ -60,9 +60,9 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-mantine-color-scheme");
 });
 
-describe("ColorSchemeToggle", () => {
+describe("ThemeToggle", () => {
   it("lists Light, Dark and System under a Theme label", () => {
-    renderWithProviders(<ColorSchemeToggle />);
+    renderWithProviders(<ThemeToggle />);
     openMenu();
 
     screen.getByText("Theme");
@@ -72,7 +72,7 @@ describe("ColorSchemeToggle", () => {
   });
 
   it("switches to dark", () => {
-    renderWithProviders(<ColorSchemeToggle />);
+    renderWithProviders(<ThemeToggle />);
 
     choose("Dark");
 
@@ -85,7 +85,7 @@ describe("ColorSchemeToggle", () => {
 
   it("switches to light", () => {
     window.localStorage.setItem("mantine-color-scheme-value", "dark");
-    renderWithProviders(<ColorSchemeToggle />);
+    renderWithProviders(<ThemeToggle />);
 
     choose("Light");
 
@@ -99,7 +99,7 @@ describe("ColorSchemeToggle", () => {
   it("switches to system and follows the OS", () => {
     mockOsDark();
     window.localStorage.setItem("mantine-color-scheme-value", "light");
-    renderWithProviders(<ColorSchemeToggle />);
+    renderWithProviders(<ThemeToggle />);
 
     choose("System");
 
@@ -111,7 +111,7 @@ describe("ColorSchemeToggle", () => {
   });
 
   it("marks only the saved choice as checked", () => {
-    renderWithProviders(<ColorSchemeToggle />);
+    renderWithProviders(<ThemeToggle />);
 
     choose("Dark");
     openMenu();
