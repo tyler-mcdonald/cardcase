@@ -15,15 +15,12 @@ import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
 export type AccountFormValues = AccountInput & {
-  initial_balance?: string | number;
+  initial_balance: number | "";
 };
 
 const requireInitialBalance = isNotEmpty("Initial balance is required");
 
 function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
-  if (value === undefined) {
-    return null;
-  }
   if (Number.isNaN(Number(value))) {
     return "Initial balance must be a number";
   }
@@ -36,6 +33,7 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
 
 export function AccountForm({
   initialValues,
+  showInitialBalance = false,
   typeLocked = false,
   submitLabel,
   isPending,
@@ -46,6 +44,7 @@ export function AccountForm({
   secondaryAction,
 }: {
   initialValues: AccountFormValues;
+  showInitialBalance?: boolean;
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
@@ -96,7 +95,7 @@ export function AccountForm({
             {...typeInputProps}
           />
         </Input.Wrapper>
-        {initialValues.initial_balance !== undefined && (
+        {showInitialBalance && (
           <MoneyInput
             label="Initial balance"
             required

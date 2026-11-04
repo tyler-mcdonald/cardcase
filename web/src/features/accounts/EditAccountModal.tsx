@@ -126,7 +126,7 @@ function EditAccountContent({
               }}
             />
             <AccountForm
-              initialValues={account}
+              initialValues={{ ...account, initial_balance: 0 }}
               typeLocked
               submitLabel="Save changes"
               isPending={updateAccount.isPending}

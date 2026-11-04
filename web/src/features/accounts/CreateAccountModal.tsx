@@ -18,7 +18,7 @@ function toCreateInput({
   initial_balance,
   ...values
 }: AccountFormValues): AccountCreateInput {
-  return { ...values, initial_balance: toTwoDecimalString(initial_balance!) };
+  return { ...values, initial_balance: toTwoDecimalString(initial_balance) };
 }
 
 export function CreateAccountModal({
@@ -38,6 +38,7 @@ export function CreateAccountModal({
     <Modal opened={opened} onClose={close} title="Add account">
       <AccountForm
         initialValues={INITIAL_VALUES}
+        showInitialBalance
         submitLabel="Add account"
         isPending={createAccount.isPending}
         fieldErrors={fieldErrors}
