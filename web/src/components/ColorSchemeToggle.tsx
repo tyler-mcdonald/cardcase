@@ -41,8 +41,10 @@ function MoonIcon() {
 }
 
 export function ColorSchemeToggle() {
-  const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme("light");
+  const { toggleColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme("light", {
+    getInitialValueInEffect: false,
+  });
   const isDark = computedColorScheme === "dark";
 
   return (
@@ -50,7 +52,7 @@ export function ColorSchemeToggle() {
       variant="default"
       size={30}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      onClick={() => setColorScheme(isDark ? "light" : "dark")}
+      onClick={toggleColorScheme}
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </ActionIcon>
