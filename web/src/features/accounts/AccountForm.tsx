@@ -7,25 +7,33 @@ import {
   TextInput,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import {
-  type FormRulesRecord,
-  isNotEmpty,
-  useForm,
-  type UseFormReturnType,
-} from "@mantine/form";
+import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
+import { MoneyInput } from "@/components/MoneyInput";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
+
+export type AccountFormValues = AccountInput & {
+  initial_balance: number | "";
+};
+
+const requireInitialBalance = isNotEmpty("Initial balance is required");
+
+function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
+  if (Number.isNaN(Number(value))) {
+    return "Initial balance must be a number";
+  }
+  return requireInitialBalance(value);
+}
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
-export function AccountForm<T extends AccountInput>({
+export function AccountForm({
   initialValues,
-  extraValidate,
-  extraFields,
+  showInitialBalance = false,
   typeLocked = false,
   submitLabel,
   isPending,
@@ -35,24 +43,23 @@ export function AccountForm<T extends AccountInput>({
   onCancel,
   secondaryAction,
 }: {
-  initialValues: T;
-  extraValidate?: FormRulesRecord<T>;
-  extraFields?: (form: UseFormReturnType<T>) => ReactNode;
+  initialValues: AccountFormValues;
+  showInitialBalance?: boolean;
   typeLocked?: boolean;
   submitLabel: string;
   isPending: boolean;
   fieldErrors: Record<string, string>;
   formError: string | null;
-  onSubmit: (values: T) => void;
+  onSubmit: (values: AccountFormValues) => void;
   onCancel: () => void;
   secondaryAction?: ReactNode;
 }) {
-  const form = useForm<T>({
+  const form = useForm<AccountFormValues>({
     initialValues,
     validate: {
       name: isNotEmpty("Name is required"),
-      ...extraValidate,
-    } as FormRulesRecord<T>,
+      initial_balance: validateInitialBalance,
+    },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
   const { setErrors } = form;
@@ -88,7 +95,13 @@ export function AccountForm<T extends AccountInput>({
             {...typeInputProps}
           />
         </Input.Wrapper>
-        {extraFields?.(form)}
+        {showInitialBalance && (
+          <MoneyInput
+            label="Initial balance"
+            required
+            {...form.getInputProps("initial_balance")}
+          />
+        )}
         <DateInput
           label="Expiration date"
           description="Optional — leave blank if it doesn't expire."
