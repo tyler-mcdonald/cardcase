@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { endpoint, v1 } from "@/lib/api/endpoints";
+import { accounts, endpoint, transactions } from "@/lib/api/endpoints";
 
 describe("endpoint", () => {
   it("returns the base path without params", () => {
@@ -27,8 +27,9 @@ describe("endpoint", () => {
   });
 });
 
-describe("v1", () => {
-  it("builds versioned API paths", () => {
-    expect(v1.path("accounts")({ page: 1 })).toBe("/v1/accounts?page=1");
+describe("API endpoints", () => {
+  it("builds versioned resource paths", () => {
+    expect(accounts({ page: 1 })).toBe("/v1/accounts?page=1");
+    expect(transactions()).toBe("/v1/transactions");
   });
 });
