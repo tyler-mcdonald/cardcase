@@ -8,6 +8,6 @@ type AccountTypeDisplay = {
 
 export const ACCOUNT_TYPE_DISPLAY: Record<Account["type"], AccountTypeDisplay> =
   {
-    gift_card: { label: "Gift card" },
-    flight_credit: { label: "Flight credit", color: "violet" },
+    gift_card: { label: "Gift card", color: "gray" },
+    flight_credit: { label: "Flight credit", color: "cobalt" },
   };

@@ -19,7 +19,7 @@ const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   flight_credit: {
     artClass: classes.artFlightCredit,
     emoji: "✈️",
-    nameColor: "var(--mantine-color-violet-light-color)",
+    nameColor: "var(--mantine-color-cobalt-light-color)",
   },
 };
 

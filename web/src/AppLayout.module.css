@@ -3,6 +3,8 @@
 }
 
 .navLink[aria-current="page"] {
-  color: var(--mantine-color-text);
+  color: var(--mantine-primary-color-filled);
   font-weight: 600;
+  text-decoration: underline 2px var(--mantine-primary-color-filled);
+  text-underline-offset: 6px;
 }

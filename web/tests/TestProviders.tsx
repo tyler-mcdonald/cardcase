@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
+import { theme } from "@/theme";
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -18,7 +19,7 @@ export function TestProviders({
 }) {
   const [queryClient] = useState(createTestQueryClient);
   return (
-    <MantineProvider env="test">
+    <MantineProvider env="test" theme={theme}>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
       </QueryClientProvider>

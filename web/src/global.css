@@ -1,0 +1,8 @@
+:root[data-mantine-color-scheme="light"] {
+  --mantine-color-body: #f8f5ec;
+}
+
+:root[data-mantine-color-scheme="light"] .mantine-Card-root,
+:root[data-mantine-color-scheme="light"] .mantine-Paper-root {
+  background-color: var(--mantine-color-white);
+}
