@@ -7,19 +7,19 @@ import { describeBalance, describeExpiry } from "./format";
 type AccountStyle = {
   artClass: string;
   emoji: string;
-  nameClass: string;
+  accountNameClass: string;
 };
 
 const ACCOUNT_STYLE: Record<Account["type"], AccountStyle> = {
   gift_card: {
     artClass: classes.artGiftCard,
     emoji: "🎁",
-    nameClass: classes.nameGiftCard,
+    accountNameClass: classes.nameGiftCard,
   },
   flight_credit: {
     artClass: classes.artFlightCredit,
     emoji: "✈️",
-    nameClass: classes.nameFlightCredit,
+    accountNameClass: classes.nameFlightCredit,
   },
 };
 
@@ -55,7 +55,7 @@ export function AccountCard({
           lineClamp={2}
           ta="center"
           w="100%"
-          className={style.nameClass}
+          className={style.accountNameClass}
         >
           {account.name}
         </Text>
