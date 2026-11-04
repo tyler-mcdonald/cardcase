@@ -1,10 +1,11 @@
 import { request } from "@/lib/api/client";
+import { endpoint } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import type { ApiResponse } from "@/lib/api/types";
 import type { User } from "./types";
 
-const AUTH_API_BASE = "/_allauth/browser/v1";
-const SESSION_PATH = "/auth/session";
+const auth = endpoint("/_allauth/browser/v1").path("auth");
+const session = auth.path("session");
 
 export type SessionData = { user?: User };
 
@@ -30,19 +31,14 @@ function allowExpectedStatus<T>(
 }
 
 export function getSession() {
-  return request<ApiResponse<SessionData>>(
-    "GET",
-    `${AUTH_API_BASE}${SESSION_PATH}`,
-  );
+  return request<ApiResponse<SessionData>>("GET", session());
 }
 
 export function requestLoginCode(email: string) {
   return allowExpectedStatus(
-    request<ApiResponse<SessionData>>(
-      "POST",
-      `${AUTH_API_BASE}/auth/code/request`,
-      { body: JSON.stringify({ email }) },
-    ),
+    request<ApiResponse<SessionData>>("POST", auth.path("code", "request")(), {
+      body: JSON.stringify({ email }),
+    }),
     [401],
   );
 }
@@ -50,17 +46,14 @@ export function requestLoginCode(email: string) {
 export function confirmLoginCode(code: string) {
   return request<ApiResponse<SessionData>>(
     "POST",
-    `${AUTH_API_BASE}/auth/code/confirm`,
+    auth.path("code", "confirm")(),
     { body: JSON.stringify({ code }) },
   );
 }
 
 export function logout() {
   return allowExpectedStatus(
-    request<ApiResponse<SessionData>>(
-      "DELETE",
-      `${AUTH_API_BASE}${SESSION_PATH}`,
-    ),
+    request<ApiResponse<SessionData>>("DELETE", session()),
     [401],
   );
 }
