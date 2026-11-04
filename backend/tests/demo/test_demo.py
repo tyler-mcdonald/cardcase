@@ -90,6 +90,18 @@ def test_start_is_throttled_per_ip() -> None:
     assert len(_demo_users()) == DEMO_START_RATE_LIMIT
 
 
+def test_start_is_throttled_per_true_client_ip() -> None:
+    def start_from(ip: str) -> ApiResponse:
+        client = Client(enforce_csrf_checks=True, HTTP_TRUE_CLIENT_IP=ip)
+        return _start(client)
+
+    for _ in range(DEMO_START_RATE_LIMIT):
+        assert start_from("203.0.113.1").status_code == 204
+
+    assert start_from("203.0.113.1").status_code == 429
+    assert start_from("203.0.113.2").status_code == 204
+
+
 def test_start_deletes_only_expired_demo_users(client: Client) -> None:
     expired = _create_user(DEMO_LIFETIME + timedelta(minutes=1))
     user = _create_user(DEMO_LIFETIME * 2, is_demo=False)

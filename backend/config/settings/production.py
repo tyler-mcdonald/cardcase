@@ -14,7 +14,12 @@ RENDER_EXTERNAL_HOSTNAME = env.str("RENDER_EXTERNAL_HOSTNAME", default=None)  # 
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-REST_FRAMEWORK = {**REST_FRAMEWORK, "NUM_PROXIES": 1}
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    },
+}
 
 SECURE_SSL_REDIRECT = True
 

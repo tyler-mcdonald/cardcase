@@ -22,6 +22,9 @@ class CsrfEnforcedSessionAuthentication(SessionAuthentication):
 class DemoStartThrottle(AnonRateThrottle):
     scope = "demo_start"
 
+    def get_ident(self, request: Request) -> str:
+        return request.META.get("HTTP_TRUE_CLIENT_IP") or super().get_ident(request)
+
 
 class DemoStartView(APIView):
     authentication_classes = (CsrfEnforcedSessionAuthentication,)
