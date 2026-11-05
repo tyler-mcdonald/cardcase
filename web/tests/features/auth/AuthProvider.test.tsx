@@ -231,33 +231,6 @@ describe("AuthProvider", () => {
       return reload;
     }
 
-    it("tells other tabs when the session user changes", async () => {
-      mockedGetSession.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: true },
-        data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-      });
-      mockedLogout.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: false },
-      });
-      const received = vi.fn();
-      openOtherTab().addEventListener("message", received);
-
-      const { result } = renderHook(
-        () => ({ auth: useAuth(), logout: useLogout() }),
-        { wrapper: Wrapper },
-      );
-
-      await waitFor(() =>
-        expect(result.current.auth.user?.email).toBe("test@example.com"),
-      );
-
-      result.current.logout.mutate();
-
-      await waitFor(() => expect(received).toHaveBeenCalledTimes(1));
-    });
-
     it("reloads when another tab changes the session user", async () => {
       const reload = stubReload();
       mockedGetSession.mockResolvedValueOnce({
@@ -271,7 +244,7 @@ describe("AuthProvider", () => {
       await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     });
 
-    it("does not reload the tab that changed the session user", async () => {
+    it("tells other tabs, without reloading itself, when the session user changes", async () => {
       const reload = stubReload();
       mockedGetSession.mockResolvedValueOnce({
         status: 200,
