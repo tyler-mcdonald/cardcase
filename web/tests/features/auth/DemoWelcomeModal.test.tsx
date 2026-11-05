@@ -5,7 +5,7 @@ import { useLogout } from "@/features/auth/queries";
 import { ApiError } from "@/lib/api/errors";
 import type { User } from "@/features/auth/types";
 import { useAuth } from "@/features/auth/use-auth";
-import { renderWithProviders } from "../../render";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/use-auth");
 vi.mock("@/features/auth/queries");

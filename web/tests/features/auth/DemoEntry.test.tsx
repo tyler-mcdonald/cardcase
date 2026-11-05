@@ -6,7 +6,7 @@ import { DemoEntry } from "@/features/auth/DemoEntry";
 import { getSession, logout, startDemo } from "@/features/auth/api";
 import type { User } from "@/features/auth/types";
 import { ApiError } from "@/lib/api/errors";
-import { renderWithProviders } from "../../render";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/api");
 
