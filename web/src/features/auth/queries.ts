@@ -14,6 +14,7 @@ import {
   startDemo,
   type SessionData,
 } from "./api";
+import { announceUserChange } from "./session-channel";
 import type { User } from "./types";
 
 const SESSION_QUERY_KEY = ["session"] as const;
@@ -43,6 +44,7 @@ function applySession(
     // Drop the previous user's data before exposing the new session, rather
     // than show it until a refetch lands.
     dropUserData(queryClient);
+    announceUserChange();
   }
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
