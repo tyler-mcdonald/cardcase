@@ -8,13 +8,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
-      "@tests": path.resolve(import.meta.dirname, "./tests"),
     },
   },
   server: {
     port: 3000,
   },
   test: {
+    alias: {
+      "@tests": path.resolve(import.meta.dirname, "./tests"),
+    },
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     mockReset: true,
