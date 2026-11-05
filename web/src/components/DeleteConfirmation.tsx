@@ -1,5 +1,6 @@
 import { Button, Group, Stack, Text } from "@mantine/core";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { CancelButton } from "./CancelButton";
 import { FormError } from "./FormError";
 
 export function DeleteConfirmation({
@@ -20,14 +21,7 @@ export function DeleteConfirmation({
       <Text size="sm">{message}</Text>
       {error && <FormError message={apiErrorMessage(error)} />}
       <Group justify="flex-end">
-        <Button
-          variant="subtle"
-          onClick={onCancel}
-          disabled={isPending}
-          autoFocus
-        >
-          Cancel
-        </Button>
+        <CancelButton onClick={onCancel} disabled={isPending} autoFocus />
         <Button
           variant="filled"
           color="red"

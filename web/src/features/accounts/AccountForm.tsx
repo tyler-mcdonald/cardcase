@@ -9,6 +9,7 @@ import {
 import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
+import { CancelButton } from "@/components/CancelButton";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
@@ -118,9 +119,7 @@ export function AccountForm({
         <Group justify={secondaryAction ? "space-between" : "flex-end"}>
           {secondaryAction}
           <Group>
-            <Button variant="subtle" onClick={onCancel} disabled={isPending}>
-              Cancel
-            </Button>
+            <CancelButton onClick={onCancel} disabled={isPending} />
             <Button type="submit" loading={isPending}>
               {submitLabel}
             </Button>

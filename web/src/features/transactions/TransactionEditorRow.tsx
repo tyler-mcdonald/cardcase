@@ -8,6 +8,7 @@ import { Button, Group, Stack, Table, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
+import { CancelButton } from "@/components/CancelButton";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
@@ -251,14 +252,11 @@ export function TransactionEditorRow({
               <ErrorMessages messages={messages} />
             </Group>
             <Group gap="xs" wrap="nowrap">
-              <Button
+              <CancelButton
                 size="xs"
-                variant="subtle"
                 onClick={cancel}
                 disabled={mutation.isPending}
-              >
-                Cancel
-              </Button>
+              />
               <Button
                 size="xs"
                 onClick={() => save()}
