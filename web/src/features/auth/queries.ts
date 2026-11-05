@@ -1,4 +1,5 @@
 import {
+  hashKey,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -24,9 +25,11 @@ function resetSession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
+  const sessionHash = hashKey(SESSION_QUERY_KEY);
   queryClient.removeQueries({
-    predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+    predicate: (query) => query.queryHash !== sessionHash,
   });
+  queryClient.getMutationCache().clear();
   queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
 }
 

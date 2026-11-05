@@ -43,7 +43,25 @@ describe("auth queries", () => {
     expect(
       result.current.queryClient.getQueryData(CACHED_ACCOUNTS_KEY),
     ).toBeUndefined();
-    expect(result.current.queryClient.getQueryData(SESSION_KEY)).toBeNull();
+  });
+
+  it("clears other session-prefixed queries and cached mutations on logout", async () => {
+    mockedLogout.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: false },
+    });
+    const { result } = renderWithQueryClient(useLogout);
+    const queryClient = result.current.queryClient;
+    queryClient.setQueryData(["session", "extra"], "previous user");
+    queryClient.getMutationCache().build(queryClient, {
+      mutationFn: async () => "previous user",
+    });
+
+    result.current.hook.mutate();
+
+    await waitFor(() => expect(result.current.hook.isSuccess).toBe(true));
+    expect(queryClient.getQueryData(["session", "extra"])).toBeUndefined();
+    expect(queryClient.getMutationCache().getAll()).toHaveLength(0);
   });
 
   it("clears cached accounts when login confirm succeeds", async () => {
