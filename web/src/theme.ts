@@ -94,10 +94,9 @@ export const theme = createTheme({
 });
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: {
-    "--mantine-primary-color-contrast": "var(--mantine-color-ink-contrast)",
-  },
+  variables: {},
   light: {
+    "--mantine-primary-color-contrast": "#ffffff",
     "--mantine-color-default": ink[0],
     "--mantine-color-default-hover": ink[1],
     "--mantine-color-default-color": ink[8],
@@ -107,12 +106,14 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     "--cardcase-subtle-hover": "rgba(129, 139, 152, 0.1)",
   },
   dark: {
+    "--mantine-primary-color-contrast": ink[9],
     "--mantine-color-default": "#2f3236",
     "--mantine-color-default-hover": "#383b40",
     "--mantine-color-default-color": "#f0f2f4",
     "--mantine-color-default-border": "#45494f",
     "--mantine-color-ink-light": "var(--mantine-color-default)",
     "--mantine-color-ink-light-hover": "var(--mantine-color-default-hover)",
+    "--mantine-color-ink-light-color": "var(--mantine-color-default-color)",
     "--cardcase-button-shadow": "0 1px 0 rgba(0, 0, 0, 0.2)",
     "--cardcase-subtle-color": "#9aa0a6",
     "--cardcase-subtle-hover": "rgba(101, 108, 118, 0.2)",
