@@ -42,9 +42,7 @@ function WelcomeModal({ userId }: { userId: string }) {
             All the data is made up and isolated to this session, so feel free
             to add, edit, or delete whatever you want.
           </List.Item>
-          <List.Item>
-            This is a temporary account, so nothing here is kept.
-          </List.Item>
+          <List.Item>This account and its data are temporary.</List.Item>
           <List.Item>Sign up to use cardcase with your own data.</List.Item>
         </List>
         {logout.error && <FormError message={apiErrorMessage(logout.error)} />}

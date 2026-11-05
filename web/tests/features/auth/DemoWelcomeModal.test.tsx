@@ -39,7 +39,7 @@ describe("DemoWelcomeModal", () => {
     renderWithProviders(<DemoWelcomeModal />);
 
     await screen.findByRole("dialog", { name: TITLE });
-    screen.getByText("This is a temporary account, so nothing here is kept.");
+    screen.getByText("This account and its data are temporary.");
   });
 
   it("does not show for a real user", () => {
