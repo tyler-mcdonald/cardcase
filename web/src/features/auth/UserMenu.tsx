@@ -1,21 +1,46 @@
-import { Button, Group, Text } from "@mantine/core";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, Menu, UnstyledButton } from "@mantine/core";
+import { IconLogout, IconSettings } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
+import { ThemeOptions } from "@/components/ThemeOptions";
 import { useLogout } from "./queries";
 import { useAuth } from "./use-auth";
+
+const ICON_SIZE = 16;
 
 export function UserMenu() {
   const { user } = useAuth();
   const logout = useLogout();
+  const email = user?.email ?? "";
 
   return (
-    <Group gap="md">
-      <Text size="sm" c="dimmed">
-        {user?.email}
-      </Text>
-      <ThemeToggle />
-      <Button variant="default" size="xs" onClick={() => logout.mutate()}>
-        Log out
-      </Button>
-    </Group>
+    <Menu position="bottom-end" width={220}>
+      <Menu.Target>
+        <UnstyledButton aria-label="Account menu">
+          <Avatar radius="xl" size={30} color="blue">
+            {email.charAt(0).toUpperCase()}
+          </Avatar>
+        </UnstyledButton>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Label>{email}</Menu.Label>
+        <Menu.Item
+          component={Link}
+          to="/settings"
+          leftSection={<IconSettings size={ICON_SIZE} aria-hidden />}
+        >
+          Settings
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Label>Theme</Menu.Label>
+        <ThemeOptions />
+        <Menu.Divider />
+        <Menu.Item
+          leftSection={<IconLogout size={ICON_SIZE} aria-hidden />}
+          onClick={() => logout.mutate()}
+        >
+          Sign out
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 }

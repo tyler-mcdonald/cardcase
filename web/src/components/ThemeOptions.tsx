@@ -1,8 +1,6 @@
 import {
-  ActionIcon,
   Group,
   Menu,
-  useComputedColorScheme,
   useMantineColorScheme,
   type MantineColorScheme,
 } from "@mantine/core";
@@ -16,21 +14,29 @@ import type { ReactNode } from "react";
 
 const ICON_SIZE = 16;
 
-const sunIcon = <IconSun size={ICON_SIZE} aria-hidden data-icon="sun" />;
-const moonIcon = <IconMoon size={ICON_SIZE} aria-hidden data-icon="moon" />;
-const desktopIcon = <IconDeviceDesktop size={ICON_SIZE} aria-hidden />;
-
 const OPTIONS: {
   value: MantineColorScheme;
   label: string;
   icon: ReactNode;
 }[] = [
-  { value: "light", label: "Light", icon: sunIcon },
-  { value: "dark", label: "Dark", icon: moonIcon },
-  { value: "auto", label: "System", icon: desktopIcon },
+  {
+    value: "light",
+    label: "Light",
+    icon: <IconSun size={ICON_SIZE} aria-hidden />,
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    icon: <IconMoon size={ICON_SIZE} aria-hidden />,
+  },
+  {
+    value: "auto",
+    label: "System",
+    icon: <IconDeviceDesktop size={ICON_SIZE} aria-hidden />,
+  },
 ];
 
-function ThemeOptions() {
+export function ThemeOptions() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
 
   return (
@@ -52,25 +58,5 @@ function ThemeOptions() {
         </Menu.RadioItem>
       ))}
     </Menu.RadioGroup>
-  );
-}
-
-export function ThemeToggle() {
-  const computedColorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: false,
-  });
-
-  return (
-    <Menu position="bottom-end">
-      <Menu.Target>
-        <ActionIcon variant="default" size={30} aria-label="Color scheme">
-          {computedColorScheme === "dark" ? moonIcon : sunIcon}
-        </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>Theme</Menu.Label>
-        <ThemeOptions />
-      </Menu.Dropdown>
-    </Menu>
   );
 }
