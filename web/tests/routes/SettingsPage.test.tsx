@@ -1,19 +1,15 @@
 import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useAuth } from "@/features/auth/use-auth";
 import { SettingsPage } from "@/routes/SettingsPage";
+import { mockSignedInUser, TEST_USER } from "../auth";
 import { renderWithProviders } from "../render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),
 }));
 
-const mockedUseAuth = vi.mocked(useAuth);
-
 beforeEach(() => {
-  mockedUseAuth.mockReturnValue({
-    user: { id: "1", email: "test@example.com" },
-  });
+  mockSignedInUser();
 });
 
 describe("SettingsPage", () => {
@@ -28,7 +24,7 @@ describe("SettingsPage", () => {
 
     screen.getByRole("heading", { name: "Account" });
     const email = screen.getByLabelText<HTMLInputElement>("Email");
-    expect(email.value).toBe("test@example.com");
+    expect(email.value).toBe(TEST_USER.email);
     expect(email.readOnly).toBe(true);
   });
 });
