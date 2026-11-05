@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DemoWelcomeModal } from "@/features/auth/DemoWelcomeModal";
 import { useLogout } from "@/features/auth/queries";
+import { ApiError } from "@/lib/api/errors";
 import type { User } from "@/features/auth/types";
 import { useAuth } from "@/features/auth/use-auth";
 import { renderWithProviders } from "../../render";
@@ -72,5 +73,18 @@ describe("DemoWelcomeModal", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
 
     expect(logout).toHaveBeenCalled();
+  });
+
+  it("shows an error when signing out fails", async () => {
+    mockedUseLogout.mockReturnValue({
+      mutate: logout,
+      isPending: false,
+      error: new ApiError("Request failed (500)", 500, {}),
+    } as unknown as ReturnType<typeof useLogout>);
+
+    renderWithProviders(<DemoWelcomeModal />);
+
+    await screen.findByRole("dialog", { name: TITLE });
+    screen.getByRole("alert");
   });
 });

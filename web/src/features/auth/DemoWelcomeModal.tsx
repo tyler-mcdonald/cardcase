@@ -1,5 +1,7 @@
 import { Button, Group, List, Modal, Stack, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
+import { FormError } from "@/components/FormError";
+import { apiErrorMessage } from "@/lib/api/errors";
 import { useLogout } from "./queries";
 import { useAuth } from "./use-auth";
 
@@ -46,6 +48,7 @@ function WelcomeModal({ userId }: { userId: string }) {
             To use cardcase for real, sign up with your email.
           </List.Item>
         </List>
+        {logout.error && <FormError message={apiErrorMessage(logout.error)} />}
         <Group justify="flex-end">
           <Button
             variant="default"
