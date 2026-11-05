@@ -16,11 +16,13 @@ def delete_expired_demo_users() -> None:
     User.objects.filter(is_demo=True, created_at__lt=cutoff).delete()
 
 
+def new_demo_email() -> str:
+    return f"demo-{uuid.uuid4()}@{DEMO_EMAIL_DOMAIN}"
+
+
 @transaction.atomic
 def start_demo() -> User:
-    user = create_verified_user(
-        f"demo-{uuid.uuid4()}@{DEMO_EMAIL_DOMAIN}", is_demo=True
-    )
+    user = create_verified_user(new_demo_email(), is_demo=True)
     seed_accounts(user)
     seed_transactions(user)
     return user
