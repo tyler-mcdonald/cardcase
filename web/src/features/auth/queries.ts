@@ -20,10 +20,13 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
-function applySession(
+function resetSession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
+  queryClient.removeQueries({
+    predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+  });
   queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
 }
 
@@ -55,7 +58,7 @@ export function useConfirmLoginCode() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: confirmLoginCode,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, response),
   });
 }
 
@@ -63,6 +66,6 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, response),
   });
 }
