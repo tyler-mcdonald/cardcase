@@ -118,7 +118,7 @@ export function AccountForm({
         <Group justify={secondaryAction ? "space-between" : "flex-end"}>
           {secondaryAction}
           <Group>
-            <Button variant="default" onClick={onCancel} disabled={isPending}>
+            <Button variant="subtle" onClick={onCancel} disabled={isPending}>
               Cancel
             </Button>
             <Button type="submit" loading={isPending}>

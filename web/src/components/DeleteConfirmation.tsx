@@ -21,14 +21,14 @@ export function DeleteConfirmation({
       {error && <FormError message={apiErrorMessage(error)} />}
       <Group justify="flex-end">
         <Button
-          variant="default"
+          variant="subtle"
           onClick={onCancel}
           disabled={isPending}
           autoFocus
         >
           Cancel
         </Button>
-        <Button color="red" onClick={onConfirm} loading={isPending}>
+        <Button variant="filled" color="red" onClick={onConfirm} loading={isPending}>
           Delete
         </Button>
       </Group>

@@ -4,7 +4,7 @@
 }
 
 .navLink[aria-current="page"] {
-  color: var(--mantine-color-cobalt-text);
-  border-bottom-color: var(--mantine-color-cobalt-text);
+  color: var(--cardcase-ink);
+  border-bottom-color: var(--cardcase-ink);
   font-weight: 600;
 }

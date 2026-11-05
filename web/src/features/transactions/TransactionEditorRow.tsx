@@ -253,7 +253,7 @@ export function TransactionEditorRow({
             <Group gap="xs" wrap="nowrap">
               <Button
                 size="xs"
-                variant="default"
+                variant="subtle"
                 onClick={cancel}
                 disabled={mutation.isPending}
               >

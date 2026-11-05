@@ -13,7 +13,7 @@ export function UserMenu() {
         {user?.email}
       </Text>
       <ThemeToggle />
-      <Button variant="default" size="xs" onClick={() => logout.mutate()}>
+      <Button size="xs" onClick={() => logout.mutate()}>
         Log out
       </Button>
     </Group>
