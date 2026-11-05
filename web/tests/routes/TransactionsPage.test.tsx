@@ -21,16 +21,9 @@ import { makeTransaction } from "@tests/features/transactions/factories";
 import { makePage } from "@tests/lib/api/factories";
 import { renderWithProviders } from "@tests/render";
 
-vi.mock("@/features/transactions/api", () => ({
-  listTransactions: vi.fn(),
-  createTransaction: vi.fn(),
-  updateTransaction: vi.fn(),
-  deleteTransaction: vi.fn(),
-}));
+vi.mock("@/features/transactions/api");
 
-vi.mock("@/features/accounts/api", () => ({
-  listAllAccounts: vi.fn(),
-}));
+vi.mock("@/features/accounts/api");
 
 const mockedListTransactions = vi.mocked(listTransactions);
 const mockedCreateTransaction = vi.mocked(createTransaction);

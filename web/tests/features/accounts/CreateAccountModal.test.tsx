@@ -6,9 +6,7 @@ import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "@tests/render";
 import { makeAccount } from "@tests/features/accounts/factories";
 
-vi.mock("@/features/accounts/api", () => ({
-  createAccount: vi.fn(),
-}));
+vi.mock("@/features/accounts/api");
 
 const mockedCreateAccount = vi.mocked(createAccount);
 

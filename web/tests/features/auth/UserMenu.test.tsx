@@ -5,12 +5,8 @@ import { useLogout } from "@/features/auth/queries";
 import { mockSignedInUser, TEST_USER } from "@tests/features/auth/fixtures";
 import { renderWithProviders } from "@tests/render";
 
-vi.mock("@/features/auth/use-auth", () => ({
-  useAuth: vi.fn(),
-}));
-vi.mock("@/features/auth/queries", () => ({
-  useLogout: vi.fn(),
-}));
+vi.mock("@/features/auth/use-auth");
+vi.mock("@/features/auth/queries");
 
 const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
@@ -27,6 +23,18 @@ describe("UserMenu", () => {
     renderWithProviders(<UserMenu />);
 
     screen.getByText(TEST_USER.email);
+  });
+
+  it("shows a demo badge instead of the email for a demo user", async () => {
+    mockSignedInUser({ id: "2", email: "demo-2@demo.invalid", is_demo: true });
+
+    renderWithProviders(<UserMenu />);
+
+    expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
+    fireEvent.focus(screen.getByText("Demo"));
+    expect((await screen.findByRole("tooltip")).textContent).toBe(
+      "Demo data is temporary",
+    );
   });
 
   it("logs out when the button is clicked", () => {
