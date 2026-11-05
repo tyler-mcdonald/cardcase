@@ -5,6 +5,6 @@
 
 .navLink[aria-current="page"] {
   color: var(--cardcase-ink);
-  border-bottom-color: var(--cardcase-ink);
+  border-bottom-color: currentColor;
   font-weight: 600;
 }

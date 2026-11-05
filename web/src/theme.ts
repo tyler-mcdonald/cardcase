@@ -89,12 +89,12 @@ export const theme = createTheme({
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
   variables: {},
   light: {
-    "--cardcase-ink": "#25292e",
-    "--cardcase-button-bg": "#f6f8fa",
-    "--cardcase-button-hover": "#eff2f5",
-    "--cardcase-button-border": "#d1d9e0",
+    "--cardcase-ink": ink[8],
+    "--cardcase-button-bg": ink[0],
+    "--cardcase-button-hover": ink[1],
+    "--cardcase-button-border": ink[3],
     "--cardcase-button-shadow": "0 1px 0 rgba(31, 35, 40, 0.04)",
-    "--cardcase-subtle-color": "#59636e",
+    "--cardcase-subtle-color": ink[6],
     "--cardcase-subtle-hover": "rgba(129, 139, 152, 0.1)",
   },
   dark: {
