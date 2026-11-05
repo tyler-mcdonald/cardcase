@@ -6,7 +6,7 @@ import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout, useStartDemo } from "@/features/auth/queries";
 import { getSession, logout, startDemo } from "@/features/auth/api";
-import { TestProviders } from "../../TestProviders";
+import { TestProviders } from "@tests/TestProviders";
 
 vi.mock("@/features/auth/api");
 

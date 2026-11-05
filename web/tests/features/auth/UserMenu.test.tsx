@@ -2,8 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { useLogout } from "@/features/auth/queries";
-import { mockSignedInUser, TEST_USER } from "./fixtures";
-import { renderWithProviders } from "../../render";
+import { mockSignedInUser, TEST_USER } from "@tests/features/auth/fixtures";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/use-auth");
 vi.mock("@/features/auth/queries");
