@@ -3,7 +3,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
-from devtools.seed_data import (
+from demo.seed_data import (
     get_or_create_seed_user,
     seed_accounts,
     seed_transactions,

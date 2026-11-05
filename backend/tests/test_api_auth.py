@@ -8,6 +8,7 @@ from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 from rest_framework.exceptions import NotAuthenticated
 
 API_PREFIX = "v1/"
+PUBLIC_ROUTE_NAMES = {"demo-start"}
 
 
 def _flatten_url_patterns(
@@ -65,6 +66,7 @@ def _api_requests() -> list[Any]:
     return [
         pytest.param(method, namespace, pattern, id=f"{method.upper()} /{route}")
         for route, namespace, pattern in API_ROUTES
+        if pattern.name not in PUBLIC_ROUTE_NAMES
         for method in _allowed_methods(pattern.callback)
     ]
 

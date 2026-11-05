@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "accounts",
+    "demo",
 ]
 
 REST_FRAMEWORK = {
@@ -63,6 +64,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_RATES": {
+        "demo_start": "5/hour",
+    },
 }
 
 MIDDLEWARE = [
@@ -188,6 +192,7 @@ ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 ACCOUNT_ADAPTER = "users.adapter.AccountAdapter"
+HEADLESS_ADAPTER = "users.adapter.HeadlessAdapter"
 ALLOW_SIGNUP = False
 
 HEADLESS_ONLY = True

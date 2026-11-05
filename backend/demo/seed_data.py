@@ -67,7 +67,7 @@ def _random_spend(rng: random.Random, name: str, today: date) -> tuple[str, str,
 
 
 def get_or_create_seed_user(email: str) -> User:
-    return User.objects.filter(email=email).first() or _create_verified_user(email)
+    return User.objects.filter(email=email).first() or create_verified_user(email)
 
 
 def seed_accounts(user: User) -> int:
@@ -101,7 +101,7 @@ def seed_transactions(user: User) -> int:
     return created_count
 
 
-def _create_verified_user(email: str) -> User:
-    user = User.objects.create_user(email)
+def create_verified_user(email: str, **extra_fields: Any) -> User:
+    user = User.objects.create_user(email, **extra_fields)
     EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
     return user

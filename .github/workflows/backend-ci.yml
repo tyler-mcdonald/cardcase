@@ -91,6 +91,7 @@ jobs:
       - run: uv sync --frozen --no-dev
       - run: uv run python manage.py collectstatic --noinput
       - run: uv run python manage.py migrate
+      - run: uv run python manage.py createcachetable
       - run: uv run gunicorn config.wsgi:application --daemon
       - name: Check /health/ returns 200
         run: |
