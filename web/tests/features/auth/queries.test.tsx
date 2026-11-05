@@ -1,7 +1,12 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
-import { useConfirmLoginCode, useLogout } from "@/features/auth/queries";
+import {
+  sessionQuery,
+  useConfirmLoginCode,
+  useLogout,
+} from "@/features/auth/queries";
+import { allAccountsQuery } from "@/features/accounts/queries";
 import { confirmLoginCode, logout } from "@/features/auth/api";
 import { makeAccount } from "../accounts/factories";
 import { TestProviders } from "../../TestProviders";
@@ -11,7 +16,8 @@ vi.mock("@/features/auth/api");
 const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
 const mockedLogout = vi.mocked(logout);
 
-const CACHED_ACCOUNTS_KEY = ["accounts", 1];
+const CACHED_ACCOUNTS_KEY = allAccountsQuery().queryKey;
+const SESSION_KEY = sessionQuery().queryKey;
 
 function renderWithQueryClient<T>(useHook: () => T) {
   return renderHook(
@@ -37,7 +43,7 @@ describe("auth queries", () => {
     expect(
       result.current.queryClient.getQueryData(CACHED_ACCOUNTS_KEY),
     ).toBeUndefined();
-    expect(result.current.queryClient.getQueryData(["session"])).toBeNull();
+    expect(result.current.queryClient.getQueryData(SESSION_KEY)).toBeNull();
   });
 
   it("clears cached accounts when login confirm succeeds", async () => {
@@ -58,6 +64,6 @@ describe("auth queries", () => {
     expect(
       result.current.queryClient.getQueryData(CACHED_ACCOUNTS_KEY),
     ).toBeUndefined();
-    expect(result.current.queryClient.getQueryData(["session"])).toEqual(user);
+    expect(result.current.queryClient.getQueryData(SESSION_KEY)).toEqual(user);
   });
 });
