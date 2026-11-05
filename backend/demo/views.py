@@ -26,6 +26,12 @@ class DemoStartThrottle(AnonRateThrottle):
         return request.META.get("HTTP_TRUE_CLIENT_IP") or super().get_ident(request)
 
 
+def _signed_in_response(user: Any) -> Response:
+    if isinstance(user, User) and user.is_demo:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_409_CONFLICT)
+
+
 class DemoStartView(APIView):
     authentication_classes = (CsrfEnforcedSessionAuthentication,)
     permission_classes = (AllowAny,)
@@ -33,9 +39,7 @@ class DemoStartView(APIView):
 
     def post(self, request: Request) -> Response:
         if request.user.is_authenticated:
-            if isinstance(request.user, User) and request.user.is_demo:
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_409_CONFLICT)
+            return _signed_in_response(request.user)
 
         delete_expired_demo_users()
         user = start_demo()
