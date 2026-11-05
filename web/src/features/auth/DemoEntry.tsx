@@ -7,7 +7,7 @@ import { useLogout, useStartDemo } from "./queries";
 import { useAuth } from "./use-auth";
 
 const THROTTLED_ERROR =
-  "Too many demos were started recently. Please try again later.";
+  "You have started too many demo sessions. Please try again later.";
 
 export function DemoEntry() {
   const { user } = useAuth();

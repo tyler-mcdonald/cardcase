@@ -103,7 +103,7 @@ describe("DemoEntry", () => {
     expect(mockedStartDemo).toHaveBeenCalledTimes(1);
   });
 
-  it("explains when too many demos were started", async () => {
+  it("explains when too many demo sessions were started", async () => {
     mockedGetSession.mockResolvedValueOnce(session(null));
     mockedStartDemo.mockRejectedValueOnce(
       new ApiError("Request failed (429)", 429, {}),
@@ -112,7 +112,9 @@ describe("DemoEntry", () => {
     renderDemoEntry();
 
     await waitFor(() =>
-      expect(screen.getByRole("alert").textContent).toMatch(/too many demos/i),
+      expect(screen.getByRole("alert").textContent).toMatch(
+        /too many demo sessions/i,
+      ),
     );
     screen.getByRole("link", { name: "Back to login" });
   });
