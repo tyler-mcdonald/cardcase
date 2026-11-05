@@ -1,3 +1,7 @@
+/**
+ * Verifies that signing out and in as a different user never shows the
+ * previous user's cached data.
+ */
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import App from "@/App";
