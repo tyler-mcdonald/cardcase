@@ -8,10 +8,7 @@ import { useLogout } from "@/features/auth/queries";
 import { getSession, logout } from "@/features/auth/api";
 import { TestProviders } from "../../TestProviders";
 
-vi.mock("@/features/auth/api", () => ({
-  getSession: vi.fn(),
-  logout: vi.fn(),
-}));
+vi.mock("@/features/auth/api");
 
 const mockedGetSession = vi.mocked(getSession);
 const mockedLogout = vi.mocked(logout);

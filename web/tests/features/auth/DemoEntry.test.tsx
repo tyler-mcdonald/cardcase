@@ -8,11 +8,7 @@ import type { User } from "@/features/auth/types";
 import { ApiError } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 
-vi.mock("@/features/auth/api", () => ({
-  getSession: vi.fn(),
-  logout: vi.fn(),
-  startDemo: vi.fn(),
-}));
+vi.mock("@/features/auth/api");
 
 const mockedGetSession = vi.mocked(getSession);
 const mockedLogout = vi.mocked(logout);

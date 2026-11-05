@@ -13,12 +13,7 @@ import { makeAccount } from "../features/accounts/factories";
 import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
 
-vi.mock("@/features/accounts/api", () => ({
-  listAccounts: vi.fn(),
-  createAccount: vi.fn(),
-  updateAccount: vi.fn(),
-  deleteAccount: vi.fn(),
-}));
+vi.mock("@/features/accounts/api");
 
 const mockedListAccounts = vi.mocked(listAccounts);
 const mockedCreateAccount = vi.mocked(createAccount);

@@ -5,12 +5,8 @@ import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
 import { renderWithProviders } from "../../render";
 
-vi.mock("@/features/auth/use-auth", () => ({
-  useAuth: vi.fn(),
-}));
-vi.mock("@/features/auth/queries", () => ({
-  useLogout: vi.fn(),
-}));
+vi.mock("@/features/auth/use-auth");
+vi.mock("@/features/auth/queries");
 
 const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
