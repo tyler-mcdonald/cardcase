@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { useAuth } from "@/features/auth/use-auth";
@@ -74,6 +74,12 @@ describe("UserMenu", () => {
     ).toBe("T");
   });
 
+  it("shows the email next to the avatar in the header", () => {
+    renderWithProviders(<UserMenu />);
+
+    screen.getByText("test@example.com");
+  });
+
   it("lists the email, Settings, the theme options and Sign out in order", () => {
     renderWithProviders(<UserMenu />);
     openMenu();
@@ -99,9 +105,10 @@ describe("UserMenu", () => {
     renderWithProviders(<UserMenu />);
     openMenu();
 
-    expect(screen.getByText("test@example.com").style.overflowWrap).toBe(
-      "anywhere",
-    );
+    expect(
+      within(screen.getByRole("menu")).getByText("test@example.com").style
+        .overflowWrap,
+    ).toBe("anywhere");
   });
 
   it("links Settings to the settings page", () => {

@@ -51,10 +51,10 @@ describe("AppLayout", () => {
     screen.getByText("Other content");
   });
 
-  it("shows only the avatar menu in the header's account area", () => {
+  it("shows the email and avatar menu in the header's account area", () => {
     renderLayout("/other");
 
-    expect(screen.queryByText("test@example.com")).toBeNull();
+    screen.getByText("test@example.com");
     expect(screen.queryByRole("button", { name: "Color scheme" })).toBeNull();
     expect(screen.queryByRole("button", { name: /log out/i })).toBeNull();
   });
