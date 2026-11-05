@@ -43,7 +43,7 @@ function WelcomeModal({ userId }: { userId: string }) {
             to add, edit, or delete whatever you want.
           </List.Item>
           <List.Item>
-            This account and everything in it is deleted after 24 hours.
+            This is a temporary account, so nothing here is kept.
           </List.Item>
           <List.Item>Sign up to use cardcase with your own data.</List.Item>
         </List>

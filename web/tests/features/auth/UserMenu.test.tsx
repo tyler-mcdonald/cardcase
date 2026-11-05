@@ -42,7 +42,7 @@ describe("UserMenu", () => {
     expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
     fireEvent.focus(screen.getByText("Demo"));
     expect((await screen.findByRole("tooltip")).textContent).toBe(
-      "Demo data is deleted after 24 hours",
+      "Demo data is temporary",
     );
   });
 

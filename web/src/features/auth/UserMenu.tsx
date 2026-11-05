@@ -11,7 +11,7 @@ export function UserMenu() {
     <Group gap="md">
       {user?.is_demo ? (
         <Tooltip
-          label="Demo data is deleted after 24 hours"
+          label="Demo data is temporary"
           events={{ hover: true, focus: true, touch: true }}
         >
           <Badge variant="light" radius="xl" tabIndex={0}>
