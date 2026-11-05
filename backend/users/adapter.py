@@ -15,6 +15,10 @@ LOGIN_CODE_EMAIL_TEMPLATE = "account/email/login_code"
 SIGNUP_WELCOME_EMAIL_TEMPLATE = "account/email/email_confirmation_signup"
 
 
+def _is_demo_email_address(email: str) -> bool:
+    return email.lower().endswith(f"@{DEMO_EMAIL_DOMAIN}")
+
+
 class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def is_open_for_signup(self, request: HttpRequest) -> bool:
         return bool(settings.ALLOW_SIGNUP)
@@ -22,7 +26,7 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
     def send_mail(
         self, template_prefix: str, email: str, context: dict[str, Any]
     ) -> None:
-        if email.lower().endswith(f"@{DEMO_EMAIL_DOMAIN}"):
+        if _is_demo_email_address(email):
             return
         if template_prefix == LOGIN_CODE_EMAIL_TEMPLATE:
             template_prefix, context = self._login_code_or_welcome_email(email, context)
