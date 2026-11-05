@@ -32,6 +32,11 @@ def _signed_in_response(user: Any) -> Response:
     return Response(status=status.HTTP_409_CONFLICT)
 
 
+def _log_in_demo_user(request: Request, user: User) -> None:
+    login(request._request, user)
+    request.session.set_expiry(int(DEMO_LIFETIME.total_seconds()))
+
+
 class DemoStartView(APIView):
     authentication_classes = (CsrfEnforcedSessionAuthentication,)
     permission_classes = (AllowAny,)
@@ -43,6 +48,5 @@ class DemoStartView(APIView):
 
         delete_expired_demo_users()
         user = start_demo()
-        login(request._request, user)
-        request.session.set_expiry(int(DEMO_LIFETIME.total_seconds()))
+        _log_in_demo_user(request, user)
         return Response(status=status.HTTP_204_NO_CONTENT)
