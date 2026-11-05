@@ -5,10 +5,12 @@ import {
   createTheme,
   Pagination,
   SegmentedControl,
+  Select,
   virtualColor,
   type CSSVariablesResolver,
   type MantineColorsTuple,
 } from "@mantine/core";
+import classes from "./theme.module.css";
 
 const ink: MantineColorsTuple = [
   "#f6f8fa",
@@ -55,11 +57,18 @@ export const theme = createTheme({
       defaultProps: { radius: BUTTON_RADIUS },
     }),
     Pagination: Pagination.extend({
-      vars: () => ({
-        root: {
-          "--pagination-active-color": "var(--mantine-color-ink-contrast)",
-        },
-      }),
+      vars: (_theme, props) =>
+        props.color
+          ? { root: {} }
+          : {
+              root: {
+                "--pagination-active-color":
+                  "var(--mantine-primary-color-contrast)",
+              },
+            },
+    }),
+    Select: Select.extend({
+      classNames: { option: classes.comboboxOption },
     }),
     SegmentedControl: SegmentedControl.extend({
       vars: (_theme, props) =>
@@ -85,7 +94,9 @@ export const theme = createTheme({
 });
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: {},
+  variables: {
+    "--mantine-primary-color-contrast": "var(--mantine-color-ink-contrast)",
+  },
   light: {
     "--mantine-color-default": ink[0],
     "--mantine-color-default-hover": ink[1],
