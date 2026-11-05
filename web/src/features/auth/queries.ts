@@ -3,6 +3,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  type Query,
   type QueryClient,
 } from "@tanstack/react-query";
 import type { ApiResponse } from "@/lib/api/types";
@@ -11,6 +12,7 @@ import {
   requestLoginCode,
   confirmLoginCode,
   logout,
+  startDemo,
   type SessionData,
 } from "./api";
 import type { User } from "./types";
@@ -26,9 +28,11 @@ function resetSession(
   response: ApiResponse<SessionData>,
 ) {
   const sessionHash = hashKey(SESSION_QUERY_KEY);
-  queryClient.removeQueries({
-    predicate: (query) => query.queryHash !== sessionHash,
-  });
+  const filters = {
+    predicate: (query: Query) => query.queryHash !== sessionHash,
+  };
+  void queryClient.cancelQueries(filters);
+  queryClient.removeQueries(filters);
   queryClient.getMutationCache().clear();
   queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
 }
@@ -69,6 +73,19 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
+    onSuccess: (response) => resetSession(queryClient, response),
+  });
+}
+
+async function startDemoSession() {
+  await startDemo();
+  return getSession();
+}
+
+export function useStartDemo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: startDemoSession,
     onSuccess: (response) => resetSession(queryClient, response),
   });
 }

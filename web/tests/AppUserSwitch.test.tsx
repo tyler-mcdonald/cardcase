@@ -24,8 +24,8 @@ const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
 const mockedLogout = vi.mocked(logout);
 const mockedListAccounts = vi.mocked(listAccounts);
 
-const USER_A = { id: "1", email: "a@example.com" };
-const USER_B = { id: "2", email: "b@example.com" };
+const USER_A = { id: "1", email: "a@example.com", is_demo: false };
+const USER_B = { id: "2", email: "b@example.com", is_demo: false };
 
 async function signInAs(email: string) {
   fireEvent.change(await screen.findByLabelText("Email"), {

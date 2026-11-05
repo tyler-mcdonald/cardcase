@@ -1,4 +1,4 @@
-import { Button, Group, Text } from "@mantine/core";
+import { Badge, Button, Group, Text, Tooltip } from "@mantine/core";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLogout } from "./queries";
 import { useAuth } from "./use-auth";
@@ -9,13 +9,32 @@ export function UserMenu() {
 
   return (
     <Group gap="md">
-      <Text size="sm" c="dimmed">
-        {user?.email}
-      </Text>
+      {user?.is_demo ? <DemoBadge /> : <UserEmail email={user?.email} />}
       <ThemeToggle />
       <Button variant="default" size="xs" onClick={() => logout.mutate()}>
         Log out
       </Button>
     </Group>
+  );
+}
+
+function DemoBadge() {
+  return (
+    <Tooltip
+      label="Demo data is temporary"
+      events={{ hover: true, focus: true, touch: true }}
+    >
+      <Badge variant="light" radius="xl" tabIndex={0}>
+        Demo
+      </Badge>
+    </Tooltip>
+  );
+}
+
+function UserEmail({ email }: { email?: string }) {
+  return (
+    <Text size="sm" c="dimmed">
+      {email}
+    </Text>
   );
 }

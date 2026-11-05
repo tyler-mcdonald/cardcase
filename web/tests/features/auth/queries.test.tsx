@@ -65,7 +65,7 @@ describe("auth queries", () => {
   });
 
   it("clears cached accounts when login confirm succeeds", async () => {
-    const user = { id: "2", email: "b@example.com" };
+    const user = { id: "2", email: "b@example.com", is_demo: false };
     mockedConfirmLoginCode.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: true },

@@ -1,5 +1,15 @@
 import { useState, type FormEvent } from "react";
-import { Button, PinInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import {
+  Anchor,
+  Button,
+  Divider,
+  PinInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { Link } from "react-router-dom";
 import { FormError } from "@/components/FormError";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { useConfirmLoginCode, useRequestLoginCode } from "./queries";
@@ -84,6 +94,10 @@ function EmailStep({
         <Button type="submit" size="md" fz="sm" loading={submitting} fullWidth>
           Continue with email
         </Button>
+        <Divider label="or" labelPosition="center" />
+        <Anchor component={Link} to="/demo" size="sm" ta="center">
+          Try the demo
+        </Anchor>
       </Stack>
     </form>
   );
