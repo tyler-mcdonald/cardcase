@@ -247,6 +247,27 @@ describe("AuthProvider", () => {
       await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     });
 
+    it("goes home instead of reloading when another tab changes the user on /demo", async () => {
+      const reload = vi.fn();
+      const replace = vi.fn();
+      vi.stubGlobal("location", {
+        ...window.location,
+        pathname: "/demo",
+        reload,
+        replace,
+      });
+      mockedGetSession.mockResolvedValueOnce({
+        status: 200,
+        meta: { is_authenticated: false },
+      });
+
+      renderHook(() => useAuth(), { wrapper: Wrapper });
+      openOtherTab().postMessage(USER_CHANGED_MESSAGE);
+
+      await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+      expect(reload).not.toHaveBeenCalled();
+    });
+
     it("tells other tabs, without reloading itself, when the session user changes", async () => {
       const reload = stubReload();
       mockedGetSession.mockResolvedValueOnce({

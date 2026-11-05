@@ -8,7 +8,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const session = useQuery(sessionQuery());
   const value = useMemo(() => ({ user: session.data }), [session.data]);
 
-  useEffect(() => onUserChangeElsewhere(() => window.location.reload()), []);
+  useEffect(
+    () =>
+      onUserChangeElsewhere(() => {
+        if (window.location.pathname === "/demo") window.location.replace("/");
+        else window.location.reload();
+      }),
+    [],
+  );
 
   return <AuthContext value={value}>{children}</AuthContext>;
 }
