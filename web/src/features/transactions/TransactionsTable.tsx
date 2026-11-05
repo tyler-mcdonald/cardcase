@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Skeleton, Table, Text } from "@mantine/core";
-import { Panel } from "@/components/Panel";
+import { SectionPaper } from "@/components/SectionPaper";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
@@ -14,7 +14,7 @@ const SKELETON_ROW_COUNT = 8;
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
   return (
-    <Panel padded={false}>
+    <SectionPaper padded={false}>
       <Table highlightOnHover verticalSpacing="xs" className={classes.table}>
         <Table.Thead>
           <Table.Tr>
@@ -28,7 +28,7 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
         </Table.Thead>
         <Table.Tbody>{children}</Table.Tbody>
       </Table>
-    </Panel>
+    </SectionPaper>
   );
 }
 

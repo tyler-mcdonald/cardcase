@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Paper } from "@mantine/core";
 
-export function Panel({
+export function SectionPaper({
   children,
   padded = true,
 }: {
