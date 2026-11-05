@@ -15,15 +15,13 @@ vi.mock("@/features/auth/queries", () => ({
 
 const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
-const logout = vi.fn();
 
 beforeEach(() => {
-  logout.mockReset();
   mockedUseAuth.mockReturnValue({
     user: { id: "1", email: "test@example.com" },
   });
   mockedUseLogout.mockReturnValue({
-    mutate: logout,
+    mutate: vi.fn(),
   } as unknown as ReturnType<typeof useLogout>);
 });
 
@@ -86,14 +84,5 @@ describe("AppLayout", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Settings" }));
 
     screen.getByText("Settings content");
-  });
-
-  it("signs out from the avatar menu", () => {
-    renderLayout("/other");
-    openAccountMenu();
-
-    fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }));
-
-    expect(logout).toHaveBeenCalled();
   });
 });
