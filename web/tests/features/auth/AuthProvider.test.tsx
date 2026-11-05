@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout, useStartDemo } from "@/features/auth/queries";
 import { getSession, logout, startDemo } from "@/features/auth/api";
+import {
+  SESSION_CHANNEL_NAME,
+  USER_CHANGED_MESSAGE,
+} from "@/features/auth/session-channel";
 import { TestProviders } from "../../TestProviders";
 
 vi.mock("@/features/auth/api");
@@ -208,5 +212,89 @@ describe("AuthProvider", () => {
 
     await waitFor(() => expect(result.current.auth.user).toBeNull());
     expect(signal?.aborted).toBe(true);
+  });
+
+  describe("across tabs", () => {
+    const otherTabs: BroadcastChannel[] = [];
+
+    function openOtherTab() {
+      const channel = new BroadcastChannel(SESSION_CHANNEL_NAME);
+      otherTabs.push(channel);
+      return channel;
+    }
+
+    afterEach(() => {
+      otherTabs.splice(0).forEach((channel) => channel.close());
+      vi.unstubAllGlobals();
+    });
+
+    function stubReload() {
+      const reload = vi.fn();
+      vi.stubGlobal("location", { ...window.location, reload });
+      return reload;
+    }
+
+    it("reloads when another tab changes the session user", async () => {
+      const reload = stubReload();
+      mockedGetSession.mockResolvedValueOnce({
+        status: 200,
+        meta: { is_authenticated: false },
+      });
+
+      renderHook(() => useAuth(), { wrapper: Wrapper });
+      openOtherTab().postMessage(USER_CHANGED_MESSAGE);
+
+      await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    });
+
+    it("goes home instead of reloading when another tab changes the user on /demo", async () => {
+      const reload = vi.fn();
+      const replace = vi.fn();
+      vi.stubGlobal("location", {
+        ...window.location,
+        pathname: "/demo",
+        reload,
+        replace,
+      });
+      mockedGetSession.mockResolvedValueOnce({
+        status: 200,
+        meta: { is_authenticated: false },
+      });
+
+      renderHook(() => useAuth(), { wrapper: Wrapper });
+      openOtherTab().postMessage(USER_CHANGED_MESSAGE);
+
+      await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+      expect(reload).not.toHaveBeenCalled();
+    });
+
+    it("tells other tabs, without reloading itself, when the session user changes", async () => {
+      const reload = stubReload();
+      mockedGetSession.mockResolvedValueOnce({
+        status: 200,
+        meta: { is_authenticated: true },
+        data: { user: { id: "1", email: "test@example.com", is_demo: false } },
+      });
+      mockedLogout.mockResolvedValueOnce({
+        status: 200,
+        meta: { is_authenticated: false },
+      });
+      const received = vi.fn();
+      openOtherTab().addEventListener("message", received);
+
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), logout: useLogout() }),
+        { wrapper: Wrapper },
+      );
+
+      await waitFor(() =>
+        expect(result.current.auth.user?.email).toBe("test@example.com"),
+      );
+
+      result.current.logout.mutate();
+
+      await waitFor(() => expect(received).toHaveBeenCalledTimes(1));
+      expect(reload).not.toHaveBeenCalled();
+    });
   });
 });
