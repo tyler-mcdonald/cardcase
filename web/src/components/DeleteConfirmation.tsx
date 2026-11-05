@@ -28,7 +28,12 @@ export function DeleteConfirmation({
         >
           Cancel
         </Button>
-        <Button variant="filled" color="red" onClick={onConfirm} loading={isPending}>
+        <Button
+          variant="filled"
+          color="red"
+          onClick={onConfirm}
+          loading={isPending}
+        >
           Delete
         </Button>
       </Group>

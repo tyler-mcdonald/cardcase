@@ -1,8 +1,11 @@
 import {
   ActionIcon,
   Button,
+  colorsTuple,
   createTheme,
+  Pagination,
   SegmentedControl,
+  virtualColor,
   type CSSVariablesResolver,
   type MantineColorsTuple,
 } from "@mantine/core";
@@ -20,37 +23,29 @@ const ink: MantineColorsTuple = [
   "#1f2328",
 ];
 
+const inkDark = colorsTuple([...ink].reverse());
+
 const BUTTON_RADIUS = 6;
 
 export const theme = createTheme({
-  colors: { ink },
+  colors: {
+    inkLight: ink,
+    inkDark,
+    ink: virtualColor({ name: "ink", light: "inkLight", dark: "inkDark" }),
+  },
   primaryColor: "ink",
-  primaryShade: { light: 8, dark: 1 },
-  autoContrast: true,
   components: {
     Button: Button.extend({
       defaultProps: { variant: "default", radius: BUTTON_RADIUS },
-      vars: (_theme, props) => {
-        if (props.variant === "default") {
-          return {
-            root: {
-              "--button-bg": "var(--cardcase-button-bg)",
-              "--button-hover": "var(--cardcase-button-hover)",
-              "--button-color": "var(--cardcase-ink)",
-              "--button-bd": "1px solid var(--cardcase-button-border)",
-            },
-          };
-        }
-        if (props.variant === "subtle" && !props.color) {
-          return {
-            root: {
-              "--button-color": "var(--cardcase-subtle-color)",
-              "--button-hover": "var(--cardcase-subtle-hover)",
-            },
-          };
-        }
-        return { root: {} };
-      },
+      vars: (_theme, props) =>
+        props.variant === "subtle" && !props.color
+          ? {
+              root: {
+                "--button-color": "var(--cardcase-subtle-color)",
+                "--button-hover": "var(--cardcase-subtle-hover)",
+              },
+            }
+          : { root: {} },
       styles: (_theme, props) =>
         props.variant === "default"
           ? { root: { boxShadow: "var(--cardcase-button-shadow)" } }
@@ -58,17 +53,13 @@ export const theme = createTheme({
     }),
     ActionIcon: ActionIcon.extend({
       defaultProps: { radius: BUTTON_RADIUS },
-      vars: (_theme, props) =>
-        props.variant === "default"
-          ? {
-              root: {
-                "--ai-bg": "var(--cardcase-button-bg)",
-                "--ai-hover": "var(--cardcase-button-hover)",
-                "--ai-color": "var(--cardcase-ink)",
-                "--ai-bd": "1px solid var(--cardcase-button-border)",
-              },
-            }
-          : { root: {} },
+    }),
+    Pagination: Pagination.extend({
+      vars: () => ({
+        root: {
+          "--pagination-active-color": "var(--mantine-color-ink-contrast)",
+        },
+      }),
     }),
     SegmentedControl: SegmentedControl.extend({
       vars: (_theme, props) =>
@@ -76,10 +67,17 @@ export const theme = createTheme({
           ? { root: {} }
           : {
               root: {
-                "--sc-color": "var(--cardcase-button-bg)",
-                "--sc-label-color": "var(--cardcase-ink)",
-                "--sc-shadow":
-                  "inset 0 0 0 1px var(--cardcase-button-border), var(--cardcase-button-shadow)",
+                "--sc-color": "var(--mantine-color-default)",
+                "--sc-label-color": "var(--mantine-color-default-color)",
+              },
+            },
+      styles: (_theme, props) =>
+        props.color
+          ? {}
+          : {
+              indicator: {
+                boxShadow:
+                  "inset 0 0 0 1px var(--mantine-color-default-border), var(--cardcase-button-shadow)",
               },
             },
     }),
@@ -89,19 +87,21 @@ export const theme = createTheme({
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
   variables: {},
   light: {
-    "--cardcase-ink": ink[8],
-    "--cardcase-button-bg": ink[0],
-    "--cardcase-button-hover": ink[1],
-    "--cardcase-button-border": ink[3],
+    "--mantine-color-default": ink[0],
+    "--mantine-color-default-hover": ink[1],
+    "--mantine-color-default-color": ink[8],
+    "--mantine-color-default-border": ink[3],
     "--cardcase-button-shadow": "0 1px 0 rgba(31, 35, 40, 0.04)",
     "--cardcase-subtle-color": ink[6],
     "--cardcase-subtle-hover": "rgba(129, 139, 152, 0.1)",
   },
   dark: {
-    "--cardcase-ink": "#f0f2f4",
-    "--cardcase-button-bg": "#2f3236",
-    "--cardcase-button-hover": "#383b40",
-    "--cardcase-button-border": "#45494f",
+    "--mantine-color-default": "#2f3236",
+    "--mantine-color-default-hover": "#383b40",
+    "--mantine-color-default-color": "#f0f2f4",
+    "--mantine-color-default-border": "#45494f",
+    "--mantine-color-ink-light": "var(--mantine-color-default)",
+    "--mantine-color-ink-light-hover": "var(--mantine-color-default-hover)",
     "--cardcase-button-shadow": "0 1px 0 rgba(0, 0, 0, 0.2)",
     "--cardcase-subtle-color": "#9aa0a6",
     "--cardcase-subtle-hover": "rgba(101, 108, 118, 0.2)",
