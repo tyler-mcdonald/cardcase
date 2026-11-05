@@ -25,7 +25,19 @@ function applySession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
-  queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
+  const user = sessionUser(response);
+  const previous = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
+  if (previous?.id !== user?.id) {
+    // Every other query holds data for the previous user, so drop it before
+    // the new session is exposed rather than show it until a refetch lands.
+    const otherQueries = {
+      predicate: (query: { queryKey: readonly unknown[] }) =>
+        query.queryKey[0] !== SESSION_QUERY_KEY[0],
+    };
+    void queryClient.cancelQueries(otherQueries);
+    queryClient.removeQueries(otherQueries);
+  }
+  queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
 
 async function loadSession(): Promise<User | null> {

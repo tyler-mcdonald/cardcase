@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
@@ -102,5 +103,38 @@ describe("AuthProvider", () => {
     result.current.logout.mutate();
 
     await waitFor(() => expect(result.current.auth.user).toBeNull());
+  });
+
+  it("drops the previous user's cached data when the session user changes", async () => {
+    mockedGetSession.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: true },
+      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
+    });
+    mockedLogout.mockResolvedValueOnce({
+      status: 200,
+      meta: { is_authenticated: false },
+    });
+
+    const { result } = renderHook(
+      () => ({
+        auth: useAuth(),
+        logout: useLogout(),
+        queryClient: useQueryClient(),
+      }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() =>
+      expect(result.current.auth.user?.email).toBe("test@example.com"),
+    );
+    result.current.queryClient.setQueryData(["accounts", 1], ["card"]);
+
+    result.current.logout.mutate();
+
+    await waitFor(() => expect(result.current.auth.user).toBeNull());
+    expect(
+      result.current.queryClient.getQueryData(["accounts", 1]),
+    ).toBeUndefined();
   });
 });
