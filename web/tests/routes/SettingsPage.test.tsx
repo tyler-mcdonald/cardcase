@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { SettingsPage } from "@/routes/SettingsPage";
-import { mockSignedInUser, TEST_USER } from "../features/auth/fixtures";
-import { renderWithProviders } from "../render";
+import { mockSignedInUser, TEST_USER } from "@tests/features/auth/fixtures";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),

@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { renderWithProviders } from "../../render";
-import { makeAccount } from "./factories";
+import { renderWithProviders } from "@tests/render";
+import { makeAccount } from "@tests/features/accounts/factories";
 
 vi.mock("@/features/accounts/api", () => ({
   createAccount: vi.fn(),

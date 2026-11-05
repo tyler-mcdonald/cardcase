@@ -7,7 +7,7 @@ import {
   listTransactions,
   updateTransaction,
 } from "@/features/transactions/api";
-import { makeTransaction } from "./factories";
+import { makeTransaction } from "@tests/features/transactions/factories";
 
 vi.mock("@/lib/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api/client")>()),
