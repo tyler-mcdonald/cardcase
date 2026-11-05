@@ -7,6 +7,9 @@ import { renderWithProviders } from "./render";
 vi.mock("@/features/auth/UserMenu", () => ({
   UserMenu: () => <div>User menu</div>,
 }));
+vi.mock("@/features/auth/DemoWelcomeModal", () => ({
+  DemoWelcomeModal: () => null,
+}));
 
 function renderLayout(route: string) {
   return renderWithProviders(
