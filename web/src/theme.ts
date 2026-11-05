@@ -115,7 +115,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     "--mantine-color-ink-light-hover": "var(--mantine-color-default-hover)",
     "--mantine-color-ink-light-color": "var(--mantine-color-default-color)",
     "--cardcase-button-shadow": "0 1px 0 rgba(0, 0, 0, 0.2)",
-    "--cardcase-subtle-color": "#9aa0a6",
+    "--cardcase-subtle-color": "#a8aeb4",
     "--cardcase-subtle-hover": "rgba(101, 108, 118, 0.2)",
   },
 });
