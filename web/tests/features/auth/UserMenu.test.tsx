@@ -74,7 +74,7 @@ describe("UserMenu", () => {
   it("shows the email next to the avatar in the header", () => {
     renderWithProviders(<UserMenu />);
 
-    screen.getByText("test@example.com");
+    screen.getByText(TEST_USER.email);
   });
 
   it("lists the email, Settings, the theme options and Sign out in order", () => {
