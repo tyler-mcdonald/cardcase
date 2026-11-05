@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import App from "@/App";
 import { useAuth } from "@/features/auth/use-auth";
-import { mockSignedInUser } from "./auth";
+import { mockSignedInUser } from "./features/auth/fixtures";
 import { renderWithProviders } from "./render";
 
 vi.mock("@/features/auth/use-auth", () => ({
