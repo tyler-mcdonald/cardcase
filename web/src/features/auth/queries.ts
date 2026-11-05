@@ -2,6 +2,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  type Query,
   type QueryClient,
 } from "@tanstack/react-query";
 import type { ApiResponse } from "@/lib/api/types";
@@ -21,21 +22,27 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
+function isUserDataQuery(query: Query) {
+  return query.queryKey[0] !== SESSION_QUERY_KEY[0];
+}
+
+// Every query other than the session holds data for the signed-in user.
+function dropUserData(queryClient: QueryClient) {
+  const filters = { predicate: isUserDataQuery };
+  void queryClient.cancelQueries(filters);
+  queryClient.removeQueries(filters);
+}
+
 function applySession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
   const user = sessionUser(response);
-  const previous = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
-  if (previous?.id !== user?.id) {
-    // Every other query holds data for the previous user, so drop it before
-    // the new session is exposed rather than show it until a refetch lands.
-    const otherQueries = {
-      predicate: (query: { queryKey: readonly unknown[] }) =>
-        query.queryKey[0] !== SESSION_QUERY_KEY[0],
-    };
-    void queryClient.cancelQueries(otherQueries);
-    queryClient.removeQueries(otherQueries);
+  const previousUser = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
+  if (user?.id !== previousUser?.id) {
+    // Drop the previous user's data before exposing the new session, rather
+    // than show it until a refetch lands.
+    dropUserData(queryClient);
   }
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
