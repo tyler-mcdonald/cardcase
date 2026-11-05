@@ -24,10 +24,10 @@ export function DemoEntry() {
     return <SignOutConfirmation />;
   }
 
-  return <StartDemo />;
+  return <DemoLauncher />;
 }
 
-function StartDemo() {
+function DemoLauncher() {
   const { mutate, error, isSuccess } = useStartDemo();
   const started = useRef(false);
 
