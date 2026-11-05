@@ -1,5 +1,4 @@
-import { Stack, TextInput, Title } from "@mantine/core";
-import { Panel } from "@/components/Panel";
+import { Paper, Stack, TextInput, Title } from "@mantine/core";
 import { useAuth } from "@/features/auth/use-auth";
 
 export function SettingsPage() {
@@ -11,14 +10,14 @@ export function SettingsPage() {
         Settings
       </Title>
 
-      <Panel>
+      <Paper withBorder p="lg" radius="md" component="section">
         <Stack gap="md">
           <Title order={2} size="h4">
             Account
           </Title>
           <TextInput label="Email" value={user?.email ?? ""} readOnly />
         </Stack>
-      </Panel>
+      </Paper>
     </Stack>
   );
 }

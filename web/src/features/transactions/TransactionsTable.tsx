@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Skeleton, Table, Text } from "@mantine/core";
-import { Panel } from "@/components/Panel";
 import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
@@ -14,21 +13,24 @@ const SKELETON_ROW_COUNT = 8;
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
   return (
-    <Panel padded={false}>
-      <Table highlightOnHover verticalSpacing="xs" className={classes.table}>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th className={classes.date}>Date</Table.Th>
-            <Table.Th className={classes.account}>Account</Table.Th>
-            <Table.Th className={classes.accountType}>Type</Table.Th>
-            <Table.Th>Description</Table.Th>
-            <Table.Th className={classes.amount}>Outflow</Table.Th>
-            <Table.Th className={classes.amount}>Inflow</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{children}</Table.Tbody>
-      </Table>
-    </Panel>
+    <Table
+      highlightOnHover
+      withTableBorder
+      verticalSpacing="xs"
+      className={classes.table}
+    >
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th className={classes.date}>Date</Table.Th>
+          <Table.Th className={classes.account}>Account</Table.Th>
+          <Table.Th className={classes.accountType}>Type</Table.Th>
+          <Table.Th>Description</Table.Th>
+          <Table.Th className={classes.amount}>Outflow</Table.Th>
+          <Table.Th className={classes.amount}>Inflow</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{children}</Table.Tbody>
+    </Table>
   );
 }
 
