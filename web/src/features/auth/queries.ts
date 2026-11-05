@@ -1,4 +1,5 @@
 import {
+  hashKey,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -23,27 +24,20 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
-function isUserDataQuery(query: Query) {
-  return query.queryKey[0] !== SESSION_QUERY_KEY[0];
-}
-
-// Every query other than the session holds data for the signed-in user.
-function dropUserData(queryClient: QueryClient) {
-  const filters = { predicate: isUserDataQuery };
-  void queryClient.cancelQueries(filters);
-  queryClient.removeQueries(filters);
-}
-
-function applySession(
+function resetSession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
   const user = sessionUser(response);
   const previousUser = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
+  const sessionHash = hashKey(SESSION_QUERY_KEY);
+  const filters = {
+    predicate: (query: Query) => query.queryHash !== sessionHash,
+  };
+  void queryClient.cancelQueries(filters);
+  queryClient.removeQueries(filters);
+  queryClient.getMutationCache().clear();
   if (user?.id !== previousUser?.id) {
-    // Drop the previous user's data before exposing the new session, rather
-    // than show it until a refetch lands.
-    dropUserData(queryClient);
     announceUserChange();
   }
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
@@ -77,7 +71,7 @@ export function useConfirmLoginCode() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: confirmLoginCode,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, response),
   });
 }
 
@@ -85,7 +79,7 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, response),
   });
 }
 
@@ -98,6 +92,6 @@ export function useStartDemo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: startDemoSession,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, response),
   });
 }
