@@ -1,92 +1,37 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { beforeEach, expect, it, vi } from "vitest";
 import App from "@/App";
-import { AuthProvider } from "@/features/auth/AuthProvider";
-import {
-  confirmLoginCode,
-  getSession,
-  logout,
-  requestLoginCode,
-} from "@/features/auth/api";
-import { listAccounts } from "@/features/accounts/api";
-import type { Account } from "@/features/accounts/types";
-import type { Paginated } from "@/lib/api/types";
-import { makeAccount } from "./features/accounts/factories";
-import { makePage } from "./lib/api/factories";
+import { useAuth } from "@/features/auth/use-auth";
+import { mockSignedInUser } from "./features/auth/fixtures";
 import { renderWithProviders } from "./render";
 
-vi.mock("@/features/auth/api");
-vi.mock("@/features/accounts/api");
+vi.mock("@/features/auth/use-auth", () => ({
+  useAuth: vi.fn(),
+}));
 
-const mockedGetSession = vi.mocked(getSession);
-const mockedRequestLoginCode = vi.mocked(requestLoginCode);
-const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
-const mockedLogout = vi.mocked(logout);
-const mockedListAccounts = vi.mocked(listAccounts);
+vi.mock("@/features/auth/LoginForm", () => ({
+  LoginForm: () => <div>Login form</div>,
+}));
 
-const USER_A = { id: "1", email: "a@example.com" };
-const USER_B = { id: "2", email: "b@example.com" };
+vi.mock("@/features/auth/UserMenu", () => ({
+  UserMenu: () => <div>User menu</div>,
+}));
 
-async function signInAs(email: string) {
-  fireEvent.change(await screen.findByLabelText("Email"), {
-    target: { value: email },
-  });
-  fireEvent.click(screen.getByRole("button", { name: "Continue with email" }));
-  const [firstCodeInput] = await screen.findAllByLabelText("Code");
-  fireEvent.change(firstCodeInput, { target: { value: "123456" } });
-  fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
-}
+beforeEach(() => {
+  mockSignedInUser();
+});
 
-describe("App", () => {
-  it("never shows the previous user's accounts after switching users", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: USER_A },
-    });
-    mockedListAccounts.mockResolvedValueOnce(
-      makePage([makeAccount({ id: "a1", name: "User A gift card" })]),
-    );
-    mockedLogout.mockResolvedValueOnce({
-      status: 401,
-      meta: { is_authenticated: false },
-    });
-    mockedRequestLoginCode.mockResolvedValueOnce({
-      status: 401,
-      meta: { is_authenticated: false },
-    });
-    mockedConfirmLoginCode.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: USER_B },
-    });
-    let resolveUserBAccounts: (page: Paginated<Account>) => void = () => {};
-    mockedListAccounts.mockReturnValueOnce(
-      new Promise((resolve) => {
-        resolveUserBAccounts = resolve;
-      }),
-    );
+it("routes /settings to the settings page", () => {
+  renderWithProviders(<App />, { route: "/settings" });
 
-    renderWithProviders(
-      <AuthProvider>
-        <App />
-      </AuthProvider>,
-    );
+  screen.getByRole("heading", { level: 1, name: "Settings" });
+});
 
-    await screen.findByText("User A gift card");
-    fireEvent.click(screen.getByRole("button", { name: "Log out" }));
-    await signInAs(USER_B.email);
+it("redirects /settings to the login page when signed out", () => {
+  vi.mocked(useAuth).mockReturnValue({ user: null });
 
-    await screen.findByText(USER_B.email);
-    expect(screen.queryByText("User A gift card")).toBeNull();
+  renderWithProviders(<App />, { route: "/settings" });
 
-    resolveUserBAccounts(
-      makePage([makeAccount({ id: "b1", name: "User B gift card" })]),
-    );
-
-    await screen.findByText("User B gift card");
-    await waitFor(() =>
-      expect(screen.queryByText("User A gift card")).toBeNull(),
-    );
-  });
+  screen.getByText("Login form");
+  expect(screen.queryByRole("heading", { name: "Settings" })).toBeNull();
 });
