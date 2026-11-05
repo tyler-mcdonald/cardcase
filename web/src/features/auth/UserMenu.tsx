@@ -1,11 +1,9 @@
 import { Avatar, Menu, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
-import { ThemeOptions } from "@/components/ThemeOptions";
+import { MENU_ICON_SIZE, ThemeOptions } from "@/components/ThemeOptions";
 import { useLogout } from "./queries";
 import { useAuth } from "./use-auth";
-
-const ICON_SIZE = 16;
 
 export function UserMenu() {
   const { user } = useAuth();
@@ -22,11 +20,11 @@ export function UserMenu() {
         </UnstyledButton>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Label>{email}</Menu.Label>
+        <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
         <Menu.Item
           component={Link}
           to="/settings"
-          leftSection={<IconSettings size={ICON_SIZE} aria-hidden />}
+          leftSection={<IconSettings size={MENU_ICON_SIZE} aria-hidden />}
         >
           Settings
         </Menu.Item>
@@ -35,7 +33,7 @@ export function UserMenu() {
         <ThemeOptions />
         <Menu.Divider />
         <Menu.Item
-          leftSection={<IconLogout size={ICON_SIZE} aria-hidden />}
+          leftSection={<IconLogout size={MENU_ICON_SIZE} aria-hidden />}
           onClick={() => logout.mutate()}
         >
           Sign out

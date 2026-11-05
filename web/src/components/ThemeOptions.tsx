@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
-const ICON_SIZE = 16;
+export const MENU_ICON_SIZE = 16;
 
 const OPTIONS: {
   value: MantineColorScheme;
@@ -22,17 +22,17 @@ const OPTIONS: {
   {
     value: "light",
     label: "Light",
-    icon: <IconSun size={ICON_SIZE} aria-hidden />,
+    icon: <IconSun size={MENU_ICON_SIZE} aria-hidden />,
   },
   {
     value: "dark",
     label: "Dark",
-    icon: <IconMoon size={ICON_SIZE} aria-hidden />,
+    icon: <IconMoon size={MENU_ICON_SIZE} aria-hidden />,
   },
   {
     value: "auto",
     label: "System",
-    icon: <IconDeviceDesktop size={ICON_SIZE} aria-hidden />,
+    icon: <IconDeviceDesktop size={MENU_ICON_SIZE} aria-hidden />,
   },
 ];
 

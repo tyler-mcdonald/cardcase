@@ -95,6 +95,15 @@ describe("UserMenu", () => {
     ]);
   });
 
+  it("wraps a long email instead of overflowing the menu", () => {
+    renderWithProviders(<UserMenu />);
+    openMenu();
+
+    expect(screen.getByText("test@example.com").style.overflowWrap).toBe(
+      "anywhere",
+    );
+  });
+
   it("links Settings to the settings page", () => {
     renderWithProviders(<UserMenu />);
     openMenu();
