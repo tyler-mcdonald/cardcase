@@ -13,8 +13,8 @@ vi.mock("@/features/auth/LoginForm", () => ({
   LoginForm: () => <div>Login form</div>,
 }));
 
-vi.mock("@/features/auth/UserMenu", () => ({
-  UserMenu: () => <div>User menu</div>,
+vi.mock("@/features/auth/HeaderAccount", () => ({
+  HeaderAccount: () => <div>Header account</div>,
 }));
 
 beforeEach(() => {
