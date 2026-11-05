@@ -7,10 +7,7 @@ import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
-vi.mock("@/features/accounts/api", () => ({
-  updateAccount: vi.fn(),
-  deleteAccount: vi.fn(),
-}));
+vi.mock("@/features/accounts/api");
 
 const mockedUpdateAccount = vi.mocked(updateAccount);
 const mockedDeleteAccount = vi.mocked(deleteAccount);

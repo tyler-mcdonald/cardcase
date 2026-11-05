@@ -2,8 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
-import { useAuth } from "@/features/auth/use-auth";
 import { useLogout } from "@/features/auth/queries";
+import { mockSignedInUser } from "./features/auth/fixtures";
 import { renderWithProviders } from "./render";
 
 vi.mock("@/features/auth/use-auth", () => ({
@@ -12,14 +12,14 @@ vi.mock("@/features/auth/use-auth", () => ({
 vi.mock("@/features/auth/queries", () => ({
   useLogout: vi.fn(),
 }));
+vi.mock("@/features/auth/DemoWelcomeModal", () => ({
+  DemoWelcomeModal: () => null,
+}));
 
-const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
 
 beforeEach(() => {
-  mockedUseAuth.mockReturnValue({
-    user: { id: "1", email: "test@example.com" },
-  });
+  mockSignedInUser();
   mockedUseLogout.mockReturnValue({
     mutate: vi.fn(),
   } as unknown as ReturnType<typeof useLogout>);
