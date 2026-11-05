@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import {
   Anchor,
   Button,
+  Divider,
   PinInput,
   Stack,
   Text,
@@ -93,12 +94,10 @@ function EmailStep({
         <Button type="submit" size="md" fz="sm" loading={submitting} fullWidth>
           Continue with email
         </Button>
-        <Text size="sm" c="dimmed" ta="center">
-          Just looking?{" "}
-          <Anchor component={Link} to="/demo" inherit>
-            Try the demo
-          </Anchor>
-        </Text>
+        <Divider label="or" labelPosition="center" />
+        <Anchor component={Link} to="/demo" size="sm" ta="center">
+          Try the demo
+        </Anchor>
       </Stack>
     </form>
   );

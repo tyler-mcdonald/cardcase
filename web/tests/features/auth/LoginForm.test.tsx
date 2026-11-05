@@ -25,7 +25,7 @@ describe("LoginForm", () => {
     expect(
       screen.getByRole("link", { name: "Try the demo" }).getAttribute("href"),
     ).toBe("/demo");
-    screen.getByText("Just looking?", { exact: false });
+    screen.getByText("or");
   });
 
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
