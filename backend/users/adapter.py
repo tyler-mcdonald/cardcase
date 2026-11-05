@@ -57,4 +57,5 @@ class AccountAdapter(DefaultAccountAdapter):  # type: ignore[misc]
 class HeadlessAdapter(DefaultHeadlessAdapter):  # type: ignore[misc]
     def serialize_user(self, user: AbstractBaseUser) -> dict[str, Any]:
         data: dict[str, Any] = super().serialize_user(user)
-        return {**data, "is_demo": isinstance(user, User) and user.is_demo}
+        is_demo = isinstance(user, User) and user.is_demo
+        return {**data, "is_demo": is_demo}
