@@ -19,8 +19,7 @@
 
     /* Paths */
     "paths": {
-      "@/*": ["./src/*"],
-      "@tests/*": ["./tests/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Linting */

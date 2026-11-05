@@ -2,7 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { describe, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
-import { renderWithProviders } from "@tests/render";
+import { renderWithProviders } from "./render";
 
 vi.mock("@/features/auth/UserMenu", () => ({
   UserMenu: () => <div>User menu</div>,

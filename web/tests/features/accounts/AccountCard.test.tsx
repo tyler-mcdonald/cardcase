@@ -2,8 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountCard } from "@/features/accounts/AccountCard";
 import type { Account } from "@/features/accounts/types";
-import { makeAccount } from "@tests/features/accounts/factories";
-import { renderWithProviders } from "@tests/render";
+import { makeAccount } from "./factories";
+import { renderWithProviders } from "../../render";
 
 function renderCard(account: Account) {
   const onEdit = vi.fn();

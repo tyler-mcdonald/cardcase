@@ -3,7 +3,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { renderWithProviders } from "@tests/render";
+import { renderWithProviders } from "../render";
 
 const originalMatchMedia = window.matchMedia;
 

@@ -8,7 +8,7 @@ import {
   listAllAccounts,
   updateAccount,
 } from "@/features/accounts/api";
-import { makeAccount } from "@tests/features/accounts/factories";
+import { makeAccount } from "./factories";
 
 vi.mock("@/lib/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api/client")>()),
