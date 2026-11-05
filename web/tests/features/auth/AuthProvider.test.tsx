@@ -6,7 +6,10 @@ import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
 import { useLogout, useStartDemo } from "@/features/auth/queries";
 import { getSession, logout, startDemo } from "@/features/auth/api";
-import { SESSION_CHANNEL_NAME } from "@/features/auth/session-channel";
+import {
+  SESSION_CHANNEL_NAME,
+  USER_CHANGED_MESSAGE,
+} from "@/features/auth/session-channel";
 import { TestProviders } from "../../TestProviders";
 
 vi.mock("@/features/auth/api");
@@ -239,7 +242,7 @@ describe("AuthProvider", () => {
       });
 
       renderHook(() => useAuth(), { wrapper: Wrapper });
-      openOtherTab().postMessage("user-changed");
+      openOtherTab().postMessage(USER_CHANGED_MESSAGE);
 
       await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     });

@@ -1,6 +1,6 @@
 export const SESSION_CHANNEL_NAME = "cardcase:session";
 
-const USER_CHANGED_MESSAGE = "user-changed";
+export const USER_CHANGED_MESSAGE = "user-changed";
 
 let channel: BroadcastChannel | undefined;
 
