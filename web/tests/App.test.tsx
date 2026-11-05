@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import App from "@/App";
 import { useAuth } from "@/features/auth/use-auth";
 import { mockSignedInUser } from "./auth";
@@ -21,19 +21,17 @@ beforeEach(() => {
   mockSignedInUser();
 });
 
-describe("App", () => {
-  it("routes /settings to the settings page", () => {
-    renderWithProviders(<App />, { route: "/settings" });
+it("routes /settings to the settings page", () => {
+  renderWithProviders(<App />, { route: "/settings" });
 
-    screen.getByRole("heading", { level: 1, name: "Settings" });
-  });
+  screen.getByRole("heading", { level: 1, name: "Settings" });
+});
 
-  it("redirects /settings to the login page when signed out", () => {
-    vi.mocked(useAuth).mockReturnValue({ user: null });
+it("redirects /settings to the login page when signed out", () => {
+  vi.mocked(useAuth).mockReturnValue({ user: null });
 
-    renderWithProviders(<App />, { route: "/settings" });
+  renderWithProviders(<App />, { route: "/settings" });
 
-    screen.getByText("Login form");
-    expect(screen.queryByRole("heading", { name: "Settings" })).toBeNull();
-  });
+  screen.getByText("Login form");
+  expect(screen.queryByRole("heading", { name: "Settings" })).toBeNull();
 });
