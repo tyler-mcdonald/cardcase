@@ -39,56 +39,33 @@ export const theme = createTheme({
   components: {
     Button: Button.extend({
       defaultProps: { variant: "default", radius: BUTTON_RADIUS },
-      vars: (_theme, props) =>
-        props.variant === "subtle" && !props.color
-          ? {
-              root: {
+      classNames: { root: classes.button },
+      // Button sets --button-color inline for every variant, so a class can't
+      // override it; uncolored subtle buttons get the muted ink here instead.
+      vars: (_theme, props) => ({
+        root:
+          props.variant === "subtle" && !props.color
+            ? {
                 "--button-color": "var(--cardcase-subtle-color)",
                 "--button-hover": "var(--cardcase-subtle-hover)",
-              },
-            }
-          : { root: {} },
-      styles: (_theme, props) =>
-        props.variant === "default"
-          ? { root: { boxShadow: "var(--cardcase-button-shadow)" } }
-          : {},
+              }
+            : {},
+      }),
     }),
     ActionIcon: ActionIcon.extend({
       defaultProps: { radius: BUTTON_RADIUS },
     }),
     Pagination: Pagination.extend({
-      vars: (_theme, props) =>
-        props.color
-          ? { root: {} }
-          : {
-              root: {
-                "--pagination-active-color":
-                  "var(--mantine-primary-color-contrast)",
-              },
-            },
+      classNames: { root: classes.pagination },
     }),
     Select: Select.extend({
       classNames: { option: classes.comboboxOption },
     }),
     SegmentedControl: SegmentedControl.extend({
-      vars: (_theme, props) =>
-        props.color
-          ? { root: {} }
-          : {
-              root: {
-                "--sc-color": "var(--mantine-color-default)",
-                "--sc-label-color": "var(--mantine-color-default-color)",
-              },
-            },
-      styles: (_theme, props) =>
-        props.color
-          ? {}
-          : {
-              indicator: {
-                boxShadow:
-                  "inset 0 0 0 1px var(--mantine-color-default-border), var(--cardcase-button-shadow)",
-              },
-            },
+      classNames: {
+        root: classes.segmentedControl,
+        indicator: classes.segmentedControlIndicator,
+      },
     }),
   },
 });

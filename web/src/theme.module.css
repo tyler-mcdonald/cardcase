@@ -1,3 +1,24 @@
+.button[data-variant="default"] {
+  box-shadow: var(--cardcase-button-shadow);
+}
+
+.pagination {
+  --pagination-active-color: var(--mantine-primary-color-contrast);
+}
+
 .comboboxOption[data-combobox-selected] {
   color: var(--mantine-primary-color-contrast);
+}
+
+/* Mantine only sets these vars inline when a `color` prop is passed, so a
+   colored control still overrides them. */
+.segmentedControl {
+  --sc-color: var(--mantine-color-default);
+  --sc-label-color: var(--mantine-color-default-color);
+}
+
+.segmentedControlIndicator {
+  box-shadow:
+    inset 0 0 0 1px var(--mantine-color-default-border),
+    var(--cardcase-button-shadow);
 }
