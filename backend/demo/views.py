@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
-from demo.services import DEMO_LIFETIME, start_demo
+from demo.services import DEMO_LIFETIME, delete_expired_demo_users, start_demo
 from users.models import User
 
 
@@ -37,6 +37,7 @@ class DemoStartView(APIView):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(status=status.HTTP_409_CONFLICT)
 
+        delete_expired_demo_users()
         user = start_demo()
         login(request._request, user)
         request.session.set_expiry(int(DEMO_LIFETIME.total_seconds()))

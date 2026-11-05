@@ -18,7 +18,6 @@ def delete_expired_demo_users() -> None:
 
 @transaction.atomic
 def start_demo() -> User:
-    delete_expired_demo_users()
     user = create_verified_user(
         f"demo-{uuid.uuid4()}@{DEMO_EMAIL_DOMAIN}", is_demo=True
     )
