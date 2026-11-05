@@ -26,12 +26,16 @@ function renderWithQueryClient<T>(useHook: () => T) {
   );
 }
 
+function mockLogoutSuccess() {
+  mockedLogout.mockResolvedValueOnce({
+    status: 200,
+    meta: { is_authenticated: false },
+  });
+}
+
 describe("auth queries", () => {
   it("clears cached accounts when logout succeeds", async () => {
-    mockedLogout.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockLogoutSuccess();
     const { result } = renderWithQueryClient(useLogout);
     result.current.queryClient.setQueryData(CACHED_ACCOUNTS_KEY, [
       makeAccount(),
@@ -46,10 +50,7 @@ describe("auth queries", () => {
   });
 
   it("clears other session-prefixed queries and cached mutations on logout", async () => {
-    mockedLogout.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockLogoutSuccess();
     const { result } = renderWithQueryClient(useLogout);
     const queryClient = result.current.queryClient;
     queryClient.setQueryData(["session", "extra"], "previous user");
