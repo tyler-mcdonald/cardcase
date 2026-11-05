@@ -2,6 +2,14 @@
   table-layout: fixed;
 }
 
+.table tbody tr:last-child > td:first-child {
+  border-bottom-left-radius: var(--mantine-radius-md);
+}
+
+.table tbody tr:last-child > td:last-child {
+  border-bottom-right-radius: var(--mantine-radius-md);
+}
+
 .date {
   width: 130px;
 }
