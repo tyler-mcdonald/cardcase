@@ -19,6 +19,15 @@ describe("LoginForm", () => {
     ).toBeTruthy();
   });
 
+  it("links to the demo from the email step", () => {
+    renderWithProviders(<LoginForm />);
+
+    expect(
+      screen.getByRole("link", { name: "Try the demo" }).getAttribute("href"),
+    ).toBe("/demo");
+    screen.getByText("Just looking?", { exact: false });
+  });
+
   it("advances to the code step on the API's real 401 pending-flow response", async () => {
     vi.stubGlobal(
       "fetch",
@@ -54,5 +63,6 @@ describe("LoginForm", () => {
       screen.queryByText("Log in or create an account with your email"),
     ).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Try the demo" })).toBeNull();
   });
 });

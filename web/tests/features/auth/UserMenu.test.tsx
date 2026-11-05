@@ -18,7 +18,7 @@ const logout = vi.fn();
 
 beforeEach(() => {
   mockedUseAuth.mockReturnValue({
-    user: { id: "1", email: "test@example.com" },
+    user: { id: "1", email: "test@example.com", is_demo: false },
   });
   mockedUseLogout.mockReturnValue({
     mutate: logout,
@@ -30,6 +30,20 @@ describe("UserMenu", () => {
     renderWithProviders(<UserMenu />);
 
     screen.getByText("test@example.com");
+  });
+
+  it("shows a demo badge instead of the email for a demo user", async () => {
+    mockedUseAuth.mockReturnValue({
+      user: { id: "2", email: "demo-2@demo.invalid", is_demo: true },
+    });
+
+    renderWithProviders(<UserMenu />);
+
+    expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
+    fireEvent.focus(screen.getByText("Demo"));
+    expect((await screen.findByRole("tooltip")).textContent).toBe(
+      "Demo data is deleted after 24 hours",
+    );
   });
 
   it("logs out when the button is clicked", () => {

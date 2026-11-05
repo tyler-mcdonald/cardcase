@@ -50,7 +50,7 @@ describe("AuthProvider", () => {
     mockedGetSession.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com" } },
+      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
     });
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
@@ -83,7 +83,7 @@ describe("AuthProvider", () => {
     mockedGetSession.mockResolvedValueOnce({
       status: 200,
       meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com" } },
+      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
     });
     mockedLogout.mockResolvedValueOnce({
       status: 200,

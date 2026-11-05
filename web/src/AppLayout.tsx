@@ -1,5 +1,6 @@
 import { Anchor, Container, Group } from "@mantine/core";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { DemoWelcomeModal } from "@/features/auth/DemoWelcomeModal";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { APP_NAME } from "@/lib/constants";
 import classes from "./AppLayout.module.css";
@@ -43,6 +44,7 @@ export function AppLayout() {
         <UserMenu />
       </Group>
       <Outlet />
+      <DemoWelcomeModal />
     </Container>
   );
 }

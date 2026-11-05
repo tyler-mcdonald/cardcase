@@ -2,7 +2,9 @@
 
 A virtual case to store and track gift cards 🎁, flight credits ✈️, and other cash-like accounts 💸.
 
-Try it at [cardcase.app](https://cardcase.app).
+**[Try the demo](https://cardcase.app/demo)** · no sign-up, sample data, cleared after 24 hours
+
+**[Open the app](https://cardcase.app)** · sign in with your email
 
 ## Screenshots
 

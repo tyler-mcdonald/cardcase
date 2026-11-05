@@ -10,6 +10,7 @@ import {
   requestLoginCode,
   confirmLoginCode,
   logout,
+  startDemo,
   type SessionData,
 } from "./api";
 import type { User } from "./types";
@@ -63,6 +64,19 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
+    onSuccess: (response) => applySession(queryClient, response),
+  });
+}
+
+async function startDemoSession() {
+  await startDemo();
+  return getSession();
+}
+
+export function useStartDemo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: startDemoSession,
     onSuccess: (response) => applySession(queryClient, response),
   });
 }
