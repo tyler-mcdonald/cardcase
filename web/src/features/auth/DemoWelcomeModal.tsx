@@ -29,7 +29,7 @@ function WelcomeModal({ userId }: { userId: string }) {
     <Modal
       opened={!seen}
       onClose={close}
-      title="Welcome to the cardcase demo"
+      title="Welcome to the cardcase demo 👋"
       centered
     >
       <Stack>
@@ -39,14 +39,13 @@ function WelcomeModal({ userId }: { userId: string }) {
         </Text>
         <List size="sm" spacing={4}>
           <List.Item>
-            All the data is made up, so add, edit or delete anything.
+            All the data is made up and isolated to this session, so feel free
+            to add, edit, or delete whatever you want.
           </List.Item>
           <List.Item>
             This account and everything in it is deleted after 24 hours.
           </List.Item>
-          <List.Item>
-            To use cardcase for real, sign up with your email.
-          </List.Item>
+          <List.Item>Sign up to use cardcase with your own data.</List.Item>
         </List>
         {logout.error && <FormError message={apiErrorMessage(logout.error)} />}
         <Group justify="flex-end">

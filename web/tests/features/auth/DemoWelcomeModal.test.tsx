@@ -18,7 +18,7 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
 
-const TITLE = "Welcome to the cardcase demo";
+const TITLE = "Welcome to the cardcase demo 👋";
 
 function signInAs(user: User) {
   mockedUseAuth.mockReturnValue({ user });
