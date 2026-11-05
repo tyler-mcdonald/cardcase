@@ -20,7 +20,7 @@ projects:
             runtime: python
             plan: free
             rootDir: backend
-            autoDeployTrigger: checksPass
+            autoDeployTrigger: "off"
             # Migrations run in the build because preDeployCommand requires a paid plan
             buildCommand: >-
               pip install uv &&
@@ -56,7 +56,7 @@ projects:
             name: cardcase-web
             runtime: static
             rootDir: web
-            autoDeployTrigger: checksPass
+            autoDeployTrigger: "off"
             buildCommand: pnpm install --frozen-lockfile && pnpm build
             staticPublishPath: dist
             routes:
