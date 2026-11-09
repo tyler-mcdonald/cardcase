@@ -24,10 +24,7 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
-function resetSession(
-  queryClient: QueryClient,
-  response: ApiResponse<SessionData>,
-) {
+function resetSession(queryClient: QueryClient, user: User | null) {
   const sessionHash = hashKey(SESSION_QUERY_KEY);
   const filters = {
     predicate: (query: Query) => query.queryHash !== sessionHash,
@@ -35,7 +32,7 @@ function resetSession(
   void queryClient.cancelQueries(filters);
   queryClient.removeQueries(filters);
   queryClient.getMutationCache().clear();
-  queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
+  queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
 
 async function loadSession(): Promise<User | null> {
@@ -66,7 +63,7 @@ export function useConfirmLoginCode() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: confirmLoginCode,
-    onSuccess: (response) => resetSession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }
 
@@ -74,7 +71,7 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: (response) => resetSession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }
 
@@ -87,11 +84,7 @@ export function useDeleteUserAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteMe,
-    onSuccess: () => {
-      void queryClient.cancelQueries();
-      queryClient.getQueryCache().clear();
-      queryClient.setQueryData(SESSION_QUERY_KEY, null);
-    },
+    onSuccess: () => resetSession(queryClient, null),
   });
 }
 
@@ -99,6 +92,6 @@ export function useStartDemo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: startDemoSession,
-    onSuccess: (response) => resetSession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }
