@@ -11,6 +11,7 @@ import {
   USER_CHANGED_MESSAGE,
 } from "@/features/auth/session-channel";
 import { TestProviders } from "../../TestProviders";
+import { sessionResponse, TEST_USER } from "./fixtures";
 
 vi.mock("@/features/auth/api");
 
@@ -28,10 +29,7 @@ function Wrapper({ children }: { children: ReactNode }) {
 
 describe("AuthProvider", () => {
   it("reports undefined user while the session is loading", () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
@@ -39,10 +37,7 @@ describe("AuthProvider", () => {
   });
 
   it("reports null user when the session has no authenticated user", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
@@ -50,11 +45,7 @@ describe("AuthProvider", () => {
   });
 
   it("reports the session user once authenticated", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(TEST_USER));
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
@@ -83,15 +74,8 @@ describe("AuthProvider", () => {
   });
 
   it("updates the session to null after a logout mutation succeeds", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-    });
-    mockedLogout.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(TEST_USER));
+    mockedLogout.mockResolvedValueOnce(sessionResponse(null));
 
     const { result } = renderHook(
       () => ({ auth: useAuth(), logout: useLogout() }),
@@ -108,15 +92,8 @@ describe("AuthProvider", () => {
   });
 
   it("drops the previous user's cached data when the session user changes", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-    });
-    mockedLogout.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(TEST_USER));
+    mockedLogout.mockResolvedValueOnce(sessionResponse(null));
 
     const { result } = renderHook(
       () => ({
@@ -142,15 +119,10 @@ describe("AuthProvider", () => {
 
   it("drops anonymous cached data when a user signs in", async () => {
     mockedGetSession
-      .mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: false },
-      })
-      .mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: true },
-        data: { user: { id: "2", email: "demo@example.com", is_demo: true } },
-      });
+      .mockResolvedValueOnce(sessionResponse(null))
+      .mockResolvedValueOnce(
+        sessionResponse({ id: "2", email: "demo@example.com", is_demo: true }),
+      );
     mockedStartDemo.mockResolvedValueOnce(null);
 
     const { result } = renderHook(
@@ -176,15 +148,8 @@ describe("AuthProvider", () => {
   });
 
   it("cancels the previous user's in-flight queries when the session user changes", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-    });
-    mockedLogout.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: false },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(TEST_USER));
+    mockedLogout.mockResolvedValueOnce(sessionResponse(null));
 
     const { result } = renderHook(
       () => ({
@@ -236,10 +201,7 @@ describe("AuthProvider", () => {
 
     it("reloads when another tab changes the session user", async () => {
       const reload = stubReload();
-      mockedGetSession.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: false },
-      });
+      mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
 
       renderHook(() => useAuth(), { wrapper: Wrapper });
       openOtherTab().postMessage(USER_CHANGED_MESSAGE);
@@ -256,10 +218,7 @@ describe("AuthProvider", () => {
         reload,
         replace,
       });
-      mockedGetSession.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: false },
-      });
+      mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
 
       renderHook(() => useAuth(), { wrapper: Wrapper });
       openOtherTab().postMessage(USER_CHANGED_MESSAGE);
@@ -270,15 +229,8 @@ describe("AuthProvider", () => {
 
     it("tells other tabs, without reloading itself, when the session user changes", async () => {
       const reload = stubReload();
-      mockedGetSession.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: true },
-        data: { user: { id: "1", email: "test@example.com", is_demo: false } },
-      });
-      mockedLogout.mockResolvedValueOnce({
-        status: 200,
-        meta: { is_authenticated: false },
-      });
+      mockedGetSession.mockResolvedValueOnce(sessionResponse(TEST_USER));
+      mockedLogout.mockResolvedValueOnce(sessionResponse(null));
       const received = vi.fn();
       openOtherTab().addEventListener("message", received);
 
