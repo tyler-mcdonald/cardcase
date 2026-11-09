@@ -6,6 +6,7 @@
 - User can add, edit, or delete "accounts"
 - User can add edit, or delete transactions against an account
 - User can log out, ending their session
+- User can delete their account and all of their data
 
 ##### Non-Functional Requirements
 
@@ -49,6 +50,9 @@
   - Resend login code
   - Sign up (email)
   - Get session / end session (log out)
+- Users
+  - DELETE /me
+    - Deletes the signed-in user with all of their data and ends the session
 - Accounts
   - POST /accounts
     - { name, description?, type, expires_on?, initial_balance? }

@@ -13,6 +13,7 @@ import {
   confirmLoginCode,
   logout,
   startDemo,
+  deleteMe,
   type SessionData,
 } from "./api";
 import type { User } from "./types";
@@ -80,6 +81,18 @@ export function useLogout() {
 async function startDemoSession() {
   await startDemo();
   return getSession();
+}
+
+export function useDeleteUserAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteMe,
+    onSuccess: () => {
+      void queryClient.cancelQueries();
+      queryClient.getQueryCache().clear();
+      queryClient.setQueryData(SESSION_QUERY_KEY, null);
+    },
+  });
 }
 
 export function useStartDemo() {

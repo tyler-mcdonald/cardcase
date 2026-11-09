@@ -3,8 +3,13 @@ from typing import Any
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from allauth.headless.account.views import RequestLoginCodeView
+from django.contrib.auth import logout
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
+from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from users.models import User
 
@@ -48,3 +53,11 @@ def _create_unverified_user(request: HttpRequest, email: str) -> User:
     user = User.objects.create_user(email=email)
     setup_user_email(request, user, [])
     return user
+
+
+class MeView(APIView):
+    def delete(self, request: Request) -> Response:
+        user = request.user
+        logout(request._request)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
