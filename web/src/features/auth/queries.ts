@@ -24,6 +24,13 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
+function isDifferentUser(
+  previousUser: User | null | undefined,
+  user: User | null,
+) {
+  return user?.id !== previousUser?.id;
+}
+
 function resetSession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
@@ -37,7 +44,7 @@ function resetSession(
   void queryClient.cancelQueries(filters);
   queryClient.removeQueries(filters);
   queryClient.getMutationCache().clear();
-  if (user?.id !== previousUser?.id) {
+  if (isDifferentUser(previousUser, user)) {
     announceUserChange();
   }
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
