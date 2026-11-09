@@ -65,7 +65,8 @@ describe("App user switch", () => {
     );
 
     await screen.findByText("User A gift card");
-    fireEvent.click(screen.getByRole("button", { name: "Log out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Sign out" }));
     await signInAs(USER_B.email);
 
     await screen.findByText(USER_B.email);

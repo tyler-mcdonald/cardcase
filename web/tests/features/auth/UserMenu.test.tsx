@@ -1,47 +1,178 @@
-import { fireEvent, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { useLogout } from "@/features/auth/queries";
-import { mockSignedInUser, TEST_USER } from "./fixtures";
+import { TEST_USER } from "./fixtures";
 import { renderWithProviders } from "../../render";
 
-vi.mock("@/features/auth/use-auth");
 vi.mock("@/features/auth/queries");
 
 const mockedUseLogout = vi.mocked(useLogout);
 const logout = vi.fn();
+const originalMatchMedia = window.matchMedia;
+
+function mockOsDark() {
+  window.matchMedia = vi.fn((query: string) => ({
+    ...originalMatchMedia(query),
+    matches: query === "(prefers-color-scheme: dark)",
+  }));
+}
+
+function openMenu() {
+  fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+}
+
+function chooseTheme(name: string) {
+  openMenu();
+  fireEvent.click(screen.getByRole("menuitemradio", { name }));
+}
+
+function appliedScheme() {
+  return document.documentElement.getAttribute("data-mantine-color-scheme");
+}
+
+function checkedItems() {
+  return screen
+    .getAllByRole("menuitemradio", { checked: true })
+    .map((item) => item.textContent);
+}
+
+function uncheckedItems() {
+  return screen
+    .getAllByRole("menuitemradio", { checked: false })
+    .map((item) => item.textContent);
+}
 
 beforeEach(() => {
-  mockSignedInUser();
   mockedUseLogout.mockReturnValue({
     mutate: logout,
   } as unknown as ReturnType<typeof useLogout>);
 });
 
-describe("UserMenu", () => {
-  it("shows the signed-in user's email", () => {
-    renderWithProviders(<UserMenu />);
+afterEach(() => {
+  logout.mockReset();
+  window.matchMedia = originalMatchMedia;
+  window.localStorage.clear();
+  document.documentElement.removeAttribute("data-mantine-color-scheme");
+});
 
-    screen.getByText(TEST_USER.email);
+describe("UserMenu", () => {
+  it("shows the email's first letter, uppercased, as the avatar", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+
+    expect(
+      screen.getByRole("button", { name: "Account menu" }).textContent,
+    ).toBe("T");
   });
 
-  it("shows a demo badge instead of the email for a demo user", async () => {
-    mockSignedInUser({ id: "2", email: "demo-2@demo.invalid", is_demo: true });
-
-    renderWithProviders(<UserMenu />);
+  it("leaves the email out of the menu for a demo user", () => {
+    renderWithProviders(<UserMenu email="demo-2@demo.invalid" isDemo />);
+    openMenu();
 
     expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
-    fireEvent.focus(screen.getByText("Demo"));
-    expect((await screen.findByRole("tooltip")).textContent).toBe(
-      "Demo data is temporary",
+  });
+
+  it("lists the email, Settings, the theme options and Sign out in order", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    openMenu();
+
+    const menu = screen.getByRole("menu");
+    const entries = Array.from(
+      menu.querySelectorAll(
+        '.mantine-Menu-label, [role="menuitem"], [role="menuitemradio"]',
+      ),
+    ).map((entry) => entry.textContent);
+    expect(entries).toEqual([
+      TEST_USER.email,
+      "Settings",
+      "Theme",
+      "Light",
+      "Dark",
+      "System",
+      "Sign out",
+    ]);
+  });
+
+  it("wraps a long email instead of overflowing the menu", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    openMenu();
+
+    expect(
+      within(screen.getByRole("menu")).getByText("test@example.com").style
+        .overflowWrap,
+    ).toBe("anywhere");
+  });
+
+  it("links Settings to the settings page", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    openMenu();
+
+    expect(
+      screen.getByRole("menuitem", { name: "Settings" }).getAttribute("href"),
+    ).toBe("/settings");
+  });
+
+  it("signs out when Sign out is clicked", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    openMenu();
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }));
+
+    expect(logout).toHaveBeenCalled();
+  });
+
+  it("switches to dark", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+
+    chooseTheme("Dark");
+
+    expect(appliedScheme()).toBe("dark");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "dark",
     );
   });
 
-  it("logs out when the button is clicked", () => {
-    renderWithProviders(<UserMenu />);
+  it("switches to light", () => {
+    window.localStorage.setItem("mantine-color-scheme-value", "dark");
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /log out/i }));
+    chooseTheme("Light");
 
-    expect(logout).toHaveBeenCalled();
+    expect(appliedScheme()).toBe("light");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "light",
+    );
+  });
+
+  it("switches to system and follows the OS", () => {
+    mockOsDark();
+    window.localStorage.setItem("mantine-color-scheme-value", "light");
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+
+    chooseTheme("System");
+
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "auto",
+    );
+    expect(appliedScheme()).toBe("dark");
+  });
+
+  it("marks only the saved theme as checked", () => {
+    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+
+    chooseTheme("Dark");
+    openMenu();
+    expect(checkedItems()).toEqual(["Dark"]);
+    expect(uncheckedItems()).toEqual(["Light", "System"]);
+    expect(
+      screen
+        .getByRole("menuitemradio", { name: "Dark" })
+        .querySelector('[data-icon="check"]'),
+    ).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "System" }));
+    openMenu();
+    expect(checkedItems()).toEqual(["System"]);
+    expect(uncheckedItems()).toEqual(["Light", "Dark"]);
   });
 });
