@@ -31,16 +31,10 @@ export function SettingsPage() {
         </Stack>
       </Paper>
 
-      <Paper
-        withBorder
-        p="lg"
-        radius="md"
-        component="section"
-        style={{ borderColor: "var(--mantine-color-red-outline)" }}
-      >
+      <Paper withBorder p="lg" radius="md" component="section">
         <Stack gap="md">
           <Title order={2} size="h4">
-            Danger zone
+            Delete account
           </Title>
           <Group justify="space-between" wrap="nowrap">
             <Text size="sm">

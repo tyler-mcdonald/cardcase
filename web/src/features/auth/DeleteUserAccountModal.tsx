@@ -1,4 +1,4 @@
-import { Modal, TextInput } from "@mantine/core";
+import { Code, Modal, TextInput } from "@mantine/core";
 import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
@@ -88,7 +88,7 @@ function DeleteUserAccountContent({
         <TextInput
           label={
             <>
-              Type <strong>{phrase}</strong> to confirm
+              Type <Code fw={700}>{phrase}</Code> to confirm
             </>
           }
           value={input}

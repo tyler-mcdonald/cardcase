@@ -57,10 +57,10 @@ it("shows the signed-in user's email read-only in the account section", () => {
 });
 
 describe("delete account", () => {
-  it("shows a danger zone with a delete account button", () => {
+  it("shows a delete account section with a delete account button", () => {
     renderSettings();
 
-    screen.getByRole("heading", { name: "Danger zone" });
+    screen.getByRole("heading", { name: "Delete account" });
     screen.getByRole("button", { name: "Delete account" });
   });
 
