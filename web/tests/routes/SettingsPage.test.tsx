@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteMe } from "@/features/auth/api";
@@ -125,6 +125,22 @@ describe("delete account", () => {
     fireEvent.click(deleteButton());
 
     await screen.findByText("Login page");
+    expect(mockedDeleteMe).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores repeat submits while the deletion is pending", async () => {
+    mockedDeleteMe.mockReturnValue(new Promise(() => {}));
+    renderSettings();
+    const input = openDeleteModal();
+
+    typePhrase(input, `delete account ${TEST_USER.email}`);
+    fireEvent.submit(input.closest("form")!);
+    await waitFor(() =>
+      expect(deleteButton().hasAttribute("data-loading")).toBe(true),
+    );
+    fireEvent.submit(input.closest("form")!);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
     expect(mockedDeleteMe).toHaveBeenCalledTimes(1);
   });
 

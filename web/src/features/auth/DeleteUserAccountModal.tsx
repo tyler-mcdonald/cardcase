@@ -62,7 +62,7 @@ function DeleteUserAccountContent({
   const confirmed = matchesPhrase(input, email);
 
   function submit() {
-    if (!confirmed) {
+    if (!confirmed || deleteUserAccount.isPending) {
       return;
     }
     deleteUserAccount.mutate(undefined, {
