@@ -62,6 +62,21 @@ def test_delete_ends_the_session(auth_client: Client) -> None:
     assert get_session(auth_client).status_code == 401
 
 
+def test_failed_delete_keeps_the_session(
+    auth_client: Client, user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail(*args: object, **kwargs: object) -> None:
+        raise RuntimeError
+
+    monkeypatch.setattr(User, "delete", fail)
+
+    with pytest.raises(RuntimeError):
+        _delete_me(auth_client)
+
+    assert get_session(auth_client).status_code == 200
+    assert User.objects.filter(pk=user.pk).exists()
+
+
 def test_signed_out_delete_is_rejected(client: Client, user: User) -> None:
     response = _delete_me(client)
 

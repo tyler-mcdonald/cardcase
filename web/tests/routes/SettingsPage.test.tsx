@@ -108,6 +108,14 @@ describe("delete account", () => {
     expect(fireEvent.drop(input)).toBe(false);
   });
 
+  it("turns off auto-capitalization and autocorrect on the confirmation input", () => {
+    renderSettings();
+    const input = openDeleteModal();
+
+    expect(input.getAttribute("autocapitalize")).toBe("none");
+    expect(input.getAttribute("autocorrect")).toBe("off");
+  });
+
   it("deletes the account and redirects to the login page", async () => {
     mockedDeleteMe.mockResolvedValue(null);
     renderSettings();

@@ -1,8 +1,7 @@
-import { Button, Group, Modal, Stack, Text, TextInput } from "@mantine/core";
+import { Modal, TextInput } from "@mantine/core";
 import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { FormError } from "@/components/FormError";
-import { apiErrorMessage } from "@/lib/api/errors";
+import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { useDeleteUserAccount } from "./queries";
 
@@ -62,8 +61,7 @@ function DeleteUserAccountContent({
   const phrase = confirmationPhrase(email);
   const confirmed = matchesPhrase(input, email);
 
-  function submit(event: SyntheticEvent) {
-    event.preventDefault();
+  function submit() {
     if (!confirmed) {
       return;
     }
@@ -73,12 +71,20 @@ function DeleteUserAccountContent({
   }
 
   return (
-    <form onSubmit={submit}>
-      <Stack>
-        <Text size="sm">
-          This permanently deletes your account and all of your accounts and
-          transactions. You can't undo this.
-        </Text>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+    >
+      <DeleteConfirmation
+        message="This permanently deletes your account and all of your accounts and transactions. You can't undo this."
+        isPending={deleteUserAccount.isPending}
+        error={deleteUserAccount.error}
+        onConfirm={submit}
+        onCancel={close}
+        confirmDisabled={!confirmed}
+      >
         <TextInput
           label={
             <>
@@ -90,30 +96,12 @@ function DeleteUserAccountContent({
           onPaste={blockInsert}
           onDrop={blockInsert}
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           spellCheck={false}
           data-autofocus
         />
-        {deleteUserAccount.error && (
-          <FormError message={apiErrorMessage(deleteUserAccount.error)} />
-        )}
-        <Group justify="flex-end">
-          <Button
-            variant="default"
-            onClick={close}
-            disabled={deleteUserAccount.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            color="red"
-            disabled={!confirmed}
-            loading={deleteUserAccount.isPending}
-          >
-            Delete
-          </Button>
-        </Group>
-      </Stack>
+      </DeleteConfirmation>
     </form>
   );
 }

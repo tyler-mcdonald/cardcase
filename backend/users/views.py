@@ -58,6 +58,6 @@ def _create_unverified_user(request: HttpRequest, email: str) -> User:
 class MeView(APIView):
     def delete(self, request: Request) -> Response:
         user = request.user
-        logout(request._request)
         user.delete()
+        logout(request._request)
         return Response(status=status.HTTP_204_NO_CONTENT)
