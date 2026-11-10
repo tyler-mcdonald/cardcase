@@ -28,7 +28,7 @@ function renderSettingsPage() {
   );
 }
 
-function openDeleteModal() {
+function clickDeleteAccountButton() {
   fireEvent.click(screen.getByRole("button", { name: "Delete account" }));
   return screen.getByLabelText<HTMLInputElement>(/to confirm/);
 }
@@ -67,14 +67,14 @@ describe("delete account", () => {
   it("asks the user to type the confirmation phrase with their email", () => {
     renderSettingsPage();
 
-    openDeleteModal();
+    clickDeleteAccountButton();
 
     screen.getByText(`delete account ${TEST_USER.email}`);
   });
 
   it("keeps Delete disabled until the phrase matches", () => {
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     expect(deleteButton().disabled).toBe(true);
 
@@ -93,7 +93,7 @@ describe("delete account", () => {
 
   it("matches the email case-insensitively", () => {
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     typePhrase(input, `delete account ${TEST_USER.email.toUpperCase()}`);
 
@@ -102,7 +102,7 @@ describe("delete account", () => {
 
   it("does not ignore whitespace in the phrase", () => {
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     typePhrase(input, ` delete account ${TEST_USER.email}`);
     expect(deleteButton().disabled).toBe(true);
@@ -116,7 +116,7 @@ describe("delete account", () => {
 
   it("blocks pasting and dropping into the confirmation input", () => {
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     expect(fireEvent.paste(input)).toBe(false);
     expect(fireEvent.drop(input)).toBe(false);
@@ -124,7 +124,7 @@ describe("delete account", () => {
 
   it("turns off auto-capitalization and autocorrect on the confirmation input", () => {
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     expect(input.getAttribute("autocapitalize")).toBe("none");
     expect(input.getAttribute("autocorrect")).toBe("off");
@@ -133,7 +133,7 @@ describe("delete account", () => {
   it("deletes the account and redirects to the login page", async () => {
     mockedDeleteMe.mockResolvedValue(null);
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     typePhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.click(deleteButton());
@@ -145,7 +145,7 @@ describe("delete account", () => {
   it("ignores repeat submits while the deletion is pending", async () => {
     mockedDeleteMe.mockReturnValue(new Promise(() => {}));
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     typePhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.submit(input.closest("form")!);
@@ -161,7 +161,7 @@ describe("delete account", () => {
   it("shows an error and stays on the page when deletion fails", async () => {
     mockedDeleteMe.mockRejectedValue(new ApiError("Request failed (500)", 500));
     renderSettingsPage();
-    const input = openDeleteModal();
+    const input = clickDeleteAccountButton();
 
     typePhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.click(deleteButton());
