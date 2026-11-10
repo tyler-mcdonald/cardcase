@@ -33,7 +33,7 @@ function clickDeleteAccountButton() {
   return screen.getByLabelText<HTMLInputElement>(/to confirm/);
 }
 
-function typePhrase(input: HTMLInputElement, value: string) {
+function typeConfirmationPhrase(input: HTMLInputElement, value: string) {
   fireEvent.change(input, { target: { value } });
 }
 
@@ -78,16 +78,16 @@ describe("delete account", () => {
 
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, "delete account");
+    typeConfirmationPhrase(input, "delete account");
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, "delete account other@example.com");
+    typeConfirmationPhrase(input, "delete account other@example.com");
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, `Delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `Delete account ${TEST_USER.email}`);
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, `delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email}`);
     expect(deleteButton().disabled).toBe(false);
   });
 
@@ -95,7 +95,7 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typePhrase(input, `delete account ${TEST_USER.email.toUpperCase()}`);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email.toUpperCase()}`);
 
     expect(deleteButton().disabled).toBe(false);
   });
@@ -104,13 +104,13 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typePhrase(input, ` delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, ` delete account ${TEST_USER.email}`);
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, `delete account ${TEST_USER.email} `);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email} `);
     expect(deleteButton().disabled).toBe(true);
 
-    typePhrase(input, `delete account  ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `delete account  ${TEST_USER.email}`);
     expect(deleteButton().disabled).toBe(true);
   });
 
@@ -135,7 +135,7 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typePhrase(input, `delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.click(deleteButton());
 
     await screen.findByText("Login page");
@@ -147,7 +147,7 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typePhrase(input, `delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.submit(input.closest("form")!);
     await waitFor(() =>
       expect(deleteButton().hasAttribute("data-loading")).toBe(true),
@@ -163,7 +163,7 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typePhrase(input, `delete account ${TEST_USER.email}`);
+    typeConfirmationPhrase(input, `delete account ${TEST_USER.email}`);
     fireEvent.click(deleteButton());
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
