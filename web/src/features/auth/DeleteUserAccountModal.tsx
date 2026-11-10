@@ -38,7 +38,7 @@ export function DeleteUserAccountModal({
 
   return (
     <Modal opened={opened} onClose={close} title="Delete your account?">
-      <DeleteUserAccountContent
+      <DeleteUserAccountForm
         email={email}
         deleteUserAccount={deleteUserAccount}
         close={close}
@@ -47,7 +47,7 @@ export function DeleteUserAccountModal({
   );
 }
 
-function DeleteUserAccountContent({
+function DeleteUserAccountForm({
   email,
   deleteUserAccount,
   close,
