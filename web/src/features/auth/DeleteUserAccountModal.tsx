@@ -59,10 +59,10 @@ function DeleteUserAccountForm({
   const navigate = useNavigate();
   const [input, setInput] = useState("");
   const confirmationPhrase = buildConfirmationPhrase(email);
-  const confirmed = matchesPhrase(input, email);
+  const phrasesMatch = matchesPhrase(input, email);
 
   function submit() {
-    if (!confirmed || deleteUserAccount.isPending) {
+    if (!phrasesMatch || deleteUserAccount.isPending) {
       return;
     }
     deleteUserAccount.mutate(undefined, {
@@ -83,7 +83,7 @@ function DeleteUserAccountForm({
         error={deleteUserAccount.error}
         onConfirm={submit}
         onCancel={close}
-        confirmEnabled={confirmed}
+        confirmEnabled={phrasesMatch}
       >
         <TextInput
           label={
