@@ -1,5 +1,7 @@
 import pytest
 from allauth.account.models import EmailAddress
+from django.db import models
+from django.db.models.fields.reverse_related import ForeignObjectRel
 from django.test import Client
 from rest_framework.exceptions import NotAuthenticated
 
@@ -92,3 +94,32 @@ def test_delete_without_csrf_token_is_rejected(client: Client, user: User) -> No
 
     assert response.status_code == 403
     assert User.objects.filter(pk=user.pk).exists()
+
+
+def test_delete_ends_the_users_other_sessions(
+    auth_client: Client, other_client: Client, user: User
+) -> None:
+    other_client.force_login(user)
+
+    _delete_me(auth_client)
+
+    assert get_session(other_client).status_code == 401
+
+
+def _non_cascading_relations(
+    model: type[models.Model], seen: set[type[models.Model]]
+) -> list[str]:
+    seen.add(model)
+    found = []
+    for relation in model._meta.related_objects:
+        if not isinstance(relation, ForeignObjectRel) or relation.many_to_many:
+            continue
+        if relation.on_delete is not models.CASCADE:
+            found.append(f"{relation.related_model._meta.label}.{relation.field.name}")
+        if relation.related_model not in seen:
+            found += _non_cascading_relations(relation.related_model, seen)
+    return found
+
+
+def test_all_user_data_cascades_on_user_delete() -> None:
+    assert _non_cascading_relations(User, set()) == []
