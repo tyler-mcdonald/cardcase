@@ -18,6 +18,7 @@ import type { Paginated } from "@/lib/api/types";
 import { makeAccount } from "./features/accounts/factories";
 import { makePage } from "./lib/api/factories";
 import { renderWithProviders } from "./render";
+import { sessionResponse } from "./features/auth/fixtures";
 
 vi.mock("@/features/auth/api");
 vi.mock("@/features/accounts/api");
@@ -43,27 +44,13 @@ async function signInAs(email: string) {
 
 describe("App user switch", () => {
   it("never shows the previous user's accounts after switching users", async () => {
-    mockedGetSession.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: USER_A },
-    });
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(USER_A));
     mockedListAccounts.mockResolvedValueOnce(
       makePage([makeAccount({ id: "a1", name: "User A gift card" })]),
     );
-    mockedLogout.mockResolvedValueOnce({
-      status: 401,
-      meta: { is_authenticated: false },
-    });
-    mockedRequestLoginCode.mockResolvedValueOnce({
-      status: 401,
-      meta: { is_authenticated: false },
-    });
-    mockedConfirmLoginCode.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user: USER_B },
-    });
+    mockedLogout.mockResolvedValueOnce(sessionResponse(null));
+    mockedRequestLoginCode.mockResolvedValueOnce(sessionResponse(null));
+    mockedConfirmLoginCode.mockResolvedValueOnce(sessionResponse(USER_B));
     let resolveUserBAccounts: (page: Paginated<Account>) => void = () => {};
     mockedListAccounts.mockReturnValueOnce(
       new Promise((resolve) => {

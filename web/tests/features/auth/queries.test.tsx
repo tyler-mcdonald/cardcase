@@ -8,10 +8,13 @@ import {
 } from "@/features/auth/queries";
 import { allAccountsQuery } from "@/features/accounts/queries";
 import { confirmLoginCode, logout } from "@/features/auth/api";
+import { announceUserChange } from "@/features/auth/session-channel";
 import { makeAccount } from "../accounts/factories";
 import { TestProviders } from "../../TestProviders";
+import { sessionResponse, TEST_USER } from "./fixtures";
 
 vi.mock("@/features/auth/api");
+vi.mock("@/features/auth/session-channel");
 
 const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
 const mockedLogout = vi.mocked(logout);
@@ -27,10 +30,7 @@ function renderWithQueryClient<T>(useHook: () => T) {
 }
 
 function mockLogoutSuccess() {
-  mockedLogout.mockResolvedValueOnce({
-    status: 200,
-    meta: { is_authenticated: false },
-  });
+  mockedLogout.mockResolvedValueOnce(sessionResponse(null));
 }
 
 describe("auth queries", () => {
@@ -67,11 +67,7 @@ describe("auth queries", () => {
 
   it("clears cached accounts when login confirm succeeds", async () => {
     const user = { id: "2", email: "b@example.com", is_demo: false };
-    mockedConfirmLoginCode.mockResolvedValueOnce({
-      status: 200,
-      meta: { is_authenticated: true },
-      data: { user },
-    });
+    mockedConfirmLoginCode.mockResolvedValueOnce(sessionResponse(user));
     const { result } = renderWithQueryClient(useConfirmLoginCode);
     result.current.queryClient.setQueryData(CACHED_ACCOUNTS_KEY, [
       makeAccount(),
@@ -84,5 +80,28 @@ describe("auth queries", () => {
       result.current.queryClient.getQueryData(CACHED_ACCOUNTS_KEY),
     ).toBeUndefined();
     expect(result.current.queryClient.getQueryData(SESSION_KEY)).toEqual(user);
+  });
+
+  it("announces a user change when the session user changes", async () => {
+    mockLogoutSuccess();
+    const { result } = renderWithQueryClient(useLogout);
+    result.current.queryClient.setQueryData(SESSION_KEY, TEST_USER);
+
+    result.current.hook.mutate();
+
+    await waitFor(() => expect(result.current.hook.isSuccess).toBe(true));
+    expect(announceUserChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not announce a user change when the session user stays the same", async () => {
+    const user = { id: "2", email: "b@example.com", is_demo: false };
+    mockedConfirmLoginCode.mockResolvedValueOnce(sessionResponse(user));
+    const { result } = renderWithQueryClient(useConfirmLoginCode);
+    result.current.queryClient.setQueryData(SESSION_KEY, user);
+
+    result.current.hook.mutate("123456");
+
+    await waitFor(() => expect(result.current.hook.isSuccess).toBe(true));
+    expect(announceUserChange).not.toHaveBeenCalled();
   });
 });
