@@ -2,7 +2,6 @@ import { Avatar, Menu, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { MENU_ICON_SIZE, ThemeOptions } from "@/components/ThemeOptions";
-import { THEME_COLOR } from "@/theme";
 import { useLogout } from "./queries";
 
 interface UserMenuProps {
@@ -17,7 +16,7 @@ export function UserMenu({ email, isDemo }: UserMenuProps) {
     <Menu position="bottom-end" width={220}>
       <Menu.Target>
         <UnstyledButton aria-label="Account menu">
-          <Avatar radius="xl" size={30} color={THEME_COLOR}>
+          <Avatar radius="xl" size={30}>
             {email.charAt(0).toUpperCase()}
           </Avatar>
         </UnstyledButton>
