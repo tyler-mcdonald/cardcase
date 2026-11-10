@@ -12,5 +12,4 @@
 .modalContent {
   --modal-content-flex: 0 0 auto;
   width: var(--modal-size);
-  max-width: 100%;
 }
