@@ -1,6 +1,7 @@
 import pytest
 from allauth.account.models import EmailAddress
 from django.db import models
+from django.db.models.deletion import get_candidate_relations_to_delete
 from django.db.models.fields.reverse_related import ForeignObjectRel
 from django.test import Client
 from rest_framework.exceptions import NotAuthenticated
@@ -111,9 +112,9 @@ def _non_cascading_relations(
     model: type[models.Model], seen: set[type[models.Model]]
 ) -> list[str]:
     seen.add(model)
-    found = []
-    for relation in model._meta.get_fields(include_hidden=True):
-        if not isinstance(relation, ForeignObjectRel) or relation.many_to_many:
+    found: list[str] = []
+    for relation in get_candidate_relations_to_delete(model._meta):
+        if not isinstance(relation, ForeignObjectRel):
             continue
         if relation.on_delete is not models.CASCADE:
             found.append(f"{relation.related_model._meta.label}.{relation.field.name}")
