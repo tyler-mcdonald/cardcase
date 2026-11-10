@@ -7,6 +7,7 @@ import { getSession, logout, startDemo } from "@/features/auth/api";
 import type { User } from "@/features/auth/types";
 import { ApiError } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
+import { sessionResponse } from "./fixtures";
 
 vi.mock("@/features/auth/api");
 
@@ -20,12 +21,6 @@ const demoUser: User = {
   email: "demo-2@demo.invalid",
   is_demo: true,
 };
-
-function session(user: User | null) {
-  return user
-    ? { status: 200, meta: { is_authenticated: true }, data: { user } }
-    : { status: 401, meta: { is_authenticated: false } };
-}
 
 function renderDemoEntry() {
   return renderWithProviders(
@@ -47,8 +42,8 @@ beforeEach(() => {
 describe("DemoEntry", () => {
   it("starts a demo and goes home when not signed in", async () => {
     mockedGetSession
-      .mockResolvedValueOnce(session(null))
-      .mockResolvedValueOnce(session(demoUser));
+      .mockResolvedValueOnce(sessionResponse(null))
+      .mockResolvedValueOnce(sessionResponse(demoUser));
     mockedStartDemo.mockResolvedValueOnce(null);
 
     renderDemoEntry();
@@ -58,7 +53,7 @@ describe("DemoEntry", () => {
   });
 
   it("goes home without starting a new demo for a demo user", async () => {
-    mockedGetSession.mockResolvedValueOnce(session(demoUser));
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(demoUser));
 
     renderDemoEntry();
 
@@ -67,7 +62,7 @@ describe("DemoEntry", () => {
   });
 
   it("asks a real user to confirm and stays signed in on request", async () => {
-    mockedGetSession.mockResolvedValueOnce(session(realUser));
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(realUser));
 
     renderDemoEntry();
 
@@ -83,9 +78,9 @@ describe("DemoEntry", () => {
 
   it("signs a real user out and starts the demo once confirmed", async () => {
     mockedGetSession
-      .mockResolvedValueOnce(session(realUser))
-      .mockResolvedValueOnce(session(demoUser));
-    mockedLogout.mockResolvedValueOnce(session(null));
+      .mockResolvedValueOnce(sessionResponse(realUser))
+      .mockResolvedValueOnce(sessionResponse(demoUser));
+    mockedLogout.mockResolvedValueOnce(sessionResponse(null));
     mockedStartDemo.mockResolvedValueOnce(null);
 
     renderDemoEntry();
@@ -100,7 +95,7 @@ describe("DemoEntry", () => {
   });
 
   it("explains when too many demo sessions were started", async () => {
-    mockedGetSession.mockResolvedValueOnce(session(null));
+    mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
     mockedStartDemo.mockRejectedValueOnce(
       new ApiError("Request failed (429)", 429, {}),
     );
