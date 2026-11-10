@@ -252,7 +252,7 @@ describe("adding a transaction", () => {
     const actionsRow = screen
       .getByRole("button", { name: "Save" })
       .closest("tr")!;
-    expect(editorRow.cells).toHaveLength(COLUMN_HEADERS.length);
+    expect(columnSpan(editorRow)).toBe(COLUMN_HEADERS.length);
     expect(columnSpan(actionsRow)).toBe(COLUMN_HEADERS.length);
   });
 
