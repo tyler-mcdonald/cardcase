@@ -12,11 +12,9 @@ function buildConfirmationPhrase(email: string) {
 }
 
 function matchesPhrase(input: string, email: string) {
-  const value = input.trim();
   return (
-    value.startsWith(PHRASE_PREFIX) &&
-    value.slice(PHRASE_PREFIX.length).trim().toLowerCase() ===
-      email.toLowerCase()
+    input.startsWith(PHRASE_PREFIX) &&
+    input.slice(PHRASE_PREFIX.length).toLowerCase() === email.toLowerCase()
   );
 }
 

@@ -91,13 +91,27 @@ describe("delete account", () => {
     expect(deleteButton().disabled).toBe(false);
   });
 
-  it("matches the email case-insensitively and ignores surrounding whitespace", () => {
+  it("matches the email case-insensitively", () => {
     renderSettings();
     const input = openDeleteModal();
 
-    typePhrase(input, `  delete account ${TEST_USER.email.toUpperCase()}  `);
+    typePhrase(input, `delete account ${TEST_USER.email.toUpperCase()}`);
 
     expect(deleteButton().disabled).toBe(false);
+  });
+
+  it("does not ignore whitespace in the phrase", () => {
+    renderSettings();
+    const input = openDeleteModal();
+
+    typePhrase(input, ` delete account ${TEST_USER.email}`);
+    expect(deleteButton().disabled).toBe(true);
+
+    typePhrase(input, `delete account ${TEST_USER.email} `);
+    expect(deleteButton().disabled).toBe(true);
+
+    typePhrase(input, `delete account  ${TEST_USER.email}`);
+    expect(deleteButton().disabled).toBe(true);
   });
 
   it("blocks pasting and dropping into the confirmation input", () => {
