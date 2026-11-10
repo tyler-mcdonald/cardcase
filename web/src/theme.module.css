@@ -1,0 +1,16 @@
+.modalInner {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.modalInner::before {
+  content: "";
+  flex: 0 1 15dvh;
+}
+
+.modalContent {
+  --modal-content-flex: 0 0 auto;
+  width: var(--modal-size);
+  max-width: 100%;
+}
