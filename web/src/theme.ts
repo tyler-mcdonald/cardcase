@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   createTheme,
   Pagination,
@@ -26,6 +27,18 @@ const accent = (key: keyof typeof ACCENT_VARS) => `var(${ACCENT_VARS[key]})`;
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
   components: {
+    Avatar: Avatar.extend({
+      vars: (_theme, props) =>
+        props.color || props.variant
+          ? { root: {} }
+          : {
+              root: {
+                "--avatar-bg": accent("bg"),
+                "--avatar-color": accent("color"),
+                "--avatar-bd": `1px solid ${accent("rim")}`,
+              },
+            },
+    }),
     Button: Button.extend({
       vars: (_theme, props) =>
         props.color || props.variant
