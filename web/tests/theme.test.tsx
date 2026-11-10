@@ -5,17 +5,14 @@ import {
   mergeMantineTheme,
   Pagination,
 } from "@mantine/core";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { cssVariablesResolver, theme } from "@/theme";
-import { TestProviders } from "./TestProviders";
+import classes from "@/theme.module.css";
+import { renderWithProviders } from "./render";
 
 function renderButton(props: ButtonProps) {
-  render(
-    <TestProviders>
-      <Button {...props}>Save</Button>
-    </TestProviders>,
-  );
+  renderWithProviders(<Button {...props}>Save</Button>);
   return screen.getByRole("button", { name: "Save" });
 }
 
@@ -51,11 +48,7 @@ describe("theme", () => {
   });
 
   it("gives the active pagination page the accent look", () => {
-    const { container } = render(
-      <TestProviders>
-        <Pagination total={3} />
-      </TestProviders>,
-    );
+    const { container } = renderWithProviders(<Pagination total={3} />);
     const root = container.querySelector<HTMLElement>(
       ".mantine-Pagination-root",
     );
@@ -65,6 +58,10 @@ describe("theme", () => {
     expect(root?.style.getPropertyValue("--pagination-active-color")).toBe(
       "var(--accent-color)",
     );
+    const active = screen.getByRole("button", { name: "1" });
+    expect(active.hasAttribute("data-active")).toBe(true);
+    expect(classes.paginationControl).toBeTruthy();
+    expect(active.classList.contains(classes.paginationControl)).toBe(true);
   });
 
   it("resolves indigo accent variables per color scheme", () => {
