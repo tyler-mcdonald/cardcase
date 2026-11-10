@@ -1,0 +1,6 @@
+/* A locked control still shows its selected option on the colored indicator,
+   so keep that label in the indicator's contrast color instead of the dim
+   disabled color, which disappears against a dark indicator. */
+.typeInput:checked + .typeLabel[data-disabled] {
+  color: var(--sc-label-color, var(--mantine-color-disabled-color));
+}

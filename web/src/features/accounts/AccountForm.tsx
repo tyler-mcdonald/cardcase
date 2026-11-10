@@ -11,6 +11,7 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
+import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
@@ -92,6 +93,7 @@ export function AccountForm({
           <SegmentedControl
             fullWidth
             disabled={typeLocked}
+            classNames={{ input: classes.typeInput, label: classes.typeLabel }}
             data={TYPE_OPTIONS}
             color={ACCOUNT_TYPE_DISPLAY[form.values.type].selectorColor}
             {...typeInputProps}

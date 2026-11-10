@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteAccount, updateAccount } from "@/features/accounts/api";
+import classes from "@/features/accounts/AccountForm.module.css";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import type { Account } from "@/features/accounts/types";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
@@ -108,6 +109,18 @@ describe("EditAccountModal", () => {
     for (const radio of screen.getAllByRole<HTMLInputElement>("radio")) {
       expect(radio.disabled).toBe(true);
     }
+  });
+
+  it("keeps the locked type's label styled for its selected indicator", () => {
+    renderForm();
+
+    const radio = screen.getByRole<HTMLInputElement>("radio", {
+      name: "Flight credit",
+    });
+    const label = document.querySelector(`label[for="${radio.id}"]`);
+    expect(classes.typeInput).toBeTruthy();
+    expect(radio.classList.contains(classes.typeInput)).toBe(true);
+    expect(label?.classList.contains(classes.typeLabel)).toBe(true);
   });
 
   it("saves only the changed values to the account", async () => {
