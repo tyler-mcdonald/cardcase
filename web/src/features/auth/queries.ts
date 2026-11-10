@@ -15,6 +15,7 @@ import {
   startDemo,
   type SessionData,
 } from "./api";
+import { announceUserChange } from "./session-channel";
 import type { User } from "./types";
 
 const SESSION_QUERY_KEY = ["session"] as const;
@@ -23,10 +24,19 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
+function isDifferentUser(
+  previousUser: User | null | undefined,
+  user: User | null,
+) {
+  return user?.id !== previousUser?.id;
+}
+
 function resetSession(
   queryClient: QueryClient,
   response: ApiResponse<SessionData>,
 ) {
+  const user = sessionUser(response);
+  const previousUser = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
   const sessionHash = hashKey(SESSION_QUERY_KEY);
   const filters = {
     predicate: (query: Query) => query.queryHash !== sessionHash,
@@ -34,7 +44,10 @@ function resetSession(
   void queryClient.cancelQueries(filters);
   queryClient.removeQueries(filters);
   queryClient.getMutationCache().clear();
-  queryClient.setQueryData(SESSION_QUERY_KEY, sessionUser(response));
+  if (isDifferentUser(previousUser, user)) {
+    announceUserChange();
+  }
+  queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
 
 async function loadSession(): Promise<User | null> {
