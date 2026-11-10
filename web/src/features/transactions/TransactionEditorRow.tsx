@@ -178,7 +178,7 @@ export function TransactionEditorRow({
             error={Boolean(form.errors.occurredOn)}
           />
         </Table.Td>
-        <Table.Td colSpan={2}>
+        <Table.Td>
           {lockedAccountName === undefined ? (
             <AccountSelect
               aria-label="Account"

@@ -47,7 +47,7 @@ async function finishOpeningClick() {
   await act(() => new Promise((resolve) => setTimeout(resolve)));
 }
 
-it("shows each transaction's date, account, type, description, and amount", async () => {
+it("shows each transaction's date, account, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
       makeTransaction({
@@ -79,7 +79,6 @@ it("shows each transaction's date, account, type, description, and amount", asyn
   expect(cells(latteRow)).toEqual([
     "Sep 28, 2026",
     "Starbucks",
-    "Gift card",
     "Latte",
     "$4.75",
     "",
@@ -87,7 +86,6 @@ it("shows each transaction's date, account, type, description, and amount", asyn
   expect(cells(refundRow)).toEqual([
     "Sep 27, 2026",
     "Delta",
-    "Flight credit",
     "Refund",
     "",
     "$150.00",
