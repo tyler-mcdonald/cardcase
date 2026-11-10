@@ -95,7 +95,10 @@ describe("delete account", () => {
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 
-    typeConfirmationPhrase(input, `delete account ${TEST_USER.email.toUpperCase()}`);
+    typeConfirmationPhrase(
+      input,
+      `delete account ${TEST_USER.email.toUpperCase()}`,
+    );
 
     expect(deleteButton().disabled).toBe(false);
   });
