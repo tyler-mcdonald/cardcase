@@ -1,0 +1,3 @@
+.paginationControl[data-active] {
+  border-color: var(--accent-rim);
+}
