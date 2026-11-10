@@ -93,7 +93,7 @@ export function AccountForm({
             fullWidth
             disabled={typeLocked}
             data={TYPE_OPTIONS}
-            color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
+            color={ACCOUNT_TYPE_DISPLAY[form.values.type].selectorColor}
             {...typeInputProps}
           />
         </Input.Wrapper>
