@@ -7,7 +7,7 @@ import { useDeleteUserAccount } from "./queries";
 
 const PHRASE_PREFIX = "delete account ";
 
-function confirmationPhrase(email: string) {
+function buildConfirmationPhrase(email: string) {
   return `${PHRASE_PREFIX}${email}`;
 }
 
@@ -58,7 +58,7 @@ function DeleteUserAccountForm({
 }) {
   const navigate = useNavigate();
   const [input, setInput] = useState("");
-  const phrase = confirmationPhrase(email);
+  const confirmationPhrase = buildConfirmationPhrase(email);
   const confirmed = matchesPhrase(input, email);
 
   function submit() {
@@ -88,7 +88,7 @@ function DeleteUserAccountForm({
         <TextInput
           label={
             <>
-              Type <Code fw={700}>{phrase}</Code> to confirm
+              Type <Code fw={700}>{confirmationPhrase}</Code> to confirm
             </>
           }
           value={input}
