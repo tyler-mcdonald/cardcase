@@ -20,6 +20,7 @@ import { makeAccount } from "../features/accounts/factories";
 import { makeTransaction } from "../features/transactions/factories";
 import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
+import { setStoredColorScheme } from "../color-scheme";
 
 vi.mock("@/features/transactions/api");
 
@@ -190,8 +191,6 @@ describe("adding a transaction", () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    window.localStorage.clear();
-    document.documentElement.removeAttribute("data-mantine-color-scheme");
   });
 
   async function openNewTransactionForm() {
@@ -399,7 +398,7 @@ describe("adding a transaction", () => {
   });
 
   it("keeps the default Save look in dark mode", async () => {
-    window.localStorage.setItem("mantine-color-scheme-value", "dark");
+    setStoredColorScheme("dark");
     await openNewTransactionForm();
 
     const saveButton = screen.getByRole("button", { name: "Save" });
