@@ -25,7 +25,8 @@ dev-web:
 up:
 	@ports=$$($(free_ports)) && set -- $$ports && \
 	WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --wait && \
-	echo "==> App running at http://localhost:$$1"
+	echo "==> App running at http://localhost:$$1" && \
+	echo "==> Backend running at http://localhost:$$2"
 
 down:
 	$(compose) down -v
