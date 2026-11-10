@@ -100,6 +100,7 @@ def test_delete_ends_the_users_other_sessions(
     auth_client: Client, other_client: Client, user: User
 ) -> None:
     other_client.force_login(user)
+    assert get_session(other_client).status_code == 200
 
     _delete_me(auth_client)
 
@@ -111,7 +112,7 @@ def _non_cascading_relations(
 ) -> list[str]:
     seen.add(model)
     found = []
-    for relation in model._meta.related_objects:
+    for relation in model._meta.get_fields(include_hidden=True):
         if not isinstance(relation, ForeignObjectRel) or relation.many_to_many:
             continue
         if relation.on_delete is not models.CASCADE:
