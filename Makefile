@@ -1,8 +1,7 @@
 .PHONY: setup setup-backend setup-web dev-backend dev-web up down logs
 .NOTPARALLEL:
 
-project = $(shell t=$$(git rev-parse --show-toplevel) && b=$$(git symbolic-ref --short -q HEAD || echo detached) && h=$$(printf '%s\n%s' "$$t" "$$b" | git hash-object --stdin | cut -c1-7) && printf 'cardcase-%s-%s' "$$b" "$$h" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-compose = docker compose -p $(or $(project),$(error Could not derive the compose project name from git)) --env-file backend/.env.example
+compose = docker compose --env-file backend/.env.example
 
 free_ports = python3 -c 'import socket; s = [socket.socket() for _ in range(2)]; [x.bind(("127.0.0.1", 0)) for x in s]; print(*(x.getsockname()[1] for x in s))'
 
