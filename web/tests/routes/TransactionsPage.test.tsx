@@ -190,6 +190,8 @@ describe("adding a transaction", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    window.localStorage.clear();
+    document.documentElement.removeAttribute("data-mantine-color-scheme");
   });
 
   async function openNewTransactionForm() {
@@ -393,6 +395,16 @@ describe("adding a transaction", () => {
     const saveButton = screen.getByRole("button", { name: "Save" });
     expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
       "var(--mantine-color-indigo-8)",
+    );
+  });
+
+  it("keeps the default Save look in dark mode", async () => {
+    window.localStorage.setItem("mantine-color-scheme-value", "dark");
+    await openNewTransactionForm();
+
+    const saveButton = screen.getByRole("button", { name: "Save" });
+    expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
+      "var(--accent-bg)",
     );
   });
 
