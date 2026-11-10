@@ -7,7 +7,7 @@ import {
 } from "@mantine/core";
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { cssVariablesResolver, theme } from "@/theme";
+import { cssVariablesResolver, theme, THEME_SHADES } from "@/theme";
 import classes from "@/theme.module.css";
 import { renderWithProviders } from "./render";
 
@@ -37,6 +37,13 @@ describe("theme", () => {
     const button = renderButton({ color: "red" });
     expect(button.style.getPropertyValue("--button-bg")).toBe(
       "var(--mantine-color-red-filled)",
+    );
+  });
+
+  it("keeps an explicit theme shade on buttons", () => {
+    const button = renderButton({ color: THEME_SHADES.strong });
+    expect(button.style.getPropertyValue("--button-bg")).toBe(
+      "var(--mantine-color-indigo-8)",
     );
   });
 

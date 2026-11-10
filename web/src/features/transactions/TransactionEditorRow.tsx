@@ -4,7 +4,15 @@ import {
   type FocusEvent,
   type KeyboardEvent,
 } from "react";
-import { Button, Group, Stack, Table, Text, TextInput } from "@mantine/core";
+import {
+  Button,
+  Group,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  useComputedColorScheme,
+} from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
@@ -12,6 +20,7 @@ import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { toTwoDecimalString } from "@/lib/format";
+import { THEME_SHADES } from "@/theme";
 import {
   type ClosableMutation,
   useGuardedClose,
@@ -66,6 +75,7 @@ export function TransactionEditorRow({
   const [actionsRow, setActionsRow] = useState<HTMLTableRowElement | null>(
     null,
   );
+  const colorScheme = useComputedColorScheme();
   const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
   const [dateDropdownOpened, setDateDropdownOpened] = useState(false);
   const form = useForm<TransactionFormValues>({
@@ -159,7 +169,7 @@ export function TransactionEditorRow({
     <>
       <Table.Tr
         ref={setEditorRow}
-        className={classes.editorRow}
+        className={`${classes.editorRow} ${classes.editorInputsRow}`}
         onKeyDown={handleEditorKeyDown}
       >
         <Table.Td>
@@ -261,6 +271,9 @@ export function TransactionEditorRow({
               </Button>
               <Button
                 size="xs"
+                color={
+                  colorScheme === "light" ? THEME_SHADES.strong : undefined
+                }
                 onClick={() => save()}
                 disabled={mutation.isPending}
               >

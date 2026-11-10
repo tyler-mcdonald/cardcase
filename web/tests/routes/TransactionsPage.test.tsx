@@ -387,6 +387,15 @@ describe("adding a transaction", () => {
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
   });
 
+  it("fills Save with the strong theme shade in light mode", async () => {
+    await openNewTransactionForm();
+
+    const saveButton = screen.getByRole("button", { name: "Save" });
+    expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
+      "var(--mantine-color-indigo-8)",
+    );
+  });
+
   it("focuses the date when opened", async () => {
     await openNewTransactionForm();
 
