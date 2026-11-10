@@ -9,7 +9,7 @@ export function DeleteConfirmation({
   error,
   onConfirm,
   onCancel,
-  confirmDisabled = false,
+  confirmEnabled = true,
   children,
 }: {
   message: string;
@@ -17,7 +17,7 @@ export function DeleteConfirmation({
   error: Error | null;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmDisabled?: boolean;
+  confirmEnabled?: boolean;
   children?: ReactNode;
 }) {
   return (
@@ -37,7 +37,7 @@ export function DeleteConfirmation({
         <Button
           color="red"
           onClick={onConfirm}
-          disabled={confirmDisabled}
+          disabled={!confirmEnabled}
           loading={isPending}
         >
           Delete

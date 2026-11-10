@@ -83,7 +83,7 @@ function DeleteUserAccountContent({
         error={deleteUserAccount.error}
         onConfirm={submit}
         onCancel={close}
-        confirmDisabled={!confirmed}
+        confirmEnabled={confirmed}
       >
         <TextInput
           label={
