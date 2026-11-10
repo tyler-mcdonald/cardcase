@@ -23,9 +23,7 @@ dev-web:
 
 up:
 	@set -- $$($(free_ports)); \
-	WEB_PORT=$$1 BACKEND_PORT=$$2 \
-	FRONTEND_URL=http://localhost:$$1 VITE_API_URL=http://localhost:$$2 \
-	docker compose up -d --build --wait && \
+	WEB_PORT=$$1 BACKEND_PORT=$$2 docker compose up -d --build --wait && \
 	echo "==> App running at http://localhost:$$1"
 
 down:
