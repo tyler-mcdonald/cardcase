@@ -19,8 +19,11 @@ def delete_expired_demo_users() -> None:
 
 
 def new_demo_email() -> str:
-    suffix = get_random_string(8, allowed_chars=DEMO_EMAIL_SUFFIX_CHARS)
-    return f"demo-{suffix}@{DEMO_EMAIL_DOMAIN}"
+    while True:
+        suffix = get_random_string(8, allowed_chars=DEMO_EMAIL_SUFFIX_CHARS)
+        email = f"demo-{suffix}@{DEMO_EMAIL_DOMAIN}"
+        if not User.objects.filter(email=email).exists():
+            return email
 
 
 @transaction.atomic

@@ -57,6 +57,21 @@ def test_anonymous_start_creates_and_logs_in_seeded_demo_user(client: Client) ->
     assert client.session.get_expiry_age() == DEMO_LIFETIME.total_seconds()
 
 
+def test_start_skips_a_demo_email_already_taken(
+    client: Client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    create_verified_user(f"demo-taken000@{DEMO_EMAIL_DOMAIN}", is_demo=True)
+    suffixes = iter(["taken000", "fresh000"])
+    monkeypatch.setattr(
+        "demo.services.get_random_string", lambda *args, **kwargs: next(suffixes)
+    )
+
+    response = _start(client)
+
+    assert response.status_code == 204
+    assert User.objects.filter(email=f"demo-fresh000@{DEMO_EMAIL_DOMAIN}").exists()
+
+
 def test_start_as_demo_user_does_not_create_another(client: Client) -> None:
     _start(client)
 
