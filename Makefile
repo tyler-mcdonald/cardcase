@@ -19,7 +19,7 @@ dev-backend:
 dev-web:
 	@$(MAKE) --no-print-directory -C web dev
 
-# Run this worktree's full stack on its own ports so several worktrees can run side by side.
+# Run the full stack in Docker on unused ports so several copies can run side by side.
 up:
 	@set -- $$(python3 scripts/available_ports.py 2) && \
 	WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --wait && \
