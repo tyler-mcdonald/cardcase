@@ -1,6 +1,9 @@
 :where([data-mantine-color-scheme="dark"])
   :is(
-    .rim[data-variant="light"]:not(:disabled, [data-disabled]),
+    .rim[data-variant="light"]:not(
+        :disabled:not([data-loading]),
+        [data-disabled]:not([data-loading])
+      ),
     .rim[data-active],
     .avatarRim
   ) {
