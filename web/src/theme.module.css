@@ -1,3 +1,11 @@
-.paginationControl[data-active] {
-  border-color: var(--accent-rim);
+:where([data-mantine-color-scheme="dark"])
+  :is(
+    .rim[data-variant="light"]:not(
+        :disabled:not([data-loading]),
+        [data-disabled]:not([data-loading])
+      ),
+    .rim[data-active],
+    .avatarRim
+  ) {
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
 }

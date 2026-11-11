@@ -403,7 +403,7 @@ describe("adding a transaction", () => {
 
     const saveButton = screen.getByRole("button", { name: "Save" });
     expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
-      "var(--accent-bg)",
+      "var(--mantine-color-indigo-light)",
     );
   });
 

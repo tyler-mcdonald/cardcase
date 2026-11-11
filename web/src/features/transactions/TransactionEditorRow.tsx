@@ -271,6 +271,7 @@ export function TransactionEditorRow({
               </Button>
               <Button
                 size="xs"
+                variant={colorScheme === "light" ? "filled" : undefined}
                 color={
                   colorScheme === "light" ? THEME_SHADES.strong : undefined
                 }
