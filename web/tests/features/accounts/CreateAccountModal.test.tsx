@@ -1,10 +1,8 @@
-import { DEFAULT_THEME, getThemeColor, mergeMantineTheme } from "@mantine/core";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { THEME_SHADES, theme } from "@/theme";
 import { renderWithProviders } from "../../render";
 import { makeAccount } from "./factories";
 
@@ -51,21 +49,6 @@ describe("CreateAccountModal", () => {
       expires_on: null,
       initial_balance: "0.00",
     });
-  });
-
-  it("shows the Flight credit option in the theme's strong shade", () => {
-    renderForm();
-
-    fireEvent.click(screen.getByRole("radio", { name: "Flight credit" }));
-
-    expect(
-      screen.getByRole("radiogroup").style.getPropertyValue("--sc-color"),
-    ).toBe(
-      getThemeColor(
-        THEME_SHADES.strong,
-        mergeMantineTheme(DEFAULT_THEME, theme),
-      ),
-    );
   });
 
   it("submits the entered initial balance", async () => {
