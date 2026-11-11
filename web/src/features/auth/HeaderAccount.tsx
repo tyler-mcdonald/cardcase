@@ -27,7 +27,7 @@ function DemoBadge() {
       label="Demo data is temporary"
       events={{ hover: true, focus: true, touch: true }}
     >
-      <Badge variant="light" radius="xl" tabIndex={0}>
+      <Badge variant="light" color="gray" radius="xl" tabIndex={0}>
         Demo
       </Badge>
     </Tooltip>

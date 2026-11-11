@@ -48,7 +48,43 @@ async function finishOpeningClick() {
   await act(() => new Promise((resolve) => setTimeout(resolve)));
 }
 
-it("shows each transaction's date, account, type, description, and amount", async () => {
+const COLUMN_HEADERS = ["Date", "Account", "Description", "Outflow", "Inflow"];
+
+function columnHeaders() {
+  return screen
+    .getAllByRole("columnheader")
+    .map((header) => header.textContent);
+}
+
+function columnSpan(row: HTMLTableRowElement) {
+  return Array.from(row.cells).reduce((span, cell) => span + cell.colSpan, 0);
+}
+
+it("shows the transaction columns", async () => {
+  mockedListTransactions.mockResolvedValueOnce(
+    makePage([makeTransaction({ description: "Groceries" })]),
+  );
+
+  renderPage();
+
+  await screen.findByText("Groceries");
+  expect(columnHeaders()).toEqual(COLUMN_HEADERS);
+});
+
+it("shows a loading skeleton that spans every column", () => {
+  mockedListTransactions.mockReturnValueOnce(new Promise(() => {}));
+
+  renderPage();
+
+  expect(columnHeaders()).toEqual(COLUMN_HEADERS);
+  const [, ...skeletonRows] = screen.getAllByRole<HTMLTableRowElement>("row");
+  expect(skeletonRows.length).toBeGreaterThan(0);
+  for (const row of skeletonRows) {
+    expect(columnSpan(row)).toBe(COLUMN_HEADERS.length);
+  }
+});
+
+it("shows each transaction's date, account, description, and amount", async () => {
   mockedListTransactions.mockResolvedValueOnce(
     makePage([
       makeTransaction({
@@ -80,7 +116,6 @@ it("shows each transaction's date, account, type, description, and amount", asyn
   expect(cells(latteRow)).toEqual([
     "Sep 28, 2026",
     "Starbucks",
-    "Gift card",
     "Latte",
     "$4.75",
     "",
@@ -88,7 +123,6 @@ it("shows each transaction's date, account, type, description, and amount", asyn
   expect(cells(refundRow)).toEqual([
     "Sep 27, 2026",
     "Delta",
-    "Flight credit",
     "Refund",
     "",
     "$150.00",
@@ -209,6 +243,19 @@ describe("adding a transaction", () => {
       target: { value: amount },
     });
   }
+
+  it("lays the editor out across every column", async () => {
+    await openNewTransactionForm();
+
+    const editorRow = screen
+      .getByRole("textbox", { name: "Description" })
+      .closest("tr")!;
+    const actionsRow = screen
+      .getByRole("button", { name: "Save" })
+      .closest("tr")!;
+    expect(columnSpan(editorRow)).toBe(COLUMN_HEADERS.length);
+    expect(columnSpan(actionsRow)).toBe(COLUMN_HEADERS.length);
+  });
 
   it("saves an outflow as a negative amount", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());

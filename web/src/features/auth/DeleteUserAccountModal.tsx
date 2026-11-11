@@ -76,7 +76,7 @@ function DeleteUserAccountForm({
       }}
     >
       <DeleteConfirmation
-        message="This permanently deletes your account and all of your accounts and transactions. You can't undo this."
+        message="This will permanently delete your user account and all associated data. You can't undo this."
         isPending={deleteUserAccount.isPending}
         error={deleteUserAccount.error}
         onConfirm={submit}
