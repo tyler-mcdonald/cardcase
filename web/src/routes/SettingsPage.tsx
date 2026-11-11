@@ -51,7 +51,7 @@ export function SettingsPage() {
           <Text size="sm">
             Permanently delete your account and all of your data.
           </Text>
-          <Button color="red" onClick={openDelete}>
+          <Button variant="filled" color="red" onClick={openDelete}>
             Delete account
           </Button>
         </Group>
