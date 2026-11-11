@@ -1,3 +1,5 @@
+"""Print N unused localhost ports so `make up` can give each worktree's Docker stack its own web and backend ports."""
+
 import socket
 import sys
 
