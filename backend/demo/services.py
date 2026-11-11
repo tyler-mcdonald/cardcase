@@ -29,7 +29,8 @@ def create_demo_user() -> User:
     for _ in range(DEMO_EMAIL_ATTEMPTS - 1):
         with suppress(IntegrityError), transaction.atomic():
             return create_verified_user(new_demo_email(), is_demo=True)
-    return create_verified_user(new_demo_email(), is_demo=True)
+    with transaction.atomic():
+        return create_verified_user(new_demo_email(), is_demo=True)
 
 
 @transaction.atomic
