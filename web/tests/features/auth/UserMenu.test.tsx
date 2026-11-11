@@ -4,7 +4,6 @@ import { UserMenu } from "@/features/auth/UserMenu";
 import { useLogout } from "@/features/auth/queries";
 import { TEST_USER } from "./fixtures";
 import { renderWithProviders } from "../../render";
-import { setStoredColorScheme, storedColorScheme } from "../../color-scheme";
 
 vi.mock("@/features/auth/queries");
 
@@ -53,6 +52,8 @@ beforeEach(() => {
 afterEach(() => {
   logout.mockReset();
   window.matchMedia = originalMatchMedia;
+  window.localStorage.clear();
+  document.documentElement.removeAttribute("data-mantine-color-scheme");
 });
 
 describe("UserMenu", () => {
@@ -126,27 +127,33 @@ describe("UserMenu", () => {
     chooseTheme("Dark");
 
     expect(appliedScheme()).toBe("dark");
-    expect(storedColorScheme()).toBe("dark");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "dark",
+    );
   });
 
   it("switches to light", () => {
-    setStoredColorScheme("dark");
+    window.localStorage.setItem("mantine-color-scheme-value", "dark");
     renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
 
     chooseTheme("Light");
 
     expect(appliedScheme()).toBe("light");
-    expect(storedColorScheme()).toBe("light");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "light",
+    );
   });
 
   it("switches to system and follows the OS", () => {
     mockOsDark();
-    setStoredColorScheme("light");
+    window.localStorage.setItem("mantine-color-scheme-value", "light");
     renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
 
     chooseTheme("System");
 
-    expect(storedColorScheme()).toBe("auto");
+    expect(window.localStorage.getItem("mantine-color-scheme-value")).toBe(
+      "auto",
+    );
     expect(appliedScheme()).toBe("dark");
   });
 
