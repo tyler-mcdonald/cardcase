@@ -7,6 +7,7 @@ import {
   rgba,
   type CSSVariablesResolver,
   type MantineColor,
+  type VariantColorsResolver,
 } from "@mantine/core";
 import classes from "./theme.module.css";
 
@@ -16,14 +17,15 @@ export const THEME_SHADES = {
   strong: `${THEME_COLOR}.8`,
 } as const;
 
+const variantColorResolver: VariantColorsResolver = (input) => {
+  const colors = defaultVariantColorsResolver(input);
+  if (input.variant !== "light") return colors;
+  return { ...colors, border: "1px solid var(--light-rim, transparent)" };
+};
+
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
-  variantColorResolver: (input) => {
-    const colors = defaultVariantColorsResolver(input);
-    return input.variant === "light"
-      ? { ...colors, border: "1px solid var(--light-rim, transparent)" }
-      : colors;
-  },
+  variantColorResolver,
   components: {
     Avatar: Avatar.extend({
       defaultProps: { color: THEME_COLOR },
