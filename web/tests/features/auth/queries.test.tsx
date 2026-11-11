@@ -4,10 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import {
   sessionQuery,
   useConfirmLoginCode,
+  useDeleteUserAccount,
   useLogout,
 } from "@/features/auth/queries";
 import { allAccountsQuery } from "@/features/accounts/queries";
-import { confirmLoginCode, logout } from "@/features/auth/api";
+import { confirmLoginCode, deleteMe, logout } from "@/features/auth/api";
 import { announceUserChange } from "@/features/auth/session-channel";
 import { makeAccount } from "../accounts/factories";
 import { TestProviders } from "../../TestProviders";
@@ -18,6 +19,7 @@ vi.mock("@/features/auth/session-channel");
 
 const mockedConfirmLoginCode = vi.mocked(confirmLoginCode);
 const mockedLogout = vi.mocked(logout);
+const mockedDeleteMe = vi.mocked(deleteMe);
 
 const CACHED_ACCOUNTS_KEY = allAccountsQuery().queryKey;
 const SESSION_KEY = sessionQuery().queryKey;
@@ -80,6 +82,21 @@ describe("auth queries", () => {
       result.current.queryClient.getQueryData(CACHED_ACCOUNTS_KEY),
     ).toBeUndefined();
     expect(result.current.queryClient.getQueryData(SESSION_KEY)).toEqual(user);
+  });
+
+  it("signs out locally and clears cached data when account deletion succeeds", async () => {
+    mockedDeleteMe.mockResolvedValueOnce(null);
+    const { result } = renderWithQueryClient(useDeleteUserAccount);
+    const queryClient = result.current.queryClient;
+    queryClient.setQueryData(SESSION_KEY, TEST_USER);
+    queryClient.setQueryData(CACHED_ACCOUNTS_KEY, [makeAccount()]);
+
+    result.current.hook.mutate();
+
+    await waitFor(() => expect(result.current.hook.isSuccess).toBe(true));
+    expect(queryClient.getQueryData(SESSION_KEY)).toBeNull();
+    expect(queryClient.getQueryData(CACHED_ACCOUNTS_KEY)).toBeUndefined();
+    expect(announceUserChange).toHaveBeenCalledTimes(1);
   });
 
   it("announces a user change when the session user changes", async () => {
