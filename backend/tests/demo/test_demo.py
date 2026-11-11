@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 
 import pytest
@@ -44,8 +45,9 @@ def test_anonymous_start_creates_and_logs_in_seeded_demo_user(client: Client) ->
 
     assert response.status_code == 204
     [user] = _demo_users()
-    assert user.email.startswith("demo-")
-    assert user.email.endswith(f"@{DEMO_EMAIL_DOMAIN}")
+    assert re.fullmatch(
+        rf"demo-[a-z0-9]{{8}}@{re.escape(DEMO_EMAIL_DOMAIN)}", user.email
+    )
     assert EmailAddress.objects.filter(user=user, verified=True, primary=True).exists()
     assert Account.objects.filter(user=user).exists()
     assert Transaction.objects.filter(account__user=user).exists()

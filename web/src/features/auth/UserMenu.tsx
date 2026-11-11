@@ -6,10 +6,9 @@ import { useLogout } from "./queries";
 
 interface UserMenuProps {
   email: string;
-  isDemo: boolean;
 }
 
-export function UserMenu({ email, isDemo }: UserMenuProps) {
+export function UserMenu({ email }: UserMenuProps) {
   const logout = useLogout();
 
   return (
@@ -22,9 +21,7 @@ export function UserMenu({ email, isDemo }: UserMenuProps) {
         </UnstyledButton>
       </Menu.Target>
       <Menu.Dropdown>
-        {!isDemo && (
-          <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
-        )}
+        <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
         <Menu.Item
           component={Link}
           to="/settings"
