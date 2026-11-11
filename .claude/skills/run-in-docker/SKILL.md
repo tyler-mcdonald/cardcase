@@ -1,6 +1,6 @@
 ---
 name: run-in-docker
-description: Run the app's full local stack in Docker, for the current checkout or a named branch or PR, and hand the user a URL to try it. Use when asked to run, spin up, or try out the app, a branch, or a PR locally.
+description: Run the app's full local stack in Docker. Use when asked to run, start, spin-up the app, etc.
 ---
 
 # Run in Docker
