@@ -35,6 +35,7 @@ export function AccountForm({
   initialValues,
   showInitialBalance = false,
   typeLocked = false,
+  autoFocus = true,
   submitLabel,
   isPending,
   fieldErrors,
@@ -46,6 +47,7 @@ export function AccountForm({
   initialValues: AccountFormValues;
   showInitialBalance?: boolean;
   typeLocked?: boolean;
+  autoFocus?: boolean;
   submitLabel: string;
   isPending: boolean;
   fieldErrors: Record<string, string>;
@@ -76,7 +78,7 @@ export function AccountForm({
           label="Name"
           required
           maxLength={255}
-          data-autofocus
+          data-autofocus={autoFocus || undefined}
           {...form.getInputProps("name")}
         />
         <Input.Wrapper
