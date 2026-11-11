@@ -1,6 +1,5 @@
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
-import { resetColorScheme } from "./color-scheme";
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -34,5 +33,4 @@ Object.defineProperty(window, "scrollTo", {
 
 afterEach(() => {
   cleanup();
-  resetColorScheme();
 });
