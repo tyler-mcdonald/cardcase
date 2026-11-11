@@ -22,15 +22,7 @@
 }
 
 .artFlightCredit {
-  background-color: var(--mantine-color-violet-light);
-}
-
-[data-mantine-color-scheme="dark"] .artFlightCredit {
-  background-color: color-mix(
-    in srgb,
-    var(--mantine-color-violet-light) 55%,
-    transparent
-  );
+  background-color: var(--mantine-color-gray-light);
 }
 
 .nameGiftCard {
@@ -42,15 +34,11 @@
 }
 
 .nameFlightCredit {
-  color: var(--mantine-color-violet-light-color);
+  color: var(--mantine-color-gray-light-color);
 }
 
 [data-mantine-color-scheme="dark"] .nameFlightCredit {
-  color: color-mix(
-    in srgb,
-    var(--mantine-color-violet-light-color) 60%,
-    var(--mantine-color-text)
-  );
+  color: var(--mantine-color-gray-5);
 }
 
 .expiry {
