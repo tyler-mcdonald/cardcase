@@ -2,6 +2,7 @@ import {
   Avatar,
   Button,
   createTheme,
+  defaultVariantColorsResolver,
   Pagination,
   rgba,
   type CSSVariablesResolver,
@@ -17,19 +18,21 @@ export const THEME_SHADES = {
 
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
+  variantColorResolver: (input) => {
+    const colors = defaultVariantColorsResolver(input);
+    return input.variant === "light"
+      ? { ...colors, border: "1px solid var(--light-rim, transparent)" }
+      : colors;
+  },
   components: {
     Avatar: Avatar.extend({
       defaultProps: { color: THEME_COLOR },
-      classNames: { placeholder: classes.avatarRim },
     }),
     Button: Button.extend({
       defaultProps: { variant: "light" },
-      classNames: (_theme, props) => ({
-        root: props.color ? undefined : classes.rim,
-      }),
     }),
     Pagination: Pagination.extend({
-      classNames: { control: classes.rim },
+      classNames: { control: classes.paginationControl },
       vars: () => ({
         root: {
           "--pagination-active-bg": "var(--mantine-primary-color-light)",
@@ -41,15 +44,17 @@ export const theme = createTheme({
   },
 });
 
-export const cssVariablesResolver: CSSVariablesResolver = (resolvedTheme) => {
-  const shades = resolvedTheme.colors[THEME_COLOR];
-  return {
-    variables: {},
-    light: {},
-    dark: {
-      [`--mantine-color-${THEME_COLOR}-light`]: rgba(shades[5], 0.15),
-      [`--mantine-color-${THEME_COLOR}-light-hover`]: rgba(shades[5], 0.22),
-      [`--mantine-color-${THEME_COLOR}-light-color`]: shades[3],
-    },
-  };
-};
+export const cssVariablesResolver: CSSVariablesResolver = (resolvedTheme) => ({
+  variables: {},
+  light: {},
+  dark: {
+    "--light-rim": "color-mix(in srgb, currentColor 35%, transparent)",
+    ...Object.fromEntries(
+      Object.entries(resolvedTheme.colors).flatMap(([name, shades]) => [
+        [`--mantine-color-${name}-light`, rgba(shades[5], 0.15)],
+        [`--mantine-color-${name}-light-hover`, rgba(shades[5], 0.22)],
+        [`--mantine-color-${name}-light-color`, shades[3]],
+      ]),
+    ),
+  },
+});
