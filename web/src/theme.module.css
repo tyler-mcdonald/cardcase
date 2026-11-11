@@ -1,4 +1,8 @@
 :where([data-mantine-color-scheme="dark"])
-  :is(.rim[data-variant="light"], .rim[data-active], .avatarRim) {
+  :is(
+    .rim[data-variant="light"]:not(:disabled, [data-disabled]),
+    .rim[data-active],
+    .avatarRim
+  ) {
   border-color: color-mix(in srgb, currentColor 35%, transparent);
 }
