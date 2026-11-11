@@ -1,4 +1,4 @@
-import { Button, Modal, Stack, TextInput } from "@mantine/core";
+import { Button, FocusTrap, Modal, Stack, TextInput } from "@mantine/core";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
@@ -39,6 +39,7 @@ export function EditAccountModal({
     <Modal.Root opened={opened} onClose={close}>
       <Modal.Overlay />
       <Modal.Content>
+        <FocusTrap.InitialFocus />
         {account && (
           <EditAccountContent
             key={account.id}
@@ -128,6 +129,7 @@ function EditAccountContent({
             <AccountForm
               initialValues={{ ...account, initial_balance: 0 }}
               typeLocked
+              autoFocus={false}
               submitLabel="Save changes"
               isPending={updateAccount.isPending}
               fieldErrors={fieldErrors}
