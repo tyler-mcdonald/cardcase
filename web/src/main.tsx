@@ -8,6 +8,7 @@ import "@mantine/dates/styles.css";
 import App from "./App.tsx";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { isClientError } from "@/lib/api/errors";
+import { theme } from "@/theme";
 
 const MAX_QUERY_RETRIES = 3;
 
@@ -23,7 +24,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider defaultColorScheme="auto">
+      <MantineProvider theme={theme} defaultColorScheme="auto">
         <BrowserRouter>
           <AuthProvider>
             <App />
