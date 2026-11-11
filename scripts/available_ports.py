@@ -2,7 +2,7 @@ import socket
 import sys
 
 
-def free_ports(count: int) -> list[int]:
+def available_ports(count: int) -> list[int]:
     sockets = [socket.socket() for _ in range(count)]
     try:
         for s in sockets:
@@ -14,4 +14,4 @@ def free_ports(count: int) -> list[int]:
 
 
 if __name__ == "__main__":
-    print(*free_ports(int(sys.argv[1])))
+    print(*available_ports(int(sys.argv[1])))
