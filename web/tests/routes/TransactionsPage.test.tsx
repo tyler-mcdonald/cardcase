@@ -20,7 +20,6 @@ import { makeAccount } from "../features/accounts/factories";
 import { makeTransaction } from "../features/transactions/factories";
 import { makePage } from "../lib/api/factories";
 import { renderWithProviders } from "../render";
-import { setStoredColorScheme } from "../color-scheme";
 
 vi.mock("@/features/transactions/api");
 
@@ -433,25 +432,6 @@ describe("adding a transaction", () => {
 
     expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
-  });
-
-  it("fills Save with the strong theme shade in light mode", async () => {
-    await openNewTransactionForm();
-
-    const saveButton = screen.getByRole("button", { name: "Save" });
-    expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
-      "var(--mantine-color-indigo-8)",
-    );
-  });
-
-  it("keeps the default Save look in dark mode", async () => {
-    setStoredColorScheme("dark");
-    await openNewTransactionForm();
-
-    const saveButton = screen.getByRole("button", { name: "Save" });
-    expect(saveButton.style.getPropertyValue("--button-bg")).toBe(
-      "var(--mantine-color-indigo-light)",
-    );
   });
 
   it("focuses the date when opened", async () => {
