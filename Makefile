@@ -20,11 +20,12 @@ dev-web:
 	@$(MAKE) --no-print-directory -C web dev
 
 # Run the full stack in Docker on unused ports so several copies can run side by side.
+# Each copy gets its own *.localhost hostname, since browsers share localhost cookies across ports.
 up:
-	@set -- $$(python3 scripts/available_ports.py 2) && \
-	WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --wait && \
-	echo "==> App running at http://localhost:$$1" && \
-	echo "==> Backend running at http://localhost:$$2"
+	@set -- $$(python3 scripts/available_ports.py 2) && host=cardcase-$$1.localhost && \
+	APP_HOST=$$host WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --wait && \
+	echo "==> App running at http://$$host:$$1" && \
+	echo "==> Backend running at http://$$host:$$2"
 
 # Also deletes the database volume, so the next `make up` starts from a fresh database.
 down:
