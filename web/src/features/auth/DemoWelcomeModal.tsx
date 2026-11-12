@@ -30,7 +30,6 @@ function WelcomeModal({ userId }: { userId: string }) {
       opened={!seen}
       onClose={close}
       title="Welcome to the cardcase demo 👋"
-      centered
     >
       <Stack>
         <Text size="sm">

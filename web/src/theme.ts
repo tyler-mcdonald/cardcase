@@ -3,6 +3,7 @@ import {
   Button,
   createTheme,
   defaultVariantColorsResolver,
+  Modal,
   Pagination,
   rgba,
   type CSSVariablesResolver,
@@ -32,6 +33,12 @@ export const theme = createTheme({
     }),
     Button: Button.extend({
       defaultProps: { variant: "light" },
+    }),
+    Modal: Modal.extend({
+      classNames: {
+        inner: classes.modalInner,
+        content: classes.modalContent,
+      },
     }),
     Pagination: Pagination.extend({
       classNames: { control: classes.paginationControl },
