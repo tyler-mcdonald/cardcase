@@ -6,25 +6,22 @@ import { useLogout } from "./queries";
 
 interface UserMenuProps {
   email: string;
-  isDemo: boolean;
 }
 
-export function UserMenu({ email, isDemo }: UserMenuProps) {
+export function UserMenu({ email }: UserMenuProps) {
   const logout = useLogout();
 
   return (
     <Menu position="bottom-end" width={220}>
       <Menu.Target>
         <UnstyledButton aria-label="Account menu">
-          <Avatar radius="xl" size={30} color="blue">
+          <Avatar radius="xl" size={30}>
             {email.charAt(0).toUpperCase()}
           </Avatar>
         </UnstyledButton>
       </Menu.Target>
       <Menu.Dropdown>
-        {!isDemo && (
-          <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
-        )}
+        <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
         <Menu.Item
           component={Link}
           to="/settings"

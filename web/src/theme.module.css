@@ -13,3 +13,7 @@
   --modal-content-flex: 0 0 auto;
   width: var(--modal-size);
 }
+
+:where([data-mantine-color-scheme="dark"]) .paginationControl[data-active] {
+  border-color: var(--light-rim);
+}

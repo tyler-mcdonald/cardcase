@@ -10,10 +10,6 @@
   width: 180px;
 }
 
-.accountType {
-  width: 130px;
-}
-
 .description {
   overflow-wrap: anywhere;
 }
@@ -29,5 +25,17 @@
 }
 
 .editorRow {
-  background-color: var(--mantine-primary-color-light);
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-light) 50%,
+    transparent
+  );
+}
+
+.editorRow > td:first-child {
+  box-shadow: inset 3px 0 0 var(--mantine-primary-color-filled);
+}
+
+.editorRow.editorInputsRow {
+  border-bottom: none;
 }

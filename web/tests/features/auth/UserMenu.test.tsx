@@ -58,22 +58,15 @@ afterEach(() => {
 
 describe("UserMenu", () => {
   it("shows the email's first letter, uppercased, as the avatar", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
 
     expect(
       screen.getByRole("button", { name: "Account menu" }).textContent,
     ).toBe("T");
   });
 
-  it("leaves the email out of the menu for a demo user", () => {
-    renderWithProviders(<UserMenu email="demo-2@demo.invalid" isDemo />);
-    openMenu();
-
-    expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
-  });
-
   it("lists the email, Settings, the theme options and Sign out in order", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
     openMenu();
 
     const menu = screen.getByRole("menu");
@@ -94,7 +87,7 @@ describe("UserMenu", () => {
   });
 
   it("wraps a long email instead of overflowing the menu", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
     openMenu();
 
     expect(
@@ -104,7 +97,7 @@ describe("UserMenu", () => {
   });
 
   it("links Settings to the settings page", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
     openMenu();
 
     expect(
@@ -113,7 +106,7 @@ describe("UserMenu", () => {
   });
 
   it("signs out when Sign out is clicked", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
     openMenu();
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }));
@@ -122,7 +115,7 @@ describe("UserMenu", () => {
   });
 
   it("switches to dark", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
 
     chooseTheme("Dark");
 
@@ -134,7 +127,7 @@ describe("UserMenu", () => {
 
   it("switches to light", () => {
     window.localStorage.setItem("mantine-color-scheme-value", "dark");
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
 
     chooseTheme("Light");
 
@@ -147,7 +140,7 @@ describe("UserMenu", () => {
   it("switches to system and follows the OS", () => {
     mockOsDark();
     window.localStorage.setItem("mantine-color-scheme-value", "light");
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
 
     chooseTheme("System");
 
@@ -158,7 +151,7 @@ describe("UserMenu", () => {
   });
 
   it("marks only the saved theme as checked", () => {
-    renderWithProviders(<UserMenu email={TEST_USER.email} isDemo={false} />);
+    renderWithProviders(<UserMenu email={TEST_USER.email} />);
 
     chooseTheme("Dark");
     openMenu();
