@@ -12,7 +12,7 @@ export type Account = {
 
 export type AccountInput = Pick<
   Account,
-  "name" | "description" | "type" | "expires_on"
+  "name" | "description" | "type" | "brand_domain" | "expires_on"
 >;
 
 export type AccountCreateInput = AccountInput & { initial_balance: string };

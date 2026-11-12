@@ -11,6 +11,7 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
+import { BrandNameInput } from "@/features/brands/BrandNameInput";
 import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -75,12 +76,20 @@ export function AccountForm({
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
-        <TextInput
+        <BrandNameInput
           label="Name"
           required
           maxLength={255}
           data-autofocus={autoFocus || undefined}
           {...form.getInputProps("name")}
+          value={form.values.name}
+          onChange={(name) => {
+            form.setFieldValue("name", name);
+            form.setFieldValue("brand_domain", "");
+          }}
+          onBrandSelect={(brand) =>
+            form.setValues({ name: brand.name, brand_domain: brand.domain })
+          }
         />
         <Input.Wrapper
           label="Type"

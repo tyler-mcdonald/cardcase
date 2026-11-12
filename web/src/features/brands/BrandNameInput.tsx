@@ -1,0 +1,82 @@
+import {
+  Combobox,
+  Group,
+  Text,
+  TextInput,
+  useCombobox,
+  type TextInputProps,
+} from "@mantine/core";
+import { useState } from "react";
+import { BrandLogo } from "./BrandLogo";
+import { useBrandSearch, type Brand } from "./queries";
+
+type BrandNameInputProps = Omit<TextInputProps, "value" | "onChange"> & {
+  value: string;
+  onChange: (name: string) => void;
+  onBrandSelect: (brand: Brand) => void;
+};
+
+export function BrandNameInput({
+  value,
+  onChange,
+  onBrandSelect,
+  onBlur,
+  ...inputProps
+}: BrandNameInputProps) {
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+  const [search, setSearch] = useState("");
+  const { data: brands = [] } = useBrandSearch(search);
+
+  function selectBrand(domain: string) {
+    const brand = brands.find((candidate) => candidate.domain === domain);
+    if (brand) {
+      onBrandSelect(brand);
+    }
+    combobox.closeDropdown();
+  }
+
+  return (
+    <Combobox store={combobox} onOptionSubmit={selectBrand}>
+      <Combobox.Target>
+        <TextInput
+          {...inputProps}
+          value={value}
+          autoComplete="off"
+          onChange={(event) => {
+            const name = event.currentTarget.value;
+            onChange(name);
+            setSearch(name);
+            combobox.openDropdown();
+            combobox.updateSelectedOptionIndex();
+          }}
+          onBlur={(event) => {
+            combobox.closeDropdown();
+            onBlur?.(event);
+          }}
+        />
+      </Combobox.Target>
+      <Combobox.Dropdown hidden={search.trim() === "" || brands.length === 0}>
+        <Combobox.Options>
+          {brands.map((brand, index) => (
+            <Combobox.Option
+              value={brand.domain}
+              key={`${brand.domain}-${index}`}
+            >
+              <Group gap="sm" wrap="nowrap">
+                <BrandLogo domain={brand.domain} size={24} />
+                <div>
+                  <Text size="sm">{brand.name}</Text>
+                  <Text size="xs" c="dimmed">
+                    {brand.domain}
+                  </Text>
+                </div>
+              </Group>
+            </Combobox.Option>
+          ))}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
+  );
+}

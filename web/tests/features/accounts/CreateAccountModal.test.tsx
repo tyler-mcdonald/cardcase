@@ -1,12 +1,18 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
+import { stubBrandSearch } from "../brands/search";
 import { makeAccount } from "./factories";
 
 vi.mock("@/features/accounts/api");
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 
 const mockedCreateAccount = vi.mocked(createAccount);
 
@@ -45,9 +51,46 @@ describe("CreateAccountModal", () => {
     expect(submittedInput()).toEqual({
       name: "Delta credit",
       type: "flight_credit",
+      brand_domain: "",
       description: "Cancelled flight",
       expires_on: null,
       initial_balance: "0.00",
+    });
+  });
+
+  it("links the picked brand", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "starb" },
+    });
+    fireEvent.click(await screen.findByRole("option"));
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({
+      name: "Starbucks",
+      brand_domain: "starbucks.com",
+    });
+  });
+
+  it("unlinks the brand when the name is typed over", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+    const name = screen.getByRole("textbox", { name: /^name/i });
+
+    fireEvent.change(name, { target: { value: "starb" } });
+    fireEvent.click(await screen.findByRole("option"));
+    fireEvent.change(name, { target: { value: "Starbucks Reserve" } });
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({
+      name: "Starbucks Reserve",
+      brand_domain: "",
     });
   });
 

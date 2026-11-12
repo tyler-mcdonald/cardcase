@@ -60,6 +60,7 @@ describe("createAccount", () => {
   const input = {
     name: "Starbucks",
     type: "gift_card" as const,
+    brand_domain: "starbucks.com",
     description: "",
     expires_on: "2026-12-31",
     initial_balance: "100.00",
