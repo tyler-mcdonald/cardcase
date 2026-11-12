@@ -116,6 +116,20 @@
   line-height: 1;
 }
 
+.brandLogo {
+  display: block;
+  box-sizing: border-box;
+  padding: 3px;
+  border-radius: var(--mantine-radius-sm);
+  background-color: var(--mantine-color-white);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  object-fit: contain;
+}
+
+[data-mantine-color-scheme="dark"] .brandLogo {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
 .nameRow {
   position: relative;
   flex: 1;

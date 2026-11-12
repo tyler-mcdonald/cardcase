@@ -5,6 +5,10 @@ import type { Account } from "@/features/accounts/types";
 import { makeAccount } from "./factories";
 import { renderWithProviders } from "../../render";
 
+vi.mock("@/features/brands/api", () => ({
+  brandLogoUrl: (domain: string) => `https://logos.test/${domain}`,
+}));
+
 function renderCard(account: Account) {
   const onEdit = vi.fn();
   renderWithProviders(<AccountCard account={account} onEdit={onEdit} />);
@@ -98,5 +102,36 @@ describe("AccountCard", () => {
     expect(screen.getByText("$12.34").hasAttribute("data-negative")).toBe(
       false,
     );
+  });
+
+  it("shows the brand logo in place of the type emoji", () => {
+    const { container } = renderWithProviders(
+      <AccountCard
+        account={makeAccount({ brand_domain: "starbucks.com" })}
+        onEdit={vi.fn()}
+      />,
+    );
+
+    const type = screen.getByRole("img", { name: "Gift card" });
+    expect(type.textContent).toBe("");
+    expect(container.querySelector("img")?.getAttribute("src")).toBe(
+      "https://logos.test/starbucks.com",
+    );
+  });
+
+  it("shows the type emoji when the brand logo fails to load", () => {
+    const { container } = renderWithProviders(
+      <AccountCard
+        account={makeAccount({ brand_domain: "starbucks.com" })}
+        onEdit={vi.fn()}
+      />,
+    );
+
+    fireEvent.error(container.querySelector("img")!);
+
+    expect(screen.getByRole("img", { name: "Gift card" }).textContent).toBe(
+      "🎁",
+    );
+    expect(container.querySelector("img")).toBeNull();
   });
 });
