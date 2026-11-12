@@ -9,8 +9,9 @@
   flex: 0 1 15dvh;
 }
 
-.modalContent {
+.modalContent:not([data-full-screen]) {
   --modal-content-flex: 0 0 auto;
+
   width: var(--modal-size);
 }
 
