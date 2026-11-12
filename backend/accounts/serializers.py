@@ -28,6 +28,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             "name",
             "description",
             "type",
+            "brand_domain",
             "expires_on",
             "balance",
             "initial_balance",
@@ -45,6 +46,9 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
 
     validate_type = _create_only
     validate_initial_balance = _create_only
+
+    def validate_brand_domain(self, value: str) -> str:
+        return value.lower()
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if self.instance is None and self._at_account_limit():

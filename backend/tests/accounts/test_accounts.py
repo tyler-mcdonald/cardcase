@@ -296,6 +296,101 @@ def test_update_account_fields(
     assert getattr(account, model_attr) == model_value
 
 
+BRAND_ACCOUNT = {"name": "Amazon", "type": "gift_card", "initial_balance": "0"}
+
+
+@pytest.mark.django_db
+def test_create_account_saves_lowercased_brand_domain(
+    auth_client: Client, user: User
+) -> None:
+    response = post(
+        auth_client, "/accounts", {**BRAND_ACCOUNT, "brand_domain": "Amazon.COM"}
+    )
+
+    assert response.status_code == 201
+    assert response.json()["brand_domain"] == "amazon.com"
+    assert Account.objects.get(user=user).brand_domain == "amazon.com"
+
+
+@pytest.mark.django_db
+def test_update_account_saves_lowercased_brand_domain(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+
+    response = patch(
+        auth_client, f"/accounts/{account.id}", {"brand_domain": "Delta.com"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["brand_domain"] == "delta.com"
+    account.refresh_from_db()
+    assert account.brand_domain == "delta.com"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "brand_domain",
+    [
+        "not a domain",
+        "https://amazon.com",
+        "amazon.com/path",
+        "-amazon.com",
+        "amazon",
+        "a" * 64 + ".com",
+    ],
+)
+def test_create_account_rejects_invalid_brand_domain(
+    auth_client: Client, user: User, brand_domain: str
+) -> None:
+    response = post(
+        auth_client, "/accounts", {**BRAND_ACCOUNT, "brand_domain": brand_domain}
+    )
+
+    assert response.status_code == 400
+    assert "brand_domain" in response.json()
+    assert not Account.objects.filter(user=user).exists()
+
+
+@pytest.mark.django_db
+def test_update_account_rejects_invalid_brand_domain(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user, brand_domain="amazon.com")
+
+    response = patch(
+        auth_client, f"/accounts/{account.id}", {"brand_domain": "not a domain"}
+    )
+
+    assert response.status_code == 400
+    account.refresh_from_db()
+    assert account.brand_domain == "amazon.com"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("payload", [{}, {"brand_domain": ""}])
+def test_create_account_allows_empty_brand_domain(
+    auth_client: Client, user: User, payload: dict[str, str]
+) -> None:
+    response = post(auth_client, "/accounts", {**BRAND_ACCOUNT, **payload})
+
+    assert response.status_code == 201
+    assert response.json()["brand_domain"] == ""
+    assert Account.objects.get(user=user).brand_domain == ""
+
+
+@pytest.mark.django_db
+def test_update_account_clears_brand_domain(auth_client: Client, user: User) -> None:
+    account = create_account(user, brand_domain="amazon.com")
+
+    response = patch(auth_client, f"/accounts/{account.id}", {"brand_domain": ""})
+
+    assert response.status_code == 200
+    assert response.json()["brand_domain"] == ""
+    account.refresh_from_db()
+    assert account.brand_domain == ""
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("new_type", ["flight_credit", "gift_card"])
 def test_update_rejects_type_field(

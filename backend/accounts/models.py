@@ -2,6 +2,7 @@ import uuid
 from typing import ClassVar
 
 from django.conf import settings
+from django.core.validators import DomainNameValidator
 from django.db import models
 from django.utils import timezone
 
@@ -25,6 +26,9 @@ class Account(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=1000, blank=True, default="")
     type = models.CharField(max_length=20, choices=Type.choices)
+    brand_domain = models.CharField(
+        max_length=253, blank=True, default="", validators=[DomainNameValidator()]
+    )
     expires_on = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
