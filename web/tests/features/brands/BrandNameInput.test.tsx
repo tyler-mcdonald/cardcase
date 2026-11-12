@@ -150,5 +150,19 @@ describe("BrandNameInput", () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(nameInput().value).toBe("Starbucks");
     expect(screen.queryByRole("option")).toBeNull();
+    expect(nameInput().hasAttribute("data-expanded")).toBe(false);
+  });
+
+  it("keeps the suggestions closed when there are no results", async () => {
+    const fetchMock = stubBrandSearch([]);
+    renderInput();
+
+    type("Zzz");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    expect(nameInput().hasAttribute("data-expanded")).toBe(false);
+    expect(nameInput().hasAttribute("data-mantine-stop-propagation")).toBe(
+      false,
+    );
   });
 });

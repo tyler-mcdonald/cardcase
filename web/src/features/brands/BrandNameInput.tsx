@@ -23,11 +23,14 @@ export function BrandNameInput({
   onBlur,
   ...inputProps
 }: BrandNameInputProps) {
-  const combobox = useCombobox({
-    onDropdownClose: () => combobox.resetSelectedOption(),
-  });
   const [search, setSearch] = useState("");
   const { data: brands = [] } = useBrandSearch(search);
+  const [opened, setOpened] = useState(false);
+  const combobox = useCombobox({
+    opened: opened && search.trim() !== "" && brands.length > 0,
+    onOpenedChange: setOpened,
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
 
   function selectBrand(domain: string) {
     const brand = brands.find((candidate) => candidate.domain === domain);
@@ -48,16 +51,17 @@ export function BrandNameInput({
             const name = event.currentTarget.value;
             onChange(name);
             setSearch(name);
-            combobox.openDropdown();
+            setOpened(true);
             combobox.updateSelectedOptionIndex();
           }}
           onBlur={(event) => {
             combobox.closeDropdown();
+            setOpened(false);
             onBlur?.(event);
           }}
         />
       </Combobox.Target>
-      <Combobox.Dropdown hidden={search.trim() === "" || brands.length === 0}>
+      <Combobox.Dropdown>
         <Combobox.Options>
           {brands.map((brand, index) => (
             <Combobox.Option
