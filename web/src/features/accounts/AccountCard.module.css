@@ -42,15 +42,7 @@
 }
 
 .description {
-  color: color-mix(
-    in srgb,
-    var(--mantine-color-gray-light-color) 80%,
-    transparent
-  );
-}
-
-[data-mantine-color-scheme="dark"] .description {
-  color: color-mix(in srgb, var(--mantine-color-gray-5) 80%, transparent);
+  opacity: 0.8;
 }
 
 .expiry {

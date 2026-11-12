@@ -66,7 +66,7 @@ export function AccountCard({
             lineClamp={2}
             ta="center"
             w="100%"
-            className={classes.description}
+            className={`${style.accountNameClass} ${classes.description}`}
           >
             {account.description}
           </Text>
