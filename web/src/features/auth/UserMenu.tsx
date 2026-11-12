@@ -1,40 +1,45 @@
-import { Badge, Button, Group, Text, Tooltip } from "@mantine/core";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, Menu, UnstyledButton } from "@mantine/core";
+import { IconLogout, IconSettings } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
+import { MENU_ICON_SIZE, ThemeOptions } from "@/components/ThemeOptions";
 import { useLogout } from "./queries";
-import { useAuth } from "./use-auth";
 
-export function UserMenu() {
-  const { user } = useAuth();
+interface UserMenuProps {
+  email: string;
+}
+
+export function UserMenu({ email }: UserMenuProps) {
   const logout = useLogout();
 
   return (
-    <Group gap="md">
-      {user?.is_demo ? <DemoBadge /> : <UserEmail email={user?.email} />}
-      <ThemeToggle />
-      <Button variant="default" size="xs" onClick={() => logout.mutate()}>
-        Log out
-      </Button>
-    </Group>
-  );
-}
-
-function DemoBadge() {
-  return (
-    <Tooltip
-      label="Demo data is temporary"
-      events={{ hover: true, focus: true, touch: true }}
-    >
-      <Badge variant="light" radius="xl" tabIndex={0}>
-        Demo
-      </Badge>
-    </Tooltip>
-  );
-}
-
-function UserEmail({ email }: { email?: string }) {
-  return (
-    <Text size="sm" c="dimmed">
-      {email}
-    </Text>
+    <Menu position="bottom-end" width={220}>
+      <Menu.Target>
+        <UnstyledButton aria-label="Account menu">
+          <Avatar radius="xl" size={30}>
+            {email.charAt(0).toUpperCase()}
+          </Avatar>
+        </UnstyledButton>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Label style={{ overflowWrap: "anywhere" }}>{email}</Menu.Label>
+        <Menu.Item
+          component={Link}
+          to="/settings"
+          leftSection={<IconSettings size={MENU_ICON_SIZE} aria-hidden />}
+        >
+          Settings
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Label>Theme</Menu.Label>
+        <ThemeOptions />
+        <Menu.Divider />
+        <Menu.Item
+          leftSection={<IconLogout size={MENU_ICON_SIZE} aria-hidden />}
+          onClick={() => logout.mutate()}
+        >
+          Sign out
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 }
