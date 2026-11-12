@@ -1,15 +1,22 @@
+import re
 from datetime import timedelta
 
 import pytest
 import time_machine
 from allauth.account.models import EmailAddress
 from django.core import mail
+from django.db import IntegrityError
 from django.test import Client
 from django.utils import timezone
 
 from accounts.models import Account, Transaction
 from demo.seed_data import create_verified_user
-from demo.services import DEMO_EMAIL_DOMAIN, DEMO_LIFETIME
+from demo.services import (
+    DEMO_EMAIL_ATTEMPTS,
+    DEMO_EMAIL_DOMAIN,
+    DEMO_LIFETIME,
+    create_demo_user,
+)
 from tests.accounts.factories import create_account, create_transaction
 from tests.client import AUTH_BASE, ApiResponse, get_session, scoped
 from users.adapter import AccountAdapter
@@ -44,8 +51,9 @@ def test_anonymous_start_creates_and_logs_in_seeded_demo_user(client: Client) ->
 
     assert response.status_code == 204
     [user] = _demo_users()
-    assert user.email.startswith("demo-")
-    assert user.email.endswith(f"@{DEMO_EMAIL_DOMAIN}")
+    assert re.fullmatch(
+        rf"demo-[a-z0-9]{{8}}@{re.escape(DEMO_EMAIL_DOMAIN)}", user.email
+    )
     assert EmailAddress.objects.filter(user=user, verified=True, primary=True).exists()
     assert Account.objects.filter(user=user).exists()
     assert Transaction.objects.filter(account__user=user).exists()
@@ -53,6 +61,40 @@ def test_anonymous_start_creates_and_logs_in_seeded_demo_user(client: Client) ->
     assert session.status_code == 200
     assert session.json()["data"]["user"]["is_demo"] is True
     assert client.session.get_expiry_age() == DEMO_LIFETIME.total_seconds()
+
+
+def test_start_skips_a_demo_email_already_taken(
+    client: Client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    create_verified_user(f"demo-taken000@{DEMO_EMAIL_DOMAIN}", is_demo=True)
+    suffixes = iter(["taken000", "fresh000"])
+    monkeypatch.setattr(
+        "demo.services.get_random_string", lambda *args, **kwargs: next(suffixes)
+    )
+
+    response = _start(client)
+
+    assert response.status_code == 204
+    assert User.objects.filter(email=f"demo-fresh000@{DEMO_EMAIL_DOMAIN}").exists()
+
+
+def test_create_demo_user_gives_up_after_bounded_attempts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    create_verified_user(f"demo-taken000@{DEMO_EMAIL_DOMAIN}", is_demo=True)
+    calls = 0
+
+    def taken_suffix(*args: object, **kwargs: object) -> str:
+        nonlocal calls
+        calls += 1
+        return "taken000"
+
+    monkeypatch.setattr("demo.services.get_random_string", taken_suffix)
+
+    with pytest.raises(IntegrityError):
+        create_demo_user()
+
+    assert calls == DEMO_EMAIL_ATTEMPTS
 
 
 def test_start_as_demo_user_does_not_create_another(client: Client) -> None:

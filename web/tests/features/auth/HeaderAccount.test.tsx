@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HeaderAccount } from "@/features/auth/HeaderAccount";
 import { useLogout } from "@/features/auth/queries";
@@ -23,15 +23,12 @@ describe("HeaderAccount", () => {
     screen.getByRole("button", { name: "Account menu" });
   });
 
-  it("shows a demo badge instead of the email for a demo user", async () => {
+  it("shows the email for a demo user", () => {
     mockSignedInUser({ id: "2", email: "demo-2@demo.invalid", is_demo: true });
 
     renderWithProviders(<HeaderAccount />);
 
-    expect(screen.queryByText("demo-2@demo.invalid")).toBeNull();
-    fireEvent.focus(screen.getByText("Demo"));
-    expect((await screen.findByRole("tooltip")).textContent).toBe(
-      "Demo data is temporary",
-    );
+    screen.getByText("demo-2@demo.invalid");
+    expect(screen.queryByText("Demo")).toBeNull();
   });
 });
