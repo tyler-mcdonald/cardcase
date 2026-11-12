@@ -63,7 +63,6 @@ export function AccountCard({
           <Text
             size="sm"
             lh={1.3}
-            lineClamp={2}
             ta="center"
             w="100%"
             className={`${style.accountNameClass} ${classes.description}`}

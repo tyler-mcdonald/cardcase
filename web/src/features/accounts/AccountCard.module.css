@@ -43,6 +43,18 @@
 
 .description {
   opacity: 0.8;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Narrow cards can't fit a 1-line name plus a 2-line description (about
+   64px) without pushing the footer out, so drop the description to 1 line. */
+@container (height < 64px) {
+  .description {
+    -webkit-line-clamp: 1;
+  }
 }
 
 .expiry {
@@ -113,6 +125,8 @@
   align-items: center;
   gap: 4px;
   min-width: 0;
+  min-height: 0;
+  container-type: size;
   overflow-wrap: anywhere;
 }
 
