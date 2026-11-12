@@ -52,13 +52,25 @@ export function AccountCard({
           fw={700}
           fz="xl"
           lh={1.15}
-          lineClamp={2}
+          lineClamp={account.description ? 1 : 2}
           ta="center"
           w="100%"
           className={style.accountNameClass}
         >
           {account.name}
         </Text>
+        {account.description && (
+          <Text
+            size="sm"
+            lh={1.3}
+            lineClamp={2}
+            ta="center"
+            w="100%"
+            className={classes.description}
+          >
+            {account.description}
+          </Text>
+        )}
       </div>
       <div className={classes.footerRow}>
         {expiry.expired ? (
