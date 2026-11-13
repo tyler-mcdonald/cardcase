@@ -6,6 +6,7 @@ export function makeAccount(overrides: Partial<Account> = {}): Account {
     name: "Amazon",
     description: "",
     type: "gift_card",
+    brand_domain: "",
     expires_on: null,
     balance: "0.00",
     created_at: "2026-01-01T00:00:00Z",

@@ -3,6 +3,7 @@ export type Account = {
   name: string;
   description: string;
   type: "gift_card" | "flight_credit";
+  brand_domain: string;
   expires_on: string | null;
   balance: string;
   created_at: string;
@@ -11,7 +12,7 @@ export type Account = {
 
 export type AccountInput = Pick<
   Account,
-  "name" | "description" | "type" | "expires_on"
+  "name" | "description" | "type" | "brand_domain" | "expires_on"
 >;
 
 export type AccountCreateInput = AccountInput & { initial_balance: string };

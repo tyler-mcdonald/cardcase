@@ -1,4 +1,5 @@
 import { Badge, Card, Skeleton, Text, UnstyledButton } from "@mantine/core";
+import { BrandLogo } from "@/features/brands/BrandLogo";
 import classes from "./AccountCard.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { Account } from "./types";
@@ -44,7 +45,16 @@ export function AccountCard({
           aria-label={ACCOUNT_TYPE_DISPLAY[account.type].label}
           className={classes.typeEmoji}
         >
-          {style.emoji}
+          {account.brand_domain ? (
+            <BrandLogo
+              domain={account.brand_domain}
+              size={28}
+              fallback={style.emoji}
+              className={classes.brandLogo}
+            />
+          ) : (
+            style.emoji
+          )}
         </span>
       </div>
       <div className={classes.nameRow}>
@@ -52,13 +62,24 @@ export function AccountCard({
           fw={700}
           fz="xl"
           lh={1.15}
-          lineClamp={2}
+          lineClamp={account.description ? 1 : 2}
           ta="center"
           w="100%"
           className={style.accountNameClass}
         >
           {account.name}
         </Text>
+        {account.description && (
+          <Text
+            size="sm"
+            lh={1.3}
+            ta="center"
+            w="100%"
+            className={`${style.accountNameClass} ${classes.description}`}
+          >
+            {account.description}
+          </Text>
+        )}
       </div>
       <div className={classes.footerRow}>
         {expiry.expired ? (

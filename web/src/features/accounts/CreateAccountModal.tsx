@@ -9,6 +9,7 @@ import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 const INITIAL_VALUES: AccountFormValues = {
   name: "",
   type: "gift_card",
+  brand_domain: "",
   initial_balance: 0,
   expires_on: null,
   description: "",

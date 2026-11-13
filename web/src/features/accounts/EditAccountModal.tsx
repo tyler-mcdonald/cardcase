@@ -1,4 +1,4 @@
-import { Button, Modal, Stack, TextInput } from "@mantine/core";
+import { Button, FocusTrap, Modal, Stack, TextInput } from "@mantine/core";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
@@ -11,6 +11,7 @@ import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 
 const EDITABLE_FIELDS = [
   "name",
+  "brand_domain",
   "expires_on",
   "description",
 ] as const satisfies readonly (keyof AccountUpdate)[];
@@ -39,6 +40,7 @@ export function EditAccountModal({
     <Modal.Root opened={opened} onClose={close}>
       <Modal.Overlay />
       <Modal.Content>
+        <FocusTrap.InitialFocus />
         {account && (
           <EditAccountContent
             key={account.id}
@@ -128,6 +130,7 @@ function EditAccountContent({
             <AccountForm
               initialValues={{ ...account, initial_balance: 0 }}
               typeLocked
+              autoFocus={false}
               submitLabel="Save changes"
               isPending={updateAccount.isPending}
               fieldErrors={fieldErrors}

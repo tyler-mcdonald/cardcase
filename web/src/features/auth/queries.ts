@@ -1,4 +1,5 @@
 import {
+  hashKey,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -12,8 +13,10 @@ import {
   confirmLoginCode,
   logout,
   startDemo,
+  deleteMe,
   type SessionData,
 } from "./api";
+import { announceUserChange } from "./session-channel";
 import type { User } from "./types";
 
 const SESSION_QUERY_KEY = ["session"] as const;
@@ -22,27 +25,24 @@ function sessionUser(response: ApiResponse<SessionData>): User | null {
   return response.meta?.is_authenticated ? (response.data?.user ?? null) : null;
 }
 
-function isUserDataQuery(query: Query) {
-  return query.queryKey[0] !== SESSION_QUERY_KEY[0];
+function isDifferentUser(
+  previousUser: User | null | undefined,
+  user: User | null,
+) {
+  return user?.id !== previousUser?.id;
 }
 
-// Every query other than the session holds data for the signed-in user.
-function dropUserData(queryClient: QueryClient) {
-  const filters = { predicate: isUserDataQuery };
+function resetSession(queryClient: QueryClient, user: User | null) {
+  const previousUser = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
+  const sessionHash = hashKey(SESSION_QUERY_KEY);
+  const filters = {
+    predicate: (query: Query) => query.queryHash !== sessionHash,
+  };
   void queryClient.cancelQueries(filters);
   queryClient.removeQueries(filters);
-}
-
-function applySession(
-  queryClient: QueryClient,
-  response: ApiResponse<SessionData>,
-) {
-  const user = sessionUser(response);
-  const previousUser = queryClient.getQueryData<User | null>(SESSION_QUERY_KEY);
-  if (user?.id !== previousUser?.id) {
-    // Drop the previous user's data before exposing the new session, rather
-    // than show it until a refetch lands.
-    dropUserData(queryClient);
+  queryClient.getMutationCache().clear();
+  if (isDifferentUser(previousUser, user)) {
+    announceUserChange();
   }
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
@@ -75,7 +75,7 @@ export function useConfirmLoginCode() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: confirmLoginCode,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }
 
@@ -83,7 +83,7 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }
 
@@ -92,10 +92,18 @@ async function startDemoSession() {
   return getSession();
 }
 
+export function useDeleteUserAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteMe,
+    onSuccess: () => resetSession(queryClient, null),
+  });
+}
+
 export function useStartDemo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: startDemoSession,
-    onSuccess: (response) => applySession(queryClient, response),
+    onSuccess: (response) => resetSession(queryClient, sessionUser(response)),
   });
 }

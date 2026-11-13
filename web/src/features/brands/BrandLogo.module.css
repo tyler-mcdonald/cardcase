@@ -1,0 +1,18 @@
+.placeholder {
+  display: inline-block;
+}
+
+.logo {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.logo[data-loaded] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo {
+    transition: none;
+  }
+}

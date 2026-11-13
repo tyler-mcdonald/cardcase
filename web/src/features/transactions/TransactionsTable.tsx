@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Skeleton, Table, Text } from "@mantine/core";
-import { AccountTypeBadge } from "@/features/accounts/AccountTypeBadge";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
 import { EditTransactionRow } from "./EditTransactionRow";
@@ -23,7 +22,6 @@ function TransactionsTableFrame({ children }: { children: ReactNode }) {
         <Table.Tr>
           <Table.Th className={classes.date}>Date</Table.Th>
           <Table.Th className={classes.account}>Account</Table.Th>
-          <Table.Th className={classes.accountType}>Type</Table.Th>
           <Table.Th>Description</Table.Th>
           <Table.Th className={classes.amount}>Outflow</Table.Th>
           <Table.Th className={classes.amount}>Inflow</Table.Th>
@@ -75,9 +73,6 @@ function TransactionRow({
         <Text size="sm" truncate>
           {transaction.account.name}
         </Text>
-      </EditableCell>
-      <EditableCell field="accountId" onEdit={editField}>
-        <AccountTypeBadge type={transaction.account.type} />
       </EditableCell>
       <EditableCell
         field="description"

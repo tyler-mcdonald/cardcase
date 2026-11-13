@@ -11,6 +11,8 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
+import { BrandNameInput } from "@/features/brands/BrandNameInput";
+import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
 
@@ -35,6 +37,7 @@ export function AccountForm({
   initialValues,
   showInitialBalance = false,
   typeLocked = false,
+  autoFocus = true,
   submitLabel,
   isPending,
   fieldErrors,
@@ -46,6 +49,7 @@ export function AccountForm({
   initialValues: AccountFormValues;
   showInitialBalance?: boolean;
   typeLocked?: boolean;
+  autoFocus?: boolean;
   submitLabel: string;
   isPending: boolean;
   fieldErrors: Record<string, string>;
@@ -69,15 +73,25 @@ export function AccountForm({
     setErrors(fieldErrors);
   }, [fieldErrors, setErrors]);
 
+  function handleNameChange(name: string) {
+    form.setFieldValue("name", name);
+    form.setFieldValue("brand_domain", "");
+  }
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
-        <TextInput
+        <BrandNameInput
           label="Name"
           required
           maxLength={255}
-          data-autofocus
+          data-autofocus={autoFocus || undefined}
           {...form.getInputProps("name")}
+          value={form.values.name}
+          onChange={handleNameChange}
+          onBrandSelect={(brand) =>
+            form.setValues({ name: brand.name, brand_domain: brand.domain })
+          }
         />
         <Input.Wrapper
           label="Type"
@@ -90,8 +104,9 @@ export function AccountForm({
           <SegmentedControl
             fullWidth
             disabled={typeLocked}
+            classNames={{ input: classes.typeInput, label: classes.typeLabel }}
             data={TYPE_OPTIONS}
-            color={ACCOUNT_TYPE_DISPLAY[form.values.type].color}
+            color={ACCOUNT_TYPE_DISPLAY[form.values.type].selectorColor}
             {...typeInputProps}
           />
         </Input.Wrapper>

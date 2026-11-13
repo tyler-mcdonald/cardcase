@@ -14,14 +14,17 @@ def sample_accounts(today: date) -> dict[str, dict[str, Any]]:
     return {
         "Amazon": {
             "type": Account.Type.GIFT_CARD,
+            "brand_domain": "amazon.com",
             "description": "Birthday gift from Mom",
         },
         "Delta": {
             "type": Account.Type.FLIGHT_CREDIT,
+            "brand_domain": "delta.com",
             "expires_on": today + timedelta(days=365),
         },
         "Starbucks": {
             "type": Account.Type.GIFT_CARD,
+            "brand_domain": "starbucks.com",
             "expires_on": today - timedelta(days=30),
         },
     }

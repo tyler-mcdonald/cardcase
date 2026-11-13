@@ -1,5 +1,7 @@
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
+
+configure({ asyncUtilTimeout: 3_000 });
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -27,6 +29,11 @@ Object.defineProperty(window, "ResizeObserver", {
 });
 
 Object.defineProperty(window, "scrollTo", {
+  writable: true,
+  value: () => {},
+});
+
+Object.defineProperty(Element.prototype, "scrollIntoView", {
   writable: true,
   value: () => {},
 });

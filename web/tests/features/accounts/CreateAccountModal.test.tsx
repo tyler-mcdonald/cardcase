@@ -4,6 +4,7 @@ import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "@tests/render";
+import { pickBrand, stubBrandSearch } from "@tests/features/brands/search";
 import { makeAccount } from "@tests/features/accounts/factories";
 
 vi.mock("@/features/accounts/api");
@@ -45,9 +46,43 @@ describe("CreateAccountModal", () => {
     expect(submittedInput()).toEqual({
       name: "Delta credit",
       type: "flight_credit",
+      brand_domain: "",
       description: "Cancelled flight",
       expires_on: null,
       initial_balance: "0.00",
+    });
+  });
+
+  it("links the picked brand", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+
+    await pickBrand("starb");
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({
+      name: "Starbucks",
+      brand_domain: "starbucks.com",
+    });
+  });
+
+  it("unlinks the brand when the name is typed over", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    mockedCreateAccount.mockResolvedValueOnce(makeAccount());
+    const { onCreated } = renderForm();
+
+    await pickBrand("starb");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Starbucks Reserve" },
+    });
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(submittedInput()).toMatchObject({
+      name: "Starbucks Reserve",
+      brand_domain: "",
     });
   });
 
