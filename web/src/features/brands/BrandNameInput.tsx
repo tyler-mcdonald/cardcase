@@ -1,6 +1,7 @@
 import {
   Combobox,
   Group,
+  Loader,
   Text,
   TextInput,
   useCombobox,
@@ -24,7 +25,7 @@ export function BrandNameInput({
   ...inputProps
 }: BrandNameInputProps) {
   const [search, setSearch] = useState("");
-  const { data } = useBrandSearch(search);
+  const { data, isFetching } = useBrandSearch(search);
   const brands = data ?? [];
   const [opened, setOpened] = useState(false);
   const dropdownOpened = opened && search.trim() !== "" && brands.length > 0;
@@ -53,6 +54,7 @@ export function BrandNameInput({
           {...inputProps}
           value={value}
           autoComplete="off"
+          rightSection={isFetching ? <Loader size="xs" /> : null}
           onChange={(event) => {
             const name = event.currentTarget.value;
             onChange(name);

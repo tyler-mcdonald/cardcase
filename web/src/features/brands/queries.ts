@@ -1,5 +1,5 @@
 import { useDebouncedValue } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { hasBrandfetchClientId, searchBrands } from "./api";
 
 export { brandLogoUrl } from "./api";
@@ -16,5 +16,6 @@ export function useBrandSearch(query: string) {
     enabled: debouncedQuery !== "" && hasBrandfetchClientId(),
     staleTime: SEARCH_CACHE_MS,
     gcTime: SEARCH_CACHE_MS,
+    placeholderData: keepPreviousData,
   });
 }
