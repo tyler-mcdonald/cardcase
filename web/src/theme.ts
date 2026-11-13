@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Avatar,
   Button,
   createTheme,
@@ -8,6 +9,7 @@ import {
   rgba,
   type CSSVariablesResolver,
   type MantineColor,
+  type MantineTheme,
   type VariantColorsResolver,
 } from "@mantine/core";
 import classes from "./theme.module.css";
@@ -24,15 +26,46 @@ const variantColorResolver: VariantColorsResolver = (input) => {
   return { ...colors, border: "1px solid var(--light-rim, transparent)" };
 };
 
+const softRedColors = (theme: MantineTheme) =>
+  theme.variantColorResolver({ color: "red", theme, variant: "light" });
+
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
   variantColorResolver,
   components: {
+    ActionIcon: ActionIcon.extend({
+      vars: (theme, props) => {
+        if (props.color !== "red") return { root: {} };
+        const colors = softRedColors(theme);
+        return {
+          root: {
+            "--ai-bg": colors.background,
+            "--ai-hover": colors.hover,
+            "--ai-color": colors.color,
+            "--ai-hover-color": colors.hoverColor,
+            "--ai-bd": colors.border,
+          },
+        };
+      },
+    }),
     Avatar: Avatar.extend({
       defaultProps: { color: THEME_COLOR },
     }),
     Button: Button.extend({
       defaultProps: { variant: "light" },
+      vars: (theme, props) => {
+        if (props.color !== "red") return { root: {} };
+        const colors = softRedColors(theme);
+        return {
+          root: {
+            "--button-bg": colors.background,
+            "--button-hover": colors.hover,
+            "--button-color": colors.color,
+            "--button-hover-color": colors.hoverColor,
+            "--button-bd": colors.border,
+          },
+        };
+      },
     }),
     Modal: Modal.extend({
       classNames: {

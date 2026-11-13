@@ -139,7 +139,6 @@ function EditAccountContent({
               secondaryAction={
                 <Button
                   ref={deleteButtonRef}
-                  variant="light"
                   color="red"
                   onClick={startDelete}
                   disabled={updateAccount.isPending}
