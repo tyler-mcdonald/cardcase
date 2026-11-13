@@ -20,7 +20,7 @@ function brandSearchQuery(term: string) {
     staleTime: SEARCH_CACHE_MS,
     gcTime: SEARCH_CACHE_MS,
     placeholderData: (previousData, previousQuery) =>
-      isRefinement(String(previousQuery?.queryKey[2] ?? ""), term)
+      oneTermExtendsTheOther(String(previousQuery?.queryKey[2] ?? ""), term)
         ? previousData
         : undefined,
   });
@@ -50,16 +50,16 @@ export function useBrandSearch(
   }
 
   const hidden =
-    (cleared && !freshResults) || !isRefinement(debouncedTerm, term);
+    (cleared && !freshResults) || !oneTermExtendsTheOther(debouncedTerm, term);
   return { data: hidden ? undefined : data, isFetching };
 }
 
-function isRefinement(previousTerm: string, term: string) {
-  const previous = previousTerm.toLowerCase();
-  const current = term.toLowerCase();
+function oneTermExtendsTheOther(firstTerm: string, secondTerm: string) {
+  const first = firstTerm.toLowerCase();
+  const second = secondTerm.toLowerCase();
   return (
-    previous !== "" &&
-    current !== "" &&
-    (current.startsWith(previous) || previous.startsWith(current))
+    first !== "" &&
+    second !== "" &&
+    (second.startsWith(first) || first.startsWith(second))
   );
 }
