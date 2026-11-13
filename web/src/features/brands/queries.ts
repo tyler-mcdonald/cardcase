@@ -38,7 +38,9 @@ export function useBrandSearch(query: string) {
     setCleared(false);
   }
 
-  return { data: cleared && !freshResults ? undefined : data, isFetching };
+  const hidden =
+    (cleared && !freshResults) || !isRefinement(debouncedTerm, term);
+  return { data: hidden ? undefined : data, isFetching };
 }
 
 function isRefinement(previousTerm: string, term: string) {

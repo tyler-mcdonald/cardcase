@@ -219,6 +219,7 @@ describe("BrandNameInput", () => {
       type("Star");
       await screen.findByText("starz.com");
       typed.forEach(type);
+      expect(screen.queryByText("starz.com") !== null).toBe(kept);
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
       expect(screen.queryByText("starz.com") !== null).toBe(kept);
