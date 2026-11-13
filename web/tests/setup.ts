@@ -33,6 +33,11 @@ Object.defineProperty(window, "scrollTo", {
   value: () => {},
 });
 
+Object.defineProperty(Element.prototype, "scrollIntoView", {
+  writable: true,
+  value: () => {},
+});
+
 afterEach(() => {
   cleanup();
 });

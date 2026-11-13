@@ -6,7 +6,7 @@ import {
   useCombobox,
   type TextInputProps,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { useBrandSearch, type Brand } from "./queries";
 
@@ -24,13 +24,19 @@ export function BrandNameInput({
   ...inputProps
 }: BrandNameInputProps) {
   const [search, setSearch] = useState("");
-  const { data: brands = [] } = useBrandSearch(search);
+  const { data } = useBrandSearch(search);
+  const brands = data ?? [];
   const [opened, setOpened] = useState(false);
+  const dropdownOpened = opened && search.trim() !== "" && brands.length > 0;
   const combobox = useCombobox({
-    opened: opened && search.trim() !== "" && brands.length > 0,
+    opened: dropdownOpened,
     onOpenedChange: setOpened,
-    onDropdownClose: () => combobox.resetSelectedOption(),
   });
+  const { resetSelectedOption } = combobox;
+
+  useEffect(() => {
+    resetSelectedOption();
+  }, [resetSelectedOption, data, dropdownOpened]);
 
   function selectBrand(domain: string) {
     const brand = brands.find((candidate) => candidate.domain === domain);
@@ -52,7 +58,6 @@ export function BrandNameInput({
             onChange(name);
             setSearch(name);
             setOpened(true);
-            combobox.updateSelectedOptionIndex();
           }}
           onBlur={(event) => {
             combobox.closeDropdown();

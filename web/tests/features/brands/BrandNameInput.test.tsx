@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
@@ -153,13 +154,51 @@ describe("BrandNameInput", () => {
     expect(nameInput().hasAttribute("data-expanded")).toBe(false);
   });
 
+  it("doesn't pick a stale highlighted brand after the results change", async () => {
+    const fetchMock = stubBrandSearch();
+    fetchMock.mockImplementation(async (url) => {
+      const results = String(url).includes("/Starb?")
+        ? [
+            { name: "Starburst", domain: "starburst.com" },
+            { name: "Starbucks", domain: "starbucks.com" },
+          ]
+        : [
+            { name: "Star Market", domain: "starmarket.com" },
+            { name: "Starz", domain: "starz.com" },
+          ];
+      return new Response(JSON.stringify(results), { status: 200 });
+    });
+    const { onBrandSelect } = renderInput();
+
+    type("Star");
+    await screen.findByText("starz.com");
+    fireEvent.keyDown(nameInput(), { code: "ArrowDown" });
+    fireEvent.keyDown(nameInput(), { code: "ArrowDown" });
+    type("Starb");
+    await screen.findByText("starburst.com");
+    fireEvent.keyDown(nameInput(), { code: "Enter" });
+
+    expect(onBrandSelect).not.toHaveBeenCalled();
+    expect(nameInput().value).toBe("Starb");
+  });
+
   it("keeps the suggestions closed when there are no results", async () => {
-    const fetchMock = stubBrandSearch([]);
-    renderInput();
+    stubBrandSearch([]);
+    const queryClient = new QueryClient();
+    renderWithProviders(
+      <QueryClientProvider client={queryClient}>
+        <Harness onBrandSelect={vi.fn()} />
+      </QueryClientProvider>,
+    );
 
     type("Zzz");
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryState(["brands", "search", "Zzz"])?.status,
+      ).toBe("success"),
+    );
 
+    expect(screen.queryByRole("option")).toBeNull();
     expect(nameInput().hasAttribute("data-expanded")).toBe(false);
     expect(nameInput().hasAttribute("data-mantine-stop-propagation")).toBe(
       false,
