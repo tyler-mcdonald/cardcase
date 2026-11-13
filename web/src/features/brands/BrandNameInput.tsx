@@ -58,6 +58,7 @@ export function BrandNameInput({
           onChange={(event) => {
             const name = event.currentTarget.value;
             onChange(name);
+            resetSelectedOption();
             setSearch(name);
             setOpened(true);
           }}

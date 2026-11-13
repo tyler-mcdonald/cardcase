@@ -182,6 +182,23 @@ describe("BrandNameInput", () => {
     expect(nameInput().value).toBe("Starb");
   });
 
+  it("doesn't pick a highlighted brand after the name is edited", async () => {
+    stubBrandSearch([
+      { name: "Star Market", domain: "starmarket.com" },
+      { name: "Starz", domain: "starz.com" },
+    ]);
+    const { onBrandSelect } = renderInput();
+
+    type("Star");
+    await screen.findByText("starz.com");
+    fireEvent.keyDown(nameInput(), { code: "ArrowDown" });
+    type("Starb");
+    fireEvent.keyDown(nameInput(), { code: "Enter" });
+
+    expect(onBrandSelect).not.toHaveBeenCalled();
+    expect(nameInput().value).toBe("Starb");
+  });
+
   it.each([
     { when: "the text is refined", typed: ["Starb"], kept: true },
     { when: "the text changes", typed: ["Nike"], kept: false },
