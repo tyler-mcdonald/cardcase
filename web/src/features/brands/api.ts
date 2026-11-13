@@ -1,8 +1,7 @@
 import { brandfetchUrl } from "./brandfetch-url";
+import type { Brand } from "./types";
 
 const SEARCH_API_URL = "https://api.brandfetch.io/v2/search";
-
-export type Brand = { name: string; domain: string };
 
 export type SearchResult = { name: string | null; domain: string };
 

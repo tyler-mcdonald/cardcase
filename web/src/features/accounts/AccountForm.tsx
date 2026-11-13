@@ -12,6 +12,7 @@ import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
+import type { Brand } from "@/features/brands/types";
 import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -78,6 +79,10 @@ export function AccountForm({
     form.setFieldValue("brand_domain", "");
   }
 
+  function handleBrandSelect(brand: Brand) {
+    form.setValues({ name: brand.name, brand_domain: brand.domain });
+  }
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
@@ -89,9 +94,7 @@ export function AccountForm({
           {...form.getInputProps("name")}
           value={form.values.name}
           onChange={handleNameChange}
-          onBrandSelect={(brand) =>
-            form.setValues({ name: brand.name, brand_domain: brand.domain })
-          }
+          onBrandSelect={handleBrandSelect}
         />
         <Input.Wrapper
           label="Type"

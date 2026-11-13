@@ -9,7 +9,8 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
-import { useBrandSearch, type Brand } from "./queries";
+import { useBrandSearch } from "./queries";
+import type { Brand } from "./types";
 
 type BrandNameInputProps = Omit<TextInputProps, "value" | "onChange"> & {
   value: string;

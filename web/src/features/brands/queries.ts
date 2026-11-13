@@ -5,10 +5,9 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { searchBrands, type Brand } from "./api";
+import { searchBrands } from "./api";
 import { hasBrandfetchClientId } from "./brandfetch-url";
-
-export type { Brand } from "./api";
+import type { Brand } from "./types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_CACHE_MS = 5 * 60 * 1000;

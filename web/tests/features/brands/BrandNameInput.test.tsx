@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
-import type { Brand } from "@/features/brands/queries";
+import type { Brand } from "@/features/brands/types";
 import { renderWithProviders } from "../../render";
 import {
   pickBrand,
