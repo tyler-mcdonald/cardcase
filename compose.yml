@@ -34,10 +34,12 @@ services:
   web:
     build: ./web
     command: pnpm dev --host
-    env_file: web/.env.example
+    env_file:
+      - path: web/.env.example
+      - path: web/.env
+        required: false
     environment:
       VITE_API_URL: http://${APP_HOST:-localhost}:${BACKEND_PORT:-8000}
-      VITE_BRANDFETCH_CLIENT_ID: ${VITE_BRANDFETCH_CLIENT_ID:-}
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
     depends_on:

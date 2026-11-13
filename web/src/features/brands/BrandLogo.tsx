@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import classes from "./BrandLogo.module.css";
-import { brandLogoUrl } from "./queries";
+import { brandLogoUrl } from "./logo-url";
 
 type BrandLogoProps = {
   domain: string;

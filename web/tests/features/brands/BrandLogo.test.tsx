@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { BrandLogo } from "@/features/brands/BrandLogo";
 import { renderWithProviders } from "../../render";
 
-vi.mock("@/features/brands/api", () => ({
+vi.mock("@/features/brands/logo-url", () => ({
   brandLogoUrl: (domain: string) => `https://logos.test/${domain}`,
 }));
 

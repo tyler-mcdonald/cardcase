@@ -68,3 +68,5 @@ projects:
             envVars:
               - key: VITE_API_URL
                 value: https://api.cardcase.app
+              - key: VITE_BRANDFETCH_CLIENT_ID
+                sync: false

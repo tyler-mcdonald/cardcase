@@ -1,9 +1,9 @@
 import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { hasBrandfetchClientId, searchBrands } from "./api";
+import { searchBrands } from "./api";
+import { hasBrandfetchClientId } from "./client-id";
 
-export { brandLogoUrl } from "./api";
 export type { Brand } from "./api";
 
 const SEARCH_DEBOUNCE_MS = 300;
