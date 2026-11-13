@@ -26,6 +26,7 @@ class Account(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=1000, blank=True, default="")
     type = models.CharField(max_length=20, choices=Type.choices)
+    # 253 is the longest a domain name can be in text form (RFC 1035).
     brand_domain = models.CharField(
         max_length=253, blank=True, default="", validators=[DomainNameValidator()]
     )
