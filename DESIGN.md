@@ -29,6 +29,7 @@
   - name: string
   - description: string
   - type: enum("gift_card", "flight_credit")
+  - brand_domain: string (domain only, e.g. "amazon.com"; lowercased)
   - expires_on?: date
   - created_at: datetime
   - updated_at: datetime
@@ -55,13 +56,13 @@
     - Deletes the signed-in user with all of their data and ends the session
 - Accounts
   - POST /accounts
-    - { name, description?, type, expires_on?, initial_balance? }
+    - { name, description?, type, brand_domain?, expires_on?, initial_balance? }
     - initial_balance is write-only: a decimal >= 0, defaulting to 0; when > 0 it is saved as an "Initial balance" inflow transaction dated today
   - GET /accounts
     - ?page (default 1), ?page_size (default 50, max 250; larger values are clamped)
   - GET /accounts/{id}
   - PATCH /accounts/{id}
-    - { name?, description?, type?, expires_on? }
+    - { name?, description?, type?, brand_domain?, expires_on? }
   - DELETE /accounts/{id}
   - Every account response includes a read-only balance: the sum of its transactions' amounts
 - Transactions
