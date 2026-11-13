@@ -73,6 +73,11 @@ export function AccountForm({
     setErrors(fieldErrors);
   }, [fieldErrors, setErrors]);
 
+  function handleNameChange(name: string) {
+    form.setFieldValue("name", name);
+    form.setFieldValue("brand_domain", "");
+  }
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
@@ -83,10 +88,7 @@ export function AccountForm({
           data-autofocus={autoFocus || undefined}
           {...form.getInputProps("name")}
           value={form.values.name}
-          onChange={(name) => {
-            form.setFieldValue("name", name);
-            form.setFieldValue("brand_domain", "");
-          }}
+          onChange={handleNameChange}
           onBrandSelect={(brand) =>
             form.setValues({ name: brand.name, brand_domain: brand.domain })
           }
