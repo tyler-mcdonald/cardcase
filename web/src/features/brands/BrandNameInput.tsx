@@ -39,6 +39,13 @@ export function BrandNameInput({
     resetSelectedOption();
   }, [resetSelectedOption, data, dropdownOpened]);
 
+  function handleChange(name: string) {
+    onChange(name);
+    resetSelectedOption();
+    setSearch(name);
+    setOpened(true);
+  }
+
   function selectBrand(domain: string) {
     const brand = brands.find((candidate) => candidate.domain === domain);
     if (brand) {
@@ -55,13 +62,7 @@ export function BrandNameInput({
           value={value}
           autoComplete="off"
           rightSection={isFetching ? <Loader size="xs" /> : null}
-          onChange={(event) => {
-            const name = event.currentTarget.value;
-            onChange(name);
-            resetSelectedOption();
-            setSearch(name);
-            setOpened(true);
-          }}
+          onChange={(event) => handleChange(event.currentTarget.value)}
           onBlur={(event) => {
             setOpened(false);
             onBlur?.(event);
