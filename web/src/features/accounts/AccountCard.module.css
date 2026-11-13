@@ -118,12 +118,10 @@
 
 .brandLogo {
   display: block;
-  box-sizing: border-box;
-  padding: 3px;
-  border-radius: var(--mantine-radius-sm);
+  border-radius: var(--mantine-radius-md);
   background-color: var(--mantine-color-white);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
-  object-fit: contain;
+  object-fit: cover;
 }
 
 [data-mantine-color-scheme="dark"] .brandLogo {

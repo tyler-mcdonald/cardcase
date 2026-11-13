@@ -15,6 +15,7 @@ export function BrandLogo(props: BrandLogoProps) {
 
 function BrandLogoImage({ domain, size, fallback, className }: BrandLogoProps) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (failed) {
     return (
@@ -36,7 +37,9 @@ function BrandLogoImage({ domain, size, fallback, className }: BrandLogoProps) {
       loading="lazy"
       width={size}
       height={size}
-      className={className}
+      className={className ? `${classes.logo} ${className}` : classes.logo}
+      data-loaded={loaded || undefined}
+      onLoad={() => setLoaded(true)}
       onError={() => setFailed(true)}
     />
   );

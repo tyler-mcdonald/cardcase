@@ -19,6 +19,19 @@ describe("BrandLogo", () => {
     expect(img.getAttribute("loading")).toBe("lazy");
   });
 
+  it("marks the logo as loaded once it loads", () => {
+    const { container } = renderWithProviders(
+      <BrandLogo domain="amazon.com" size={28} />,
+    );
+
+    const img = container.querySelector("img")!;
+    expect(img.hasAttribute("data-loaded")).toBe(false);
+
+    fireEvent.load(img);
+
+    expect(img.hasAttribute("data-loaded")).toBe(true);
+  });
+
   it("shows an empty placeholder when the logo fails to load", () => {
     const { container } = renderWithProviders(
       <BrandLogo domain="amazon.com" size={28} />,
