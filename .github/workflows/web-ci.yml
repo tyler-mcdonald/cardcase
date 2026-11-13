@@ -20,8 +20,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-web
       - run: pnpm run build
-        env:
-          VITE_BRANDFETCH_CLIENT_ID: ci-placeholder
 
   format:
     runs-on: ubuntu-latest
