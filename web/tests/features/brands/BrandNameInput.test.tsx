@@ -4,13 +4,13 @@ import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
 import type { Brand } from "@/features/brands/queries";
-import { renderWithProviders } from "../../render";
+import { renderWithProviders } from "@tests/render";
 import {
   pickBrand,
   searchedQueries,
   stubBrandSearch,
   stubBrandSearchByQuery,
-} from "./search";
+} from "@tests/features/brands/search";
 
 afterEach(() => {
   vi.useRealTimers();
