@@ -3,6 +3,7 @@ export type Account = {
   name: string;
   description: string;
   type: "gift_card" | "flight_credit";
+  brand_domain: string;
   expires_on: string | null;
   balance: string;
   created_at: string;
