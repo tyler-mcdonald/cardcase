@@ -26,46 +26,41 @@ const variantColorResolver: VariantColorsResolver = (input) => {
   return { ...colors, border: "1px solid var(--light-rim, transparent)" };
 };
 
-const softRedColors = (theme: MantineTheme) =>
-  theme.variantColorResolver({ color: "red", theme, variant: "light" });
+const softRedVars = (
+  prefix: string,
+  theme: MantineTheme,
+  color: MantineColor | undefined,
+) => {
+  if (color !== "red") return { root: {} };
+  const colors = theme.variantColorResolver({
+    color: "red",
+    theme,
+    variant: "light",
+  });
+  return {
+    root: {
+      [`--${prefix}-bg`]: colors.background,
+      [`--${prefix}-hover`]: colors.hover,
+      [`--${prefix}-color`]: colors.color,
+      [`--${prefix}-hover-color`]: colors.hoverColor,
+      [`--${prefix}-bd`]: colors.border,
+    },
+  };
+};
 
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
   variantColorResolver,
   components: {
     ActionIcon: ActionIcon.extend({
-      vars: (theme, props) => {
-        if (props.color !== "red") return { root: {} };
-        const colors = softRedColors(theme);
-        return {
-          root: {
-            "--ai-bg": colors.background,
-            "--ai-hover": colors.hover,
-            "--ai-color": colors.color,
-            "--ai-hover-color": colors.hoverColor,
-            "--ai-bd": colors.border,
-          },
-        };
-      },
+      vars: (theme, props) => softRedVars("ai", theme, props.color),
     }),
     Avatar: Avatar.extend({
       defaultProps: { color: THEME_COLOR },
     }),
     Button: Button.extend({
       defaultProps: { variant: "light" },
-      vars: (theme, props) => {
-        if (props.color !== "red") return { root: {} };
-        const colors = softRedColors(theme);
-        return {
-          root: {
-            "--button-bg": colors.background,
-            "--button-hover": colors.hover,
-            "--button-color": colors.color,
-            "--button-hover-color": colors.hoverColor,
-            "--button-bd": colors.border,
-          },
-        };
-      },
+      vars: (theme, props) => softRedVars("button", theme, props.color),
     }),
     Modal: Modal.extend({
       classNames: {
