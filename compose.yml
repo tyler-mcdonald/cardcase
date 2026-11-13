@@ -34,6 +34,10 @@ services:
   web:
     build: ./web
     command: pnpm dev --host
+    env_file:
+      - path: web/.env.example
+      - path: web/.env
+        required: false
     environment:
       VITE_API_URL: http://${APP_HOST:-localhost}:${BACKEND_PORT:-8000}
     ports:
