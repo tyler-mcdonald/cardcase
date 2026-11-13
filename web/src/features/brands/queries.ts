@@ -2,7 +2,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { searchBrands } from "./api";
-import { hasBrandfetchClientId } from "./client-id";
+import { hasBrandfetchClientId } from "./brandfetch-url";
 
 export type { Brand } from "./api";
 

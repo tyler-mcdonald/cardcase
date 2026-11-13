@@ -1,12 +1,10 @@
-import { brandfetchClientId } from "./client-id";
+import { brandfetchUrl } from "./brandfetch-url";
 
 const LOGO_CDN_URL = "https://cdn.brandfetch.io/domain";
 const LOGO_PX = 64;
 
 export function brandLogoUrl(domain: string) {
-  const url = new URL(
+  return brandfetchUrl(
     `${LOGO_CDN_URL}/${encodeURIComponent(domain)}/w/${LOGO_PX}/h/${LOGO_PX}/fallback/404`,
-  );
-  url.searchParams.set("c", brandfetchClientId());
-  return url.toString();
+  ).toString();
 }
