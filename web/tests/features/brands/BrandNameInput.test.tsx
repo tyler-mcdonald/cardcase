@@ -182,6 +182,32 @@ describe("BrandNameInput", () => {
     expect(nameInput().value).toBe("Starb");
   });
 
+  it.each([
+    { when: "the text is refined", typed: ["Starb"], kept: true },
+    { when: "the text changes", typed: ["Nike"], kept: false },
+    { when: "the field is cleared", typed: ["", "S"], kept: false },
+  ])(
+    "when $when, keeps the previous results while loading: $kept",
+    async ({ typed, kept }) => {
+      const fetchMock = stubBrandSearch();
+      fetchMock.mockImplementation(async (url) =>
+        String(url).includes("/Star?")
+          ? new Response(
+              JSON.stringify([{ name: "Starz", domain: "starz.com" }]),
+            )
+          : new Promise<Response>(() => {}),
+      );
+      renderInput();
+
+      type("Star");
+      await screen.findByText("starz.com");
+      typed.forEach(type);
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+      expect(screen.queryByText("starz.com") !== null).toBe(kept);
+    },
+  );
+
   it("keeps the suggestions closed when there are no results", async () => {
     stubBrandSearch([]);
     const queryClient = new QueryClient();

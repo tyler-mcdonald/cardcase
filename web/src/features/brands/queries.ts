@@ -1,5 +1,6 @@
 import { useDebouncedValue } from "@mantine/hooks";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { hasBrandfetchClientId, searchBrands } from "./api";
 
 export { brandLogoUrl } from "./api";
@@ -9,13 +10,43 @@ const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_CACHE_MS = 5 * 60 * 1000;
 
 export function useBrandSearch(query: string) {
-  const [debouncedQuery] = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
-  return useQuery({
-    queryKey: ["brands", "search", debouncedQuery],
-    queryFn: ({ signal }) => searchBrands(debouncedQuery, signal),
-    enabled: debouncedQuery !== "" && hasBrandfetchClientId(),
+  const term = query.trim();
+  const [debouncedTerm] = useDebouncedValue(term, SEARCH_DEBOUNCE_MS);
+  const [cleared, setCleared] = useState(false);
+  if (term === "" && !cleared) {
+    setCleared(true);
+  }
+
+  const { data, isFetching, isPlaceholderData } = useQuery({
+    queryKey: ["brands", "search", debouncedTerm],
+    queryFn: ({ signal }) => searchBrands(debouncedTerm, signal),
+    enabled: debouncedTerm !== "" && hasBrandfetchClientId(),
     staleTime: SEARCH_CACHE_MS,
     gcTime: SEARCH_CACHE_MS,
-    placeholderData: keepPreviousData,
+    placeholderData: (previousData, previousQuery) =>
+      isRefinement(String(previousQuery?.queryKey[2] ?? ""), debouncedTerm)
+        ? previousData
+        : undefined,
   });
+
+  const freshResults =
+    term !== "" &&
+    debouncedTerm === term &&
+    data !== undefined &&
+    !isPlaceholderData;
+  if (cleared && freshResults) {
+    setCleared(false);
+  }
+
+  return { data: cleared && !freshResults ? undefined : data, isFetching };
+}
+
+function isRefinement(previousTerm: string, term: string) {
+  const previous = previousTerm.toLowerCase();
+  const current = term.toLowerCase();
+  return (
+    previous !== "" &&
+    current !== "" &&
+    (current.startsWith(previous) || previous.startsWith(current))
+  );
 }
