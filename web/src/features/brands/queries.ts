@@ -1,7 +1,11 @@
 import { useDebouncedValue } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useQuery,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 import { useState } from "react";
-import { searchBrands } from "./api";
+import { searchBrands, type Brand } from "./api";
 import { hasBrandfetchClientId } from "./brandfetch-url";
 
 export type { Brand } from "./api";
@@ -9,7 +13,23 @@ export type { Brand } from "./api";
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_CACHE_MS = 5 * 60 * 1000;
 
-export function useBrandSearch(query: string) {
+function brandSearchQuery(term: string) {
+  return queryOptions({
+    queryKey: ["brands", "search", term],
+    queryFn: ({ signal }) => searchBrands(term, signal),
+    enabled: term !== "" && hasBrandfetchClientId(),
+    staleTime: SEARCH_CACHE_MS,
+    gcTime: SEARCH_CACHE_MS,
+    placeholderData: (previousData, previousQuery) =>
+      isRefinement(String(previousQuery?.queryKey[2] ?? ""), term)
+        ? previousData
+        : undefined,
+  });
+}
+
+export function useBrandSearch(
+  query: string,
+): Pick<UseQueryResult<Brand[]>, "data" | "isFetching"> {
   const term = query.trim();
   const [debouncedTerm] = useDebouncedValue(term, SEARCH_DEBOUNCE_MS);
   const [cleared, setCleared] = useState(false);
@@ -17,17 +37,9 @@ export function useBrandSearch(query: string) {
     setCleared(true);
   }
 
-  const { data, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["brands", "search", debouncedTerm],
-    queryFn: ({ signal }) => searchBrands(debouncedTerm, signal),
-    enabled: debouncedTerm !== "" && hasBrandfetchClientId(),
-    staleTime: SEARCH_CACHE_MS,
-    gcTime: SEARCH_CACHE_MS,
-    placeholderData: (previousData, previousQuery) =>
-      isRefinement(String(previousQuery?.queryKey[2] ?? ""), debouncedTerm)
-        ? previousData
-        : undefined,
-  });
+  const { data, isFetching, isPlaceholderData } = useQuery(
+    brandSearchQuery(debouncedTerm),
+  );
 
   const freshResults =
     term !== "" &&
