@@ -34,6 +34,20 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
+type AccountFormProps = {
+  initialValues: AccountFormValues;
+  showInitialBalance?: boolean;
+  typeLocked?: boolean;
+  autoFocus?: boolean;
+  submitLabel: string;
+  isPending: boolean;
+  fieldErrors: Record<string, string>;
+  formError: string | null;
+  onSubmit: (values: AccountFormValues) => void;
+  onCancel: () => void;
+  secondaryAction?: ReactNode;
+};
+
 export function AccountForm({
   initialValues,
   showInitialBalance = false,
@@ -46,19 +60,7 @@ export function AccountForm({
   onSubmit,
   onCancel,
   secondaryAction,
-}: {
-  initialValues: AccountFormValues;
-  showInitialBalance?: boolean;
-  typeLocked?: boolean;
-  autoFocus?: boolean;
-  submitLabel: string;
-  isPending: boolean;
-  fieldErrors: Record<string, string>;
-  formError: string | null;
-  onSubmit: (values: AccountFormValues) => void;
-  onCancel: () => void;
-  secondaryAction?: ReactNode;
-}) {
+}: AccountFormProps) {
   const form = useForm<AccountFormValues>({
     initialValues,
     validate: {
