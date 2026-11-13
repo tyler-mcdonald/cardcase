@@ -1,11 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { searchBrands } from "@/features/brands/api";
 import { stubBrandSearch } from "./search";
-
-afterEach(() => {
-  vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
-});
 
 describe("searchBrands", () => {
   it("searches Brandfetch directly with the client ID", async () => {

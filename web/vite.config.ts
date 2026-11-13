@@ -17,6 +17,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     mockReset: true,
+    unstubEnvs: true,
+    unstubGlobals: true,
     testTimeout: 15_000,
     env: {
       VITE_API_URL: "http://api.test",

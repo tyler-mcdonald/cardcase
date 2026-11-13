@@ -5,11 +5,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
 import type { Brand } from "@/features/brands/queries";
 import { renderWithProviders } from "../../render";
-import { searchedQueries, stubBrandSearch } from "./search";
+import {
+  pickBrand,
+  searchedQueries,
+  stubBrandSearch,
+  stubBrandSearchByQuery,
+} from "./search";
 
 afterEach(() => {
-  vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -87,8 +90,7 @@ describe("BrandNameInput", () => {
     stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
     const { onBrandSelect } = renderInput();
 
-    type("star");
-    fireEvent.click(await screen.findByRole("option"));
+    await pickBrand("star");
 
     expect(onBrandSelect).toHaveBeenCalledWith({
       name: "Starbucks",
@@ -114,8 +116,7 @@ describe("BrandNameInput", () => {
   });
 
   it("cancels the previous search when a new one starts", async () => {
-    const fetchMock = stubBrandSearch();
-    fetchMock.mockImplementationOnce(() => new Promise<Response>(() => {}));
+    const fetchMock = stubBrandSearchByQuery({ Sta: [] });
     renderInput();
 
     type("St");
@@ -155,18 +156,15 @@ describe("BrandNameInput", () => {
   });
 
   it("doesn't pick a stale highlighted brand after the results change", async () => {
-    const fetchMock = stubBrandSearch();
-    fetchMock.mockImplementation(async (url) => {
-      const results = String(url).includes("/Starb?")
-        ? [
-            { name: "Starburst", domain: "starburst.com" },
-            { name: "Starbucks", domain: "starbucks.com" },
-          ]
-        : [
-            { name: "Star Market", domain: "starmarket.com" },
-            { name: "Starz", domain: "starz.com" },
-          ];
-      return new Response(JSON.stringify(results), { status: 200 });
+    stubBrandSearchByQuery({
+      Star: [
+        { name: "Star Market", domain: "starmarket.com" },
+        { name: "Starz", domain: "starz.com" },
+      ],
+      Starb: [
+        { name: "Starburst", domain: "starburst.com" },
+        { name: "Starbucks", domain: "starbucks.com" },
+      ],
     });
     const { onBrandSelect } = renderInput();
 
@@ -206,14 +204,9 @@ describe("BrandNameInput", () => {
   ])(
     "when $when, keeps the previous results while loading: $kept",
     async ({ typed, kept }) => {
-      const fetchMock = stubBrandSearch();
-      fetchMock.mockImplementation(async (url) =>
-        String(url).includes("/Star?")
-          ? new Response(
-              JSON.stringify([{ name: "Starz", domain: "starz.com" }]),
-            )
-          : new Promise<Response>(() => {}),
-      );
+      const fetchMock = stubBrandSearchByQuery({
+        Star: [{ name: "Starz", domain: "starz.com" }],
+      });
       renderInput();
 
       type("Star");

@@ -4,7 +4,7 @@ const SEARCH_API_URL = "https://api.brandfetch.io/v2/search";
 
 export type Brand = { name: string; domain: string };
 
-type SearchResult = { name: string | null; domain: string };
+export type SearchResult = { name: string | null; domain: string };
 
 export async function searchBrands(
   query: string,

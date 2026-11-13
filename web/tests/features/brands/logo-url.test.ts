@@ -3,7 +3,6 @@ import { brandLogoUrl } from "@/features/brands/logo-url";
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
 });
 
 describe("brandLogoUrl", () => {

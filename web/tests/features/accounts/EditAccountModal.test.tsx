@@ -1,19 +1,14 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import type { Account } from "@/features/accounts/types";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
-import { stubBrandSearch } from "../brands/search";
+import { pickBrand, stubBrandSearch } from "../brands/search";
 import { makeAccount } from "./factories";
 
 vi.mock("@/features/accounts/api");
-
-afterEach(() => {
-  vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
-});
 
 const mockedUpdateAccount = vi.mocked(updateAccount);
 const mockedDeleteAccount = vi.mocked(deleteAccount);
@@ -155,10 +150,7 @@ describe("EditAccountModal", () => {
     mockedUpdateAccount.mockResolvedValueOnce(account);
     renderForm();
 
-    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
-      target: { value: "delta" },
-    });
-    fireEvent.click(await screen.findByRole("option"));
+    await pickBrand("delta");
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());

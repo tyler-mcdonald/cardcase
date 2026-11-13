@@ -44,7 +44,7 @@ export function BrandNameInput({
     if (brand) {
       onBrandSelect(brand);
     }
-    combobox.closeDropdown();
+    setOpened(false);
   }
 
   return (
@@ -63,7 +63,6 @@ export function BrandNameInput({
             setOpened(true);
           }}
           onBlur={(event) => {
-            combobox.closeDropdown();
             setOpened(false);
             onBlur?.(event);
           }}
