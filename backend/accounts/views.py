@@ -3,6 +3,7 @@ from typing import Any
 from django.db import transaction
 from django.db.models import DecimalField, OuterRef, QuerySet, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -12,6 +13,7 @@ from rest_framework.serializers import BaseSerializer
 
 from users.models import User
 
+from .filters import TransactionFilter
 from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 from .serializers import AccountSerializer, TransactionSerializer
 
@@ -81,6 +83,8 @@ class TransactionViewSet(UserScopedViewSet):
 
 class UserTransactionViewSet(UserScopedViewSet):
     serializer_class = TransactionSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TransactionFilter
 
     def get_queryset(self) -> QuerySet[Transaction]:
         return (
