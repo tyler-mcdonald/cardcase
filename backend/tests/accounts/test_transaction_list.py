@@ -114,6 +114,19 @@ def test_list_without_account_filter_is_unchanged(
     first = create_transaction(create_account(user, name="Amazon"))
     second = create_transaction(create_account(user, name="Delta"))
 
+    response = get(auth_client, "/transactions")
+
+    assert response.status_code == 200
+    assert set(result_ids(response)) == {str(first.id), str(second.id)}
+
+
+@pytest.mark.django_db
+def test_list_with_empty_account_filter_is_unchanged(
+    auth_client: Client, user: User
+) -> None:
+    first = create_transaction(create_account(user, name="Amazon"))
+    second = create_transaction(create_account(user, name="Delta"))
+
     response = get(auth_client, "/transactions?account=")
 
     assert response.status_code == 200
