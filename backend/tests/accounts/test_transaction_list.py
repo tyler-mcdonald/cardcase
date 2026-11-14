@@ -108,26 +108,14 @@ def test_list_filters_to_one_account(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("path", ["/transactions", "/transactions?account="])
 def test_list_without_account_filter_is_unchanged(
-    auth_client: Client, user: User
+    auth_client: Client, user: User, path: str
 ) -> None:
     first = create_transaction(create_account(user, name="Amazon"))
     second = create_transaction(create_account(user, name="Delta"))
 
-    response = get(auth_client, "/transactions")
-
-    assert response.status_code == 200
-    assert set(result_ids(response)) == {str(first.id), str(second.id)}
-
-
-@pytest.mark.django_db
-def test_list_with_empty_account_filter_is_unchanged(
-    auth_client: Client, user: User
-) -> None:
-    first = create_transaction(create_account(user, name="Amazon"))
-    second = create_transaction(create_account(user, name="Delta"))
-
-    response = get(auth_client, "/transactions?account=")
+    response = get(auth_client, path)
 
     assert response.status_code == 200
     assert set(result_ids(response)) == {str(first.id), str(second.id)}
