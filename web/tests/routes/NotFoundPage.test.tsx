@@ -2,7 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { NotFoundPage } from "@/routes/NotFoundPage";
-import { renderWithProviders } from "../render";
+import { renderWithProviders } from "@tests/render";
 
 function renderNotFoundPage() {
   return renderWithProviders(

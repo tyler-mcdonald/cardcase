@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { render } from "@testing-library/react";
-import { TestProviders } from "./TestProviders";
+import { TestProviders } from "@tests/TestProviders";
 
 export function renderWithProviders(
   ui: ReactElement,
