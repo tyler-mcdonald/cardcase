@@ -15,10 +15,10 @@ import {
 import { listAccounts } from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import type { Paginated } from "@/lib/api/types";
-import { makeAccount } from "./features/accounts/factories";
-import { makePage } from "./lib/api/factories";
-import { renderWithProviders } from "./render";
-import { sessionResponse } from "./features/auth/fixtures";
+import { makeAccount } from "@tests/features/accounts/factories";
+import { makePage } from "@tests/lib/api/factories";
+import { renderWithProviders } from "@tests/render";
+import { sessionResponse } from "@tests/features/auth/fixtures";
 
 vi.mock("@/features/auth/api");
 vi.mock("@/features/accounts/api");

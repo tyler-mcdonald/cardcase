@@ -10,9 +10,9 @@ import {
 import { allAccountsQuery } from "@/features/accounts/queries";
 import { confirmLoginCode, deleteMe, logout } from "@/features/auth/api";
 import { announceUserChange } from "@/features/auth/session-channel";
-import { makeAccount } from "../accounts/factories";
-import { TestProviders } from "../../TestProviders";
-import { sessionResponse, TEST_USER } from "./fixtures";
+import { makeAccount } from "@tests/features/accounts/factories";
+import { TestProviders } from "@tests/TestProviders";
+import { sessionResponse, TEST_USER } from "@tests/features/auth/fixtures";
 
 vi.mock("@/features/auth/api");
 vi.mock("@/features/auth/session-channel");
