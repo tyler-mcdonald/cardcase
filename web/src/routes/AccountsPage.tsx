@@ -18,7 +18,7 @@ import { usePageParam } from "@/lib/hooks/use-page-param";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
-  const { page, goToPage, searchWithoutPage } = usePageParam();
+  const { page, goToPage, firstPageSearch } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     accountsQuery(page),
   );
@@ -39,7 +39,7 @@ export function AccountsPage() {
   }
 
   if (page > 1 && isMissingPage(error)) {
-    return <Navigate to={{ search: searchWithoutPage }} replace />;
+    return <Navigate to={{ search: firstPageSearch }} replace />;
   }
 
   return (

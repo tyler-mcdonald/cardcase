@@ -10,16 +10,20 @@ function paramsForPage(params: URLSearchParams, page: number) {
   return next;
 }
 
+// The location search string for page 1, keeping every other param.
+export function firstPageSearch(params: URLSearchParams): string {
+  const search = paramsForPage(params, 1).toString();
+  return search === "" ? "" : `?${search}`;
+}
+
 export function usePageParam() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
-  const firstPageParams = paramsForPage(searchParams, 1).toString();
-  const searchWithoutPage = firstPageParams === "" ? "" : `?${firstPageParams}`;
 
   function goToPage(nextPage: number) {
     setSearchParams((current) => paramsForPage(current, nextPage));
     window.scrollTo({ top: 0 });
   }
 
-  return { page, goToPage, searchWithoutPage };
+  return { page, goToPage, firstPageSearch: firstPageSearch(searchParams) };
 }

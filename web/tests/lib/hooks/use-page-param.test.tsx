@@ -18,9 +18,9 @@ function Pager() {
 }
 
 function MissingPageRedirect() {
-  const { page, searchWithoutPage } = usePageParam();
+  const { page, firstPageSearch } = usePageParam();
   if (page > 1) {
-    return <Navigate to={{ search: searchWithoutPage }} replace />;
+    return <Navigate to={{ search: firstPageSearch }} replace />;
   }
   return <LocationDisplay />;
 }
