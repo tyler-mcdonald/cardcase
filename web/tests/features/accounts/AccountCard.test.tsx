@@ -5,7 +5,8 @@ import type { Account } from "@/features/accounts/types";
 import { makeAccount } from "./factories";
 import { renderWithProviders } from "../../render";
 
-vi.mock("@/features/brands/logo-url", () => ({
+vi.mock("@/features/brands/brandfetch-url", async (importOriginal) => ({
+  ...(await importOriginal()),
   brandLogoUrl: (domain: string) => `https://logos.test/${domain}`,
 }));
 

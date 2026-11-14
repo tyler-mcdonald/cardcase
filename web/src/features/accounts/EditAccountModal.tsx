@@ -11,6 +11,7 @@ import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 
 const EDITABLE_FIELDS = [
   "name",
+  "brand_domain",
   "expires_on",
   "description",
 ] as const satisfies readonly (keyof AccountUpdate)[];

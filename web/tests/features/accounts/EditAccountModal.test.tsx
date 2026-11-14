@@ -5,6 +5,7 @@ import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import type { Account } from "@/features/accounts/types";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "../../render";
+import { pickBrand, stubBrandSearch } from "../brands/search";
 import { makeAccount } from "./factories";
 
 vi.mock("@/features/accounts/api");
@@ -122,6 +123,40 @@ describe("EditAccountModal", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
       name: "Delta voucher",
+    });
+  });
+
+  it("unlinks the brand when the name is typed over", async () => {
+    const linked = { ...account, brand_domain: "delta.com" };
+    mockedUpdateAccount.mockResolvedValueOnce(linked);
+    renderWithProviders(
+      <EditAccountModal account={linked} opened onClose={onClose} />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
+    submit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      name: "Delta voucher",
+      brand_domain: "",
+    });
+  });
+
+  it("saves a newly picked brand", async () => {
+    stubBrandSearch([{ name: "Delta Air Lines", domain: "delta.com" }]);
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    renderForm();
+
+    await pickBrand("delta");
+    submit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      name: "Delta Air Lines",
+      brand_domain: "delta.com",
     });
   });
 
