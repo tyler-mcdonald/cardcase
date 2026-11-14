@@ -9,7 +9,8 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
-import { useBrandSearch, type Brand } from "./queries";
+import { useBrandSearch } from "./queries";
+import type { Brand } from "./types";
 
 type BrandNameInputProps = Omit<TextInputProps, "value" | "onChange"> & {
   value: string;
@@ -21,6 +22,8 @@ export function BrandNameInput({
   value,
   onChange,
   onBrandSelect,
+  onFocus,
+  onClick,
   onBlur,
   ...inputProps
 }: BrandNameInputProps) {
@@ -63,6 +66,14 @@ export function BrandNameInput({
           autoComplete="off"
           rightSection={isFetching ? <Loader size="xs" /> : null}
           onChange={(event) => handleChange(event.currentTarget.value)}
+          onFocus={(event) => {
+            setOpened(true);
+            onFocus?.(event);
+          }}
+          onClick={(event) => {
+            setOpened(true);
+            onClick?.(event);
+          }}
           onBlur={(event) => {
             setOpened(false);
             onBlur?.(event);

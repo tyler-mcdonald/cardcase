@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
-import type { Brand } from "@/features/brands/queries";
+import type { Brand } from "@/features/brands/types";
 import { renderWithProviders } from "@tests/render";
 import {
   pickBrand,
@@ -98,6 +98,32 @@ describe("BrandNameInput", () => {
     });
     expect(nameInput().value).toBe("Starbucks");
     await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
+  });
+
+  it("shows the suggestions again when the field is refocused", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    renderInput();
+
+    type("Star");
+    await screen.findByText("starbucks.com");
+    fireEvent.blur(nameInput());
+    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
+    fireEvent.focus(nameInput());
+
+    expect(await screen.findByRole("option")).toBeTruthy();
+  });
+
+  it("shows the suggestions again when the focused field is clicked", async () => {
+    stubBrandSearch([{ name: "Starbucks", domain: "starbucks.com" }]);
+    renderInput();
+
+    type("Star");
+    await screen.findByText("starbucks.com");
+    fireEvent.keyDown(nameInput(), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
+    fireEvent.click(nameInput());
+
+    expect(await screen.findByRole("option")).toBeTruthy();
   });
 
   it("searches 300ms after typing stops", async () => {

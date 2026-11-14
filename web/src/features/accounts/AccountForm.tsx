@@ -12,6 +12,7 @@ import { type ReactNode, useEffect } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
+import type { Brand } from "@/features/brands/types";
 import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -33,6 +34,20 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
 );
 
+type AccountFormProps = {
+  initialValues: AccountFormValues;
+  showInitialBalance?: boolean;
+  typeLocked?: boolean;
+  autoFocus?: boolean;
+  submitLabel: string;
+  isPending: boolean;
+  fieldErrors: Record<string, string>;
+  formError: string | null;
+  onSubmit: (values: AccountFormValues) => void;
+  onCancel: () => void;
+  secondaryAction?: ReactNode;
+};
+
 export function AccountForm({
   initialValues,
   showInitialBalance = false,
@@ -45,19 +60,7 @@ export function AccountForm({
   onSubmit,
   onCancel,
   secondaryAction,
-}: {
-  initialValues: AccountFormValues;
-  showInitialBalance?: boolean;
-  typeLocked?: boolean;
-  autoFocus?: boolean;
-  submitLabel: string;
-  isPending: boolean;
-  fieldErrors: Record<string, string>;
-  formError: string | null;
-  onSubmit: (values: AccountFormValues) => void;
-  onCancel: () => void;
-  secondaryAction?: ReactNode;
-}) {
+}: AccountFormProps) {
   const form = useForm<AccountFormValues>({
     initialValues,
     validate: {
@@ -78,6 +81,10 @@ export function AccountForm({
     form.setFieldValue("brand_domain", "");
   }
 
+  function handleBrandSelect(brand: Brand) {
+    form.setValues({ name: brand.name, brand_domain: brand.domain });
+  }
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
@@ -89,9 +96,7 @@ export function AccountForm({
           {...form.getInputProps("name")}
           value={form.values.name}
           onChange={handleNameChange}
-          onBrandSelect={(brand) =>
-            form.setValues({ name: brand.name, brand_domain: brand.domain })
-          }
+          onBrandSelect={handleBrandSelect}
         />
         <Input.Wrapper
           label="Type"

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { brandLogoUrl } from "@/features/brands/logo-url";
+import { brandLogoUrl } from "@/features/brands/brandfetch-url";
 
 afterEach(() => {
   vi.unstubAllEnvs();

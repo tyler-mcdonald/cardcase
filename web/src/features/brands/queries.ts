@@ -5,10 +5,9 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { searchBrands, type Brand } from "./api";
+import { searchBrands } from "./api";
 import { hasBrandfetchClientId } from "./brandfetch-url";
-
-export type { Brand } from "./api";
+import type { Brand } from "./types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_CACHE_MS = 5 * 60 * 1000;
@@ -32,27 +31,32 @@ export function useBrandSearch(
 ): Pick<UseQueryResult<Brand[]>, "data" | "isFetching"> {
   const term = query.trim();
   const [debouncedTerm] = useDebouncedValue(term, SEARCH_DEBOUNCE_MS);
-  const [cleared, setCleared] = useState(false);
-  if (term === "" && !cleared) {
-    setCleared(true);
-  }
-
   const { data, isFetching, isPlaceholderData } = useQuery(
     brandSearchQuery(debouncedTerm),
   );
 
-  const freshResults =
+  const hasFreshResults =
     term !== "" &&
     debouncedTerm === term &&
     data !== undefined &&
     !isPlaceholderData;
-  if (cleared && freshResults) {
+  const hidden =
+    useHiddenSinceCleared(term === "", hasFreshResults) ||
+    !isRefinement(debouncedTerm, term);
+  return { data: hidden ? undefined : data, isFetching };
+}
+
+// Once the input is cleared, keep results hidden until a new search returns
+// fresh ones, so the previous search's results don't flash back.
+function useHiddenSinceCleared(isCleared: boolean, hasFreshResults: boolean) {
+  const [cleared, setCleared] = useState(false);
+  if (isCleared && !cleared) {
+    setCleared(true);
+  }
+  if (cleared && hasFreshResults) {
     setCleared(false);
   }
-
-  const hidden =
-    (cleared && !freshResults) || !isRefinement(debouncedTerm, term);
-  return { data: hidden ? undefined : data, isFetching };
+  return cleared && !hasFreshResults;
 }
 
 function isRefinement(previousTerm: string, term: string) {
