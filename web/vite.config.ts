@@ -3,12 +3,15 @@ import react from "@vitejs/plugin-react";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
+function hasBrandfetchClientId(mode: string): boolean {
+  return Boolean(
+    loadEnv(mode, import.meta.dirname, "VITE_").VITE_BRANDFETCH_CLIENT_ID,
+  );
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
-  if (
-    command === "build" &&
-    !loadEnv(mode, import.meta.dirname, "VITE_").VITE_BRANDFETCH_CLIENT_ID
-  ) {
+  if (command === "build" && !hasBrandfetchClientId(mode)) {
     throw new Error("VITE_BRANDFETCH_CLIENT_ID must be set to build");
   }
 
