@@ -16,3 +16,7 @@ export type TransactionInput = Pick<
 >;
 
 export type TransactionUpdate = Partial<TransactionInput>;
+
+export type TransactionListParams = {
+  page: number;
+};

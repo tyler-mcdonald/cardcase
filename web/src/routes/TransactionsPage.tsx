@@ -34,7 +34,7 @@ function isEditedRowGone(
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } =
-    usePaginatedQuery(transactionsQuery);
+    usePaginatedQuery((page) => transactionsQuery({ page }));
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
