@@ -12,10 +12,7 @@ const accountTransactions = (accountId: string) =>
   accounts.path(accountId, "transactions");
 
 export function listTransactions(params: TransactionListParams) {
-  return request<Paginated<Transaction>>(
-    "GET",
-    transactions({ page: params.page }),
-  );
+  return request<Paginated<Transaction>>("GET", transactions(params));
 }
 
 export function createTransaction(accountId: string, input: TransactionInput) {

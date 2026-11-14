@@ -19,6 +19,7 @@ import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { makeAccount } from "@tests/features/accounts/factories";
 import { makeTransaction } from "@tests/features/transactions/factories";
 import { makePage } from "@tests/lib/api/factories";
+import { LocationDisplay } from "@tests/LocationDisplay";
 import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/transactions/api");
@@ -1009,5 +1010,174 @@ describe("deleting a transaction", () => {
       GENERIC_ERROR,
     );
     expect(dialog.isConnected).toBe(true);
+  });
+});
+
+describe("filtering by account", () => {
+  const latte = makeTransaction({
+    id: "latte-id",
+    account: { id: "starbucks-id", name: "Starbucks", type: "gift_card" },
+    description: "Latte",
+  });
+  const flight = makeTransaction({
+    id: "flight-id",
+    account: { id: "delta-id", name: "Delta", type: "flight_credit" },
+    description: "Flight",
+  });
+
+  beforeEach(() => {
+    mockedListTransactions.mockImplementation(async ({ account }) =>
+      makePage(
+        [latte, flight].filter(
+          (transaction) => !account || transaction.account.id === account,
+        ),
+      ),
+    );
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks" }),
+        makeAccount({ id: "delta-id", name: "Delta" }),
+      ]),
+    );
+  });
+
+  function renderFilterablePage(route = "/") {
+    return renderWithProviders(
+      <>
+        <TransactionsPage />
+        <LocationDisplay />
+      </>,
+      { route },
+    );
+  }
+
+  function accountFilter() {
+    return screen.getByRole<HTMLInputElement>("combobox", {
+      name: "Filter by account",
+    });
+  }
+
+  function clearAccountFilter() {
+    fireEvent.click(screen.getByLabelText("Clear account filter"));
+  }
+
+  function location() {
+    return screen.getByTestId("location").textContent;
+  }
+
+  async function filterBy(name: string) {
+    fireEvent.click(accountFilter());
+    fireEvent.click(await screen.findByRole("option", { name }));
+  }
+
+  it("filters the list to the selected account", async () => {
+    renderFilterablePage();
+    await screen.findByText(flight.description);
+
+    await filterBy("Starbucks");
+
+    await waitFor(() =>
+      expect(screen.queryByText(flight.description)).toBeNull(),
+    );
+    expect(screen.getByText(latte.description)).toBeTruthy();
+    expect(location()).toBe("?account=starbucks-id");
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({
+      page: 1,
+      account: "starbucks-id",
+    });
+  });
+
+  it("shows every account's transactions when cleared", async () => {
+    renderFilterablePage("/?account=starbucks-id");
+    await screen.findByText(latte.description);
+    await waitFor(() => expect(accountFilter().value).toBe("Starbucks"));
+
+    clearAccountFilter();
+
+    expect(await screen.findByText(flight.description)).toBeTruthy();
+    expect(location()).toBe("");
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
+  });
+
+  it("returns to the first page when the filter changes", async () => {
+    renderFilterablePage("/?page=2&sort=date");
+    await screen.findByText(flight.description);
+
+    await filterBy("Delta");
+
+    await waitFor(() => expect(location()).toBe("?sort=date&account=delta-id"));
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({
+      page: 1,
+      account: "delta-id",
+    });
+  });
+
+  it("closes an open editor when the filter changes", async () => {
+    renderFilterablePage();
+    fireEvent.click(await screen.findByText(latte.description));
+    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+
+    await filterBy("Starbucks");
+
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Save" })).toBeNull(),
+    );
+  });
+
+  it("shows a filtered empty message when the account has no transactions", async () => {
+    mockedListTransactions.mockResolvedValue(makePage([]));
+
+    renderFilterablePage("/?account=delta-id");
+
+    expect(
+      await screen.findByText("No transactions for this account"),
+    ).toBeTruthy();
+    expect(screen.queryByText("No transactions yet.")).toBeNull();
+  });
+
+  it("shows an unknown account in the filter so it can be cleared", async () => {
+    mockedListTransactions.mockResolvedValue(makePage([]));
+    renderFilterablePage("/?account=gone-id");
+
+    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({
+      page: 1,
+      account: "gone-id",
+    });
+
+    clearAccountFilter();
+
+    await waitFor(() => expect(location()).toBe(""));
+  });
+
+  it("doesn't offer an unknown account when adding a transaction", async () => {
+    mockedListTransactions.mockResolvedValue(makePage([latte]));
+    renderFilterablePage("/?account=gone-id");
+    await screen.findByText(latte.description);
+    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+    const account = screen.getByRole<HTMLInputElement>("combobox", {
+      name: "Account",
+    });
+    expect(account.value).toBe("");
+    fireEvent.click(account);
+
+    await screen.findByRole("option", { name: "Starbucks" });
+    expect(
+      screen.queryByRole("option", { name: "Unknown account" }),
+    ).toBeNull();
+  });
+
+  it("pre-selects the filtered account when adding a transaction", async () => {
+    renderFilterablePage("/?account=delta-id");
+    await screen.findByText(flight.description);
+    await waitFor(() => expect(accountFilter().value).toBe("Delta"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    expect(
+      screen.getByRole<HTMLInputElement>("combobox", { name: "Account" }).value,
+    ).toBe("Delta");
   });
 });

@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { parsePage } from "@/lib/api/pagination";
 
-function paramsForPage(params: URLSearchParams, page: number) {
+export function paramsForPage(params: URLSearchParams, page: number) {
   const next = new URLSearchParams(params);
   next.delete("page");
   if (page !== 1) {

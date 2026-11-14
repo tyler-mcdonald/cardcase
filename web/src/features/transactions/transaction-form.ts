@@ -49,9 +49,11 @@ export function toTransactionInput(
   };
 }
 
-export function emptyTransactionForm(): TransactionFormValues {
+export function emptyTransactionForm(
+  accountId?: string,
+): TransactionFormValues {
   return {
-    accountId: null,
+    accountId: accountId ?? null,
     occurredOn: localDateString(new Date()),
     description: "",
     outflow: "",

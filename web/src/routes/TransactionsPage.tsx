@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { FirstPageRedirect } from "@/components/FirstPageRedirect";
+import { AccountSelect } from "@/features/accounts/AccountSelect";
+import { allAccountsQuery } from "@/features/accounts/queries";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
@@ -14,6 +16,7 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
+import { useTransactionFilters } from "@/features/transactions/use-transaction-filters";
 import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
@@ -35,9 +38,16 @@ function isEditedRowGone(
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
+  const { filters, setFilters } = useTransactionFilters();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
-    transactionsQuery({ page }),
+    transactionsQuery({ page, ...filters }),
   );
+  const { data: accounts } = useQuery(allAccountsQuery());
+  const filteredAccountId = accounts?.some(
+    (account) => account.id === filters.account,
+  )
+    ? filters.account
+    : undefined;
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
@@ -57,6 +67,11 @@ export function TransactionsPage() {
 
   function openEditTransaction(target: EditTarget) {
     setEditor({ kind: "edit", ...target });
+  }
+
+  function filterByAccount(accountId: string | null) {
+    setEditor(null);
+    setFilters({ account: accountId ?? undefined });
   }
 
   function closeEditor(closing: Editor | null) {
@@ -81,6 +96,18 @@ export function TransactionsPage() {
         </Button>
       </Group>
 
+      <AccountSelect
+        aria-label="Filter by account"
+        placeholder="All accounts"
+        searchable
+        clearable
+        clearButtonProps={{ "aria-label": "Clear account filter" }}
+        showUnknownValue
+        value={filters.account ?? null}
+        onChange={filterByAccount}
+        maw={280}
+      />
+
       {isPending && <TransactionsTableSkeleton />}
 
       {isError && (
@@ -92,7 +119,13 @@ export function TransactionsPage() {
         />
       )}
 
-      {isEmpty && <Text fw={600}>No transactions yet.</Text>}
+      {isEmpty && (
+        <Text fw={600}>
+          {filters.account
+            ? "No transactions for this account"
+            : "No transactions yet."}
+        </Text>
+      )}
 
       {showTable && (
         <TransactionsTable
@@ -104,6 +137,7 @@ export function TransactionsPage() {
             isAdding && (
               <NewTransactionRow
                 key={editor.key}
+                accountId={filteredAccountId}
                 onClose={() => closeEditor(editor)}
               />
             )
