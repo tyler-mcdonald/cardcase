@@ -4,7 +4,7 @@ from .models import Transaction
 
 
 class TransactionFilter(filters.FilterSet):  # type: ignore[misc]
-    account = filters.UUIDFilter(field_name="account")
+    account = filters.UUIDFilter()
 
     class Meta:
         model = Transaction
