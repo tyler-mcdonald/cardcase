@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@/lib/api/errors";
-import { isMissingPage, parsePage, totalPages } from "@/lib/api/pagination";
+import {
+  isMissingPage,
+  isPastLastPage,
+  parsePage,
+  totalPages,
+} from "@/lib/api/pagination";
 
 describe("parsePage", () => {
   it("returns a positive integer page", () => {
@@ -47,4 +52,19 @@ describe("isMissingPage", () => {
   it("returns false for other errors", () => {
     expect(isMissingPage(new ApiError("Server error", 500))).toBe(false);
   });
+});
+
+describe("isPastLastPage", () => {
+  it.each([
+    { page: 3, status: 404, expected: true },
+    { page: 1, status: 404, expected: false },
+    { page: 3, status: 500, expected: false },
+  ])(
+    "returns $expected for page $page with a $status error",
+    ({ page, status, expected }) => {
+      expect(isPastLastPage(page, new ApiError("Error", status))).toBe(
+        expected,
+      );
+    },
+  );
 });

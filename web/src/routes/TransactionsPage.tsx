@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
@@ -14,8 +12,8 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
-import { isMissingPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
+import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
 type NewTransactionEditor = { kind: "new"; key: number };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
@@ -35,9 +33,8 @@ function isEditedRowGone(
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } = useQuery(
-    transactionsQuery(page),
-  );
+  const { data, error, isPending, isError, isFetching, refetch } =
+    usePaginatedQuery(transactionsQuery);
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
@@ -61,10 +58,6 @@ export function TransactionsPage() {
 
   function closeEditor(closing: Editor | null) {
     setEditor((current) => (current === closing ? null : current));
-  }
-
-  if (page > 1 && isMissingPage(error)) {
-    return <Navigate to={{ search: "" }} replace />;
   }
 
   return (

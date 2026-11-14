@@ -27,3 +27,8 @@ export function toPage<T>(response: Paginated<T>, page: number): Page<T> {
 export function isMissingPage(error: unknown): boolean {
   return hasApiStatus(error, 404);
 }
+
+// True when a page past the first no longer exists, e.g. after deletes.
+export function isPastLastPage(page: number, error: unknown): boolean {
+  return page > 1 && isMissingPage(error);
+}
