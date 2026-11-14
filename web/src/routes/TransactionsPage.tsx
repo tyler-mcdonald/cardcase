@@ -12,6 +12,7 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
+import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
 type NewTransactionEditor = { kind: "new"; key: number };
@@ -31,11 +32,9 @@ function isEditedRowGone(
 }
 
 export function TransactionsPage() {
-  const {
-    query: { data, error, isPending, isError, isFetching, refetch },
-    page,
-    goToPage,
-  } = usePaginatedQuery(transactionsQuery);
+  const { page, goToPage } = usePageParam();
+  const { data, error, isPending, isError, isFetching, refetch } =
+    usePaginatedQuery(transactionsQuery);
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {

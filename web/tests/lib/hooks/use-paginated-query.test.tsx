@@ -20,11 +20,10 @@ function itemsQuery(page: number) {
 }
 
 function List() {
-  const { query, page } = usePaginatedQuery(itemsQuery);
+  const { data } = usePaginatedQuery(itemsQuery);
   return (
     <>
-      <p>Page {page}</p>
-      {query.data && <p>Loaded</p>}
+      {data && <p>Loaded</p>}
       <LocationDisplay />
     </>
   );

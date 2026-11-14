@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { parsePage } from "@/lib/api/pagination";
 
@@ -20,9 +21,9 @@ export function usePageParam() {
   }
 
   // Swaps the current history entry for page 1, keeping every other param.
-  function replaceWithFirstPage() {
+  const replaceWithFirstPage = useCallback(() => {
     setSearchParams((current) => paramsForPage(current, 1), { replace: true });
-  }
+  }, [setSearchParams]);
 
   return { page, goToPage, replaceWithFirstPage };
 }

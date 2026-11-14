@@ -11,15 +11,14 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
+import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
-  const {
-    query: { data, error, isPending, isError, isFetching, refetch },
-    page,
-    goToPage,
-  } = usePaginatedQuery(accountsQuery);
+  const { page, goToPage } = usePageParam();
+  const { data, error, isPending, isError, isFetching, refetch } =
+    usePaginatedQuery(accountsQuery);
   const [createOpened, createModal] = useDisclosure(false);
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
