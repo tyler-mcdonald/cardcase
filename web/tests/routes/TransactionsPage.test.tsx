@@ -6,6 +6,7 @@ import {
   within,
 } from "@testing-library/react";
 import { focusManager, QueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listAllAccounts } from "@/features/accounts/api";
@@ -1122,6 +1123,52 @@ describe("filtering by account", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: "Save" })).toBeNull(),
     );
+  });
+
+  it("closes an open new row when the filter changes in the URL", async () => {
+    renderWithProviders(
+      <>
+        <TransactionsPage />
+        <Link to="?account=starbucks-id">Show Starbucks</Link>
+      </>,
+      { route: "/?account=delta-id" },
+    );
+    await screen.findByText(flight.description);
+    await waitFor(() => expect(accountFilter().value).toBe("Delta"));
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    fireEvent.click(screen.getByRole("link", { name: "Show Starbucks" }));
+
+    await screen.findByText(latte.description);
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  });
+
+  it("can't change the filter while a save is pending", async () => {
+    mockedUpdateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    renderFilterablePage();
+    fireEvent.click(await screen.findByText(latte.description));
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+
+    save();
+
+    await waitFor(() =>
+      expect(accountFilter().hasAttribute("disabled")).toBe(true),
+    );
+  });
+
+  it("can't add a filtered transaction until the accounts load", async () => {
+    mockedListAllAccounts.mockReturnValue(new Promise(() => {}));
+
+    renderFilterablePage("/?account=delta-id");
+
+    await screen.findByText(flight.description);
+    expect(
+      screen
+        .getByRole("button", { name: "Add transaction" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
   });
 
   it("shows a filtered empty message when the account has no transactions", async () => {

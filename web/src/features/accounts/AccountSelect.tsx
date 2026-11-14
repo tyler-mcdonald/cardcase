@@ -1,5 +1,6 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import { hasAccount } from "./format";
 import { allAccountsQuery } from "./queries";
 import type { Account } from "./types";
 
@@ -12,28 +13,17 @@ function toOptions(accounts: Account[]): AccountOption[] {
   }));
 }
 
-function withUnknownValue(
-  options: AccountOption[],
-  value: string | null | undefined,
-): AccountOption[] {
-  if (!value || options.some((option) => option.value === value)) {
-    return options;
-  }
-  return [...options, { value, label: "Unknown account" }];
-}
-
 export function AccountSelect({
   showUnknownValue = false,
+  value,
   ...props
 }: Omit<SelectProps, "data"> & { showUnknownValue?: boolean }) {
-  const { data: options } = useQuery({
-    ...allAccountsQuery(),
-    select: toOptions,
-  });
+  const { data: accounts } = useQuery(allAccountsQuery());
+  const options = toOptions(accounts ?? []);
   const data =
-    showUnknownValue && options !== undefined
-      ? withUnknownValue(options, props.value)
-      : (options ?? []);
+    showUnknownValue && accounts && value && !hasAccount(accounts, value)
+      ? [...options, { value, label: "Unknown account" }]
+      : options;
 
-  return <Select data={data} {...props} />;
+  return <Select data={data} value={value} {...props} />;
 }

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
+import { hasAccount } from "@/features/accounts/format";
 import { allAccountsQuery } from "@/features/accounts/queries";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
@@ -43,13 +44,17 @@ export function TransactionsPage() {
     transactionsQuery({ page, ...filters }),
   );
   const { data: accounts } = useQuery(allAccountsQuery());
-  const filteredAccountId = accounts?.some(
-    (account) => account.id === filters.account,
-  )
-    ? filters.account
-    : undefined;
+  const filteredAccountId =
+    accounts && filters.account && hasAccount(accounts, filters.account)
+      ? filters.account
+      : undefined;
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [editorFilter, setEditorFilter] = useState(filters.account);
+  if (editorFilter !== filters.account) {
+    setEditorFilter(filters.account);
+    setEditor(null);
+  }
   if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
@@ -70,7 +75,6 @@ export function TransactionsPage() {
   }
 
   function filterByAccount(accountId: string | null) {
-    setEditor(null);
     setFilters({ account: accountId ?? undefined });
   }
 
@@ -90,7 +94,11 @@ export function TransactionsPage() {
         </Title>
         <Button
           onClick={openNewTransaction}
-          disabled={data === undefined || isSaving}
+          disabled={
+            data === undefined ||
+            (filters.account !== undefined && accounts === undefined) ||
+            isSaving
+          }
         >
           Add transaction
         </Button>
@@ -105,6 +113,7 @@ export function TransactionsPage() {
         showUnknownValue
         value={filters.account ?? null}
         onChange={filterByAccount}
+        disabled={isSaving}
         maw={280}
       />
 
