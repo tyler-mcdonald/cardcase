@@ -7,7 +7,7 @@ from django.test import Client
 from accounts.models import Account, Transaction
 from tests.accounts.client import delete, get, patch, post
 from tests.accounts.factories import create_account, create_transaction
-from tests.client import csrf_token, result_ids
+from tests.client import csrf_token
 from users.models import User
 
 MALFORMED_IDS = [
@@ -116,44 +116,6 @@ def test_create_transaction_for_nonexistent_account_returns_404(
         "/accounts/11111111-1111-1111-1111-111111111111/transactions",
         {"amount": "10.00", "occurred_on": "2026-01-01"},
     )
-
-    assert response.status_code == 404
-
-
-@pytest.mark.django_db
-def test_list_only_returns_transactions_for_the_given_account(
-    auth_client: Client, user: User
-) -> None:
-    account = create_account(user, name="Mine")
-    other_account = create_account(user, name="Also mine")
-    mine = create_transaction(account, amount="10.00")
-    create_transaction(other_account, amount="20.00")
-
-    response = get(auth_client, transaction_list_url(account))
-
-    assert response.status_code == 200
-    assert result_ids(response) == [str(mine.id)]
-
-
-@pytest.mark.django_db
-def test_list_orders_by_occurred_on_descending(auth_client: Client, user: User) -> None:
-    account = create_account(user)
-    older = create_transaction(account, amount="1.00", occurred_on="2026-01-01")
-    newer = create_transaction(account, amount="2.00", occurred_on="2026-02-01")
-
-    response = get(auth_client, transaction_list_url(account))
-
-    assert result_ids(response) == [str(newer.id), str(older.id)]
-
-
-@pytest.mark.django_db
-def test_list_for_another_users_account_returns_404(
-    auth_client: Client, other_user: User
-) -> None:
-    account = create_account(other_user)
-    create_transaction(account)
-
-    response = get(auth_client, transaction_list_url(account))
 
     assert response.status_code == 404
 
@@ -276,6 +238,15 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
+def test_list_for_account_is_not_allowed(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+
+    response = get(auth_client, transaction_list_url(account))
+
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
 def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> None:
     account = create_account(user)
     transaction = create_transaction(account)
@@ -324,7 +295,7 @@ def test_deleting_account_cascades_to_transactions(user: User) -> None:
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("case", ["list", "create", "retrieve", "update", "delete"])
+@pytest.mark.parametrize("case", ["create", "retrieve", "update", "delete"])
 def test_transaction_endpoints_404_after_account_soft_deleted(
     auth_client: Client, user: User, case: str
 ) -> None:
@@ -335,7 +306,6 @@ def test_transaction_endpoints_404_after_account_soft_deleted(
     detail_path = transaction_detail_url(account, transaction)
 
     responses = {
-        "list": lambda: get(auth_client, list_path),
         "create": lambda: post(
             auth_client, list_path, {"amount": "10.00", "occurred_on": "2026-01-01"}
         ),
@@ -370,7 +340,12 @@ def test_trailing_slash_urls_are_not_routed(auth_client: Client, user: User) -> 
 def test_malformed_account_id_returns_not_found(
     auth_client: Client, malformed_id: str
 ) -> None:
-    assert get(auth_client, f"/accounts/{malformed_id}/transactions").status_code == 404
+    response = post(
+        auth_client,
+        f"/accounts/{malformed_id}/transactions",
+        {"amount": "10.00", "occurred_on": "2026-01-01"},
+    )
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db

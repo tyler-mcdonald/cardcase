@@ -72,7 +72,6 @@
     - ?page (default 1)
   - POST /accounts/{id}/transactions
     - { amount, description?, occurred_on }
-  - GET /accounts/{id}/transactions
   - GET /accounts/{id}/transactions/{id}
   - PATCH /accounts/{id}/transactions/{id}
     - { amount?, description?, occurred_on? }
