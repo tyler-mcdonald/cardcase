@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteMe } from "@/features/auth/api";
 import { SettingsPage } from "@/routes/SettingsPage";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { mockSignedInUser, TEST_USER } from "../features/auth/fixtures";
-import { renderWithProviders } from "../render";
+import { mockSignedInUser, TEST_USER } from "@tests/features/auth/fixtures";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),

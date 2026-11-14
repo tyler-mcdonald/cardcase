@@ -16,10 +16,10 @@ import {
   updateTransaction,
 } from "@/features/transactions/api";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { makeAccount } from "../features/accounts/factories";
-import { makeTransaction } from "../features/transactions/factories";
-import { makePage } from "../lib/api/factories";
-import { renderWithProviders } from "../render";
+import { makeAccount } from "@tests/features/accounts/factories";
+import { makeTransaction } from "@tests/features/transactions/factories";
+import { makePage } from "@tests/lib/api/factories";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/transactions/api");
 
