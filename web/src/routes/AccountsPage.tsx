@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import {
@@ -13,7 +13,7 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
-import { isMissingPage } from "@/lib/api/pagination";
+import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import classes from "./AccountsPage.module.css";
 
@@ -38,8 +38,8 @@ export function AccountsPage() {
     }
   }
 
-  if (page > 1 && isMissingPage(error)) {
-    return <Navigate to={{ search: "" }} replace />;
+  if (isPastLastPage(page, error)) {
+    return <FirstPageRedirect />;
   }
 
   return (

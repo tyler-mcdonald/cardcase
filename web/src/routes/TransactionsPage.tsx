@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
+import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
@@ -14,7 +14,7 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
-import { isMissingPage } from "@/lib/api/pagination";
+import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 
 type NewTransactionEditor = { kind: "new"; key: number };
@@ -63,8 +63,8 @@ export function TransactionsPage() {
     setEditor((current) => (current === closing ? null : current));
   }
 
-  if (page > 1 && isMissingPage(error)) {
-    return <Navigate to={{ search: "" }} replace />;
+  if (isPastLastPage(page, error)) {
+    return <FirstPageRedirect />;
   }
 
   return (
