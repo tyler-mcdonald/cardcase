@@ -1,7 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { BrandLogo } from "@/features/brands/BrandLogo";
-import { renderWithProviders } from "../../render";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/brands/brandfetch-url", async (importOriginal) => ({
   ...(await importOriginal()),

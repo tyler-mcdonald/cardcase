@@ -54,6 +54,13 @@ module.exports = {
         dependencyTypesNot: ["type-only"],
       },
     },
+    {
+      name: "no-src-to-tests-import",
+      comment: "App code must never import test code",
+      severity: "error",
+      from: { path: "^src/" },
+      to: { path: "^tests/" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },
