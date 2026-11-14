@@ -2,8 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { Navigate } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { usePageParam } from "@/lib/hooks/use-page-param";
-import { LocationDisplay } from "../../LocationDisplay";
-import { renderWithProviders } from "../../render";
+import { LocationDisplay } from "@tests/LocationDisplay";
+import { renderWithProviders } from "@tests/render";
 
 function Pager() {
   const { page, goToPage } = usePageParam();
