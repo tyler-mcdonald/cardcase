@@ -22,6 +22,8 @@ export function BrandNameInput({
   value,
   onChange,
   onBrandSelect,
+  onFocus,
+  onClick,
   onBlur,
   ...inputProps
 }: BrandNameInputProps) {
@@ -64,6 +66,14 @@ export function BrandNameInput({
           autoComplete="off"
           rightSection={isFetching ? <Loader size="xs" /> : null}
           onChange={(event) => handleChange(event.currentTarget.value)}
+          onFocus={(event) => {
+            setOpened(true);
+            onFocus?.(event);
+          }}
+          onClick={(event) => {
+            setOpened(true);
+            onClick?.(event);
+          }}
           onBlur={(event) => {
             setOpened(false);
             onBlur?.(event);
