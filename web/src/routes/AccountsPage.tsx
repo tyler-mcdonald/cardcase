@@ -11,6 +11,7 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
+import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 import classes from "./AccountsPage.module.css";
@@ -69,7 +70,7 @@ export function AccountsPage() {
         </Box>
       )}
 
-      {isError && (
+      {isError && !isPastLastPage(page, error) && (
         <LoadErrorAlert
           title="Couldn't load your accounts"
           error={error}

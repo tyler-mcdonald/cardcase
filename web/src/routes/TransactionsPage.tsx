@@ -12,6 +12,7 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
+import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
@@ -76,7 +77,7 @@ export function TransactionsPage() {
 
       {isPending && <TransactionsTableSkeleton />}
 
-      {isError && (
+      {isError && !isPastLastPage(page, error) && (
         <LoadErrorAlert
           title="Couldn't load your transactions"
           error={error}
