@@ -18,7 +18,6 @@ export function LoadErrorAlert({
       <Stack gap="sm">
         <Text size="sm">{apiErrorMessage(error)}</Text>
         <Button
-          variant="light"
           color="red"
           size="xs"
           loading={retrying}

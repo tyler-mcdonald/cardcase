@@ -35,7 +35,6 @@ export function DeleteConfirmation({
           Cancel
         </Button>
         <Button
-          variant="filled"
           color="red"
           onClick={onConfirm}
           disabled={!confirmEnabled}

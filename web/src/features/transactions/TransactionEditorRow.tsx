@@ -250,7 +250,6 @@ export function TransactionEditorRow({
               {onDelete && (
                 <Button
                   size="xs"
-                  variant="light"
                   color="red"
                   onClick={onDelete}
                   disabled={mutation.isPending}
