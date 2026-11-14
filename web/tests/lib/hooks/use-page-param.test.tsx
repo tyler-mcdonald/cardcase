@@ -1,5 +1,4 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { Navigate } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { LocationDisplay } from "@tests/LocationDisplay";
@@ -15,14 +14,6 @@ function Pager() {
       <LocationDisplay />
     </>
   );
-}
-
-function MissingPageRedirect() {
-  const { page, firstPageSearch } = usePageParam();
-  if (page > 1) {
-    return <Navigate to={{ search: firstPageSearch }} replace />;
-  }
-  return <LocationDisplay />;
 }
 
 describe("usePageParam", () => {
@@ -42,13 +33,5 @@ describe("usePageParam", () => {
     expect(screen.getByTestId("location").textContent).toBe(
       "?account=x&page=4",
     );
-  });
-
-  it("keeps other params on the missing-page redirect", () => {
-    renderWithProviders(<MissingPageRedirect />, {
-      route: "/?account=x&page=3",
-    });
-
-    expect(screen.getByTestId("location").textContent).toBe("?account=x");
   });
 });

@@ -25,5 +25,5 @@ export function usePageParam() {
     window.scrollTo({ top: 0 });
   }
 
-  return { page, goToPage, firstPageSearch: firstPageSearch(searchParams) };
+  return { page, goToPage };
 }

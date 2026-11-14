@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@/lib/api/errors";
-import { isMissingPage, parsePage, totalPages } from "@/lib/api/pagination";
+import {
+  isMissingPage,
+  isPastLastPage,
+  parsePage,
+  totalPages,
+} from "@/lib/api/pagination";
 
 describe("parsePage", () => {
   it("returns a positive integer page", () => {
@@ -46,5 +51,19 @@ describe("isMissingPage", () => {
 
   it("returns false for other errors", () => {
     expect(isMissingPage(new ApiError("Server error", 500))).toBe(false);
+  });
+});
+
+describe("isPastLastPage", () => {
+  it("returns true for a missing page past the first", () => {
+    expect(isPastLastPage(3, new ApiError("Not found", 404))).toBe(true);
+  });
+
+  it("returns false for a missing first page", () => {
+    expect(isPastLastPage(1, new ApiError("Not found", 404))).toBe(false);
+  });
+
+  it("returns false for other errors", () => {
+    expect(isPastLastPage(3, new ApiError("Server error", 500))).toBe(false);
   });
 });
