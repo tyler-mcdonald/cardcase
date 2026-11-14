@@ -55,15 +55,16 @@ describe("isMissingPage", () => {
 });
 
 describe("isPastLastPage", () => {
-  it("returns true for a missing page past the first", () => {
-    expect(isPastLastPage(3, new ApiError("Not found", 404))).toBe(true);
-  });
-
-  it("returns false for a missing first page", () => {
-    expect(isPastLastPage(1, new ApiError("Not found", 404))).toBe(false);
-  });
-
-  it("returns false for other errors", () => {
-    expect(isPastLastPage(3, new ApiError("Server error", 500))).toBe(false);
-  });
+  it.each([
+    { page: 3, status: 404, expected: true },
+    { page: 1, status: 404, expected: false },
+    { page: 3, status: 500, expected: false },
+  ])(
+    "returns $expected for page $page with a $status error",
+    ({ page, status, expected }) => {
+      expect(isPastLastPage(page, new ApiError("Error", status))).toBe(
+        expected,
+      );
+    },
+  );
 });
