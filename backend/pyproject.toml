@@ -9,6 +9,7 @@ dependencies = [
     "django-anymail>=15.1,<16.0",
     "django-cors-headers>=4.9.0,<5.0.0",
     "django-environ>=0.14.0,<0.15.0",
+    "django-filter>=26.2,<27.0",
     "django-health-check>=4.5.0,<5.0.0",
     "djangorestframework>=3.18.1,<4.0.0",
     "gunicorn>=26.1.0,<27.0.0",
@@ -25,7 +26,7 @@ strict = true
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["environ", "allauth.*", "health_check.*"]
+module = ["environ", "allauth.*", "health_check.*", "django_filters.*"]
 ignore_missing_imports = true
 
 [tool.django-stubs]
