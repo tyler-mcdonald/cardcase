@@ -9,6 +9,7 @@ import {
   rgba,
   type CSSVariablesResolver,
   type MantineColor,
+  type MantineTheme,
   type VariantColorsResolver,
 } from "@mantine/core";
 import classes from "./theme.module.css";
@@ -25,25 +26,28 @@ const variantColorResolver: VariantColorsResolver = (input) => {
   return { ...colors, border: "1px solid var(--light-rim, transparent)" };
 };
 
+const softRedVars =
+  <P extends { color?: MantineColor; variant?: string }, C, R>(
+    resolver: (theme: MantineTheme, props: P, ctx: C) => R,
+  ) =>
+  (theme: MantineTheme, props: P, ctx: C) =>
+    props.color === "red"
+      ? resolver(theme, { ...props, variant: "light" }, ctx)
+      : { root: {} };
+
 export const theme = createTheme({
   primaryColor: THEME_COLOR,
   variantColorResolver,
   components: {
     ActionIcon: ActionIcon.extend({
-      vars: (theme, props, ctx) =>
-        props.color === "red"
-          ? ActionIcon.varsResolver(theme, { ...props, variant: "light" }, ctx)
-          : { root: {} },
+      vars: softRedVars(ActionIcon.varsResolver),
     }),
     Avatar: Avatar.extend({
       defaultProps: { color: THEME_COLOR },
     }),
     Button: Button.extend({
       defaultProps: { variant: "light" },
-      vars: (theme, props, ctx) =>
-        props.color === "red"
-          ? Button.varsResolver(theme, { ...props, variant: "light" }, ctx)
-          : { root: {} },
+      vars: softRedVars(Button.varsResolver),
     }),
     Modal: Modal.extend({
       classNames: {
