@@ -126,7 +126,7 @@ it("shows each transaction's date, account, description, and amount", async () =
     "",
     "$150.00",
   ]);
-  expect(mockedListTransactions).toHaveBeenCalledWith(1);
+  expect(mockedListTransactions).toHaveBeenCalledWith({ page: 1 });
   expect(screen.queryByRole("button", { name: "2" })).toBeNull();
 });
 
@@ -189,7 +189,7 @@ it("paginates through the transactions", async () => {
   fireEvent.click(screen.getByRole("button", { name: "2" }));
 
   expect(await screen.findByText("Movies")).toBeTruthy();
-  expect(mockedListTransactions).toHaveBeenLastCalledWith(2);
+  expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 2 });
 });
 
 it("falls back to the first page when the requested page doesn't exist", async () => {
@@ -202,8 +202,8 @@ it("falls back to the first page when the requested page doesn't exist", async (
   renderPage("/?page=9");
 
   expect(await screen.findByText("Groceries")).toBeTruthy();
-  expect(mockedListTransactions).toHaveBeenNthCalledWith(1, 9);
-  expect(mockedListTransactions).toHaveBeenLastCalledWith(1);
+  expect(mockedListTransactions).toHaveBeenNthCalledWith(1, { page: 9 });
+  expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
   expect(screen.queryByText("Couldn't load your transactions")).toBeNull();
 });
 
@@ -741,12 +741,12 @@ describe("editing a transaction", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: "Save" })).toBeNull(),
     );
-    expect(mockedListTransactions).toHaveBeenLastCalledWith(2);
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 2 });
   });
 
   it("doesn't reopen the editor after leaving its page", async () => {
     const coffee = makeTransaction({ id: "coffee-id", description: "Coffee" });
-    mockedListTransactions.mockImplementation(async (page) =>
+    mockedListTransactions.mockImplementation(async ({ page }) =>
       page === 1
         ? makePage([latte, refund], { count: 3, hasNext: true })
         : makePage([coffee], { count: 3 }),
@@ -963,7 +963,7 @@ describe("deleting a transaction", () => {
   });
 
   it("returns to the first page after deleting the last transaction on a page", async () => {
-    mockedListTransactions.mockImplementation(async (page) => {
+    mockedListTransactions.mockImplementation(async ({ page }) => {
       if (page === 1) {
         return makePage([refund], { count: 2, hasNext: true });
       }
@@ -979,7 +979,7 @@ describe("deleting a transaction", () => {
 
     expect(await screen.findByText(refund.description)).toBeTruthy();
     expect(screen.queryByText(latte.description)).toBeNull();
-    expect(mockedListTransactions).toHaveBeenLastCalledWith(1);
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
   });
 
   it("treats a transaction that's already gone as deleted", async () => {
