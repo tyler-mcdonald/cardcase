@@ -1,5 +1,3 @@
-from collections.abc import Callable
-
 import pytest
 from django.db import connection
 from django.test import Client
@@ -98,26 +96,16 @@ def test_list_all_is_paginated(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "path",
-    [
-        lambda account: "/transactions",
-        lambda account: f"/accounts/{account.id}/transactions",
-    ],
-    ids=["all", "per-account"],
-)
-def test_list_avoids_n_plus_one_queries(
-    auth_client: Client, user: User, path: Callable[[Account], str]
-) -> None:
+def test_list_avoids_n_plus_one_queries(auth_client: Client, user: User) -> None:
     account = create_account(user)
     create_transaction(account)
     with CaptureQueriesContext(connection) as one_transaction:
-        get(auth_client, path(account))
+        get(auth_client, "/transactions")
 
     for _ in range(5):
         create_transaction(create_account(user))
         create_transaction(account)
     with CaptureQueriesContext(connection) as many_transactions:
-        get(auth_client, path(account))
+        get(auth_client, "/transactions")
 
     assert len(many_transactions) == len(one_transaction)

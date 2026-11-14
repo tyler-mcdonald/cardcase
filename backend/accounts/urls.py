@@ -6,7 +6,7 @@ from .views import AccountViewSet, TransactionViewSet, UserTransactionViewSet
 router = SimpleRouter(trailing_slash=False)
 router.register("accounts", AccountViewSet, basename="account")
 
-transaction_list = TransactionViewSet.as_view({"get": "list", "post": "create"})
+transaction_list = TransactionViewSet.as_view({"post": "create"})
 transaction_detail = TransactionViewSet.as_view(
     {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
 )
