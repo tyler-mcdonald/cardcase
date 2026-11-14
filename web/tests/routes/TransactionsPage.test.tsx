@@ -1212,6 +1212,14 @@ describe("filtering by account", () => {
     await waitFor(() => expect(location()).toBe(""));
   });
 
+  it("keeps the active filter visible when accounts fail to load", async () => {
+    mockedListAllAccounts.mockRejectedValue(new ApiError("Server error", 500));
+    renderFilterablePage("/?account=starbucks-id");
+    await screen.findByText(latte.description);
+
+    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
+  });
+
   it("doesn't offer an unknown account when adding a transaction", async () => {
     mockedListTransactions.mockResolvedValue(makePage([latte]));
     renderFilterablePage("/?account=gone-id");

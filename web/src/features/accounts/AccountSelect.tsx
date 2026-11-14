@@ -18,10 +18,13 @@ export function AccountSelect({
   value,
   ...props
 }: Omit<SelectProps, "data"> & { showUnknownValue?: boolean }) {
-  const { data: accounts } = useQuery(allAccountsQuery());
+  const { data: accounts, isError } = useQuery(allAccountsQuery());
   const options = toOptions(accounts ?? []);
+  // Before accounts arrive, the value can only be called unknown if they failed.
+  const isUnknown = (id: string) =>
+    accounts ? !hasAccount(accounts, id) : isError;
   const data =
-    showUnknownValue && accounts && value && !hasAccount(accounts, value)
+    showUnknownValue && value && isUnknown(value)
       ? [...options, { value, label: "Unknown account" }]
       : options;
 
