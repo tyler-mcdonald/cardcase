@@ -34,7 +34,7 @@ function isEditedRowGone(
 }
 
 export function TransactionsPage() {
-  const { page, goToPage } = usePageParam();
+  const { page, goToPage, searchWithoutPage } = usePageParam();
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery(page),
   );
@@ -64,7 +64,7 @@ export function TransactionsPage() {
   }
 
   if (page > 1 && isMissingPage(error)) {
-    return <Navigate to={{ search: "" }} replace />;
+    return <Navigate to={{ search: searchWithoutPage }} replace />;
   }
 
   return (
