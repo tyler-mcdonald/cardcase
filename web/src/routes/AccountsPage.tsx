@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import {
@@ -13,15 +11,15 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
-import { isPastLastPage } from "@/lib/api/pagination";
-import { usePageParam } from "@/lib/hooks/use-page-param";
+import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
-  const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } = useQuery(
-    accountsQuery(page),
-  );
+  const {
+    query: { data, error, isPending, isError, isFetching, refetch },
+    page,
+    goToPage,
+  } = usePaginatedQuery(accountsQuery);
   const [createOpened, createModal] = useDisclosure(false);
   const [editOpened, editModal] = useDisclosure(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -36,10 +34,6 @@ export function AccountsPage() {
     if (page !== 1) {
       goToPage(1);
     }
-  }
-
-  if (isPastLastPage(page, error)) {
-    return <FirstPageRedirect />;
   }
 
   return (

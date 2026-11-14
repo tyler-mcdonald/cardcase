@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
-import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
@@ -14,8 +12,7 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
-import { isPastLastPage } from "@/lib/api/pagination";
-import { usePageParam } from "@/lib/hooks/use-page-param";
+import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
 type NewTransactionEditor = { kind: "new"; key: number };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
@@ -34,10 +31,11 @@ function isEditedRowGone(
 }
 
 export function TransactionsPage() {
-  const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } = useQuery(
-    transactionsQuery(page),
-  );
+  const {
+    query: { data, error, isPending, isError, isFetching, refetch },
+    page,
+    goToPage,
+  } = usePaginatedQuery(transactionsQuery);
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
@@ -61,10 +59,6 @@ export function TransactionsPage() {
 
   function closeEditor(closing: Editor | null) {
     setEditor((current) => (current === closing ? null : current));
-  }
-
-  if (isPastLastPage(page, error)) {
-    return <FirstPageRedirect />;
   }
 
   return (
