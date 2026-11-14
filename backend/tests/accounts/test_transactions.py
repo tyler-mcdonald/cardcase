@@ -238,6 +238,15 @@ def test_put_is_not_allowed(auth_client: Client, user: User) -> None:
 
 
 @pytest.mark.django_db
+def test_list_for_account_is_not_allowed(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+
+    response = get(auth_client, transaction_list_url(account))
+
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
 def test_delete_hard_deletes_transaction(auth_client: Client, user: User) -> None:
     account = create_account(user)
     transaction = create_transaction(account)
