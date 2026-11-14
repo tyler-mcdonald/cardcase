@@ -4,9 +4,9 @@ import { deleteAccount, updateAccount } from "@/features/accounts/api";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import type { Account } from "@/features/accounts/types";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { renderWithProviders } from "../../render";
-import { pickBrand, stubBrandSearch } from "../brands/search";
-import { makeAccount } from "./factories";
+import { renderWithProviders } from "@tests/render";
+import { pickBrand, stubBrandSearch } from "@tests/features/brands/search";
+import { makeAccount } from "@tests/features/accounts/factories";
 
 vi.mock("@/features/accounts/api");
 

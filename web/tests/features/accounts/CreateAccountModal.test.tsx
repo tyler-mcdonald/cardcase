@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { createAccount } from "@/features/accounts/api";
 import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
-import { renderWithProviders } from "../../render";
-import { pickBrand, stubBrandSearch } from "../brands/search";
-import { makeAccount } from "./factories";
+import { renderWithProviders } from "@tests/render";
+import { pickBrand, stubBrandSearch } from "@tests/features/brands/search";
+import { makeAccount } from "@tests/features/accounts/factories";
 
 vi.mock("@/features/accounts/api");
 

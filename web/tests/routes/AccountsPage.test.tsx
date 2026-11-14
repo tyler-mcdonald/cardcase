@@ -9,9 +9,9 @@ import {
 } from "@/features/accounts/api";
 import type { Account } from "@/features/accounts/types";
 import { ApiError } from "@/lib/api/errors";
-import { makeAccount } from "../features/accounts/factories";
-import { makePage } from "../lib/api/factories";
-import { renderWithProviders } from "../render";
+import { makeAccount } from "@tests/features/accounts/factories";
+import { makePage } from "@tests/lib/api/factories";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/accounts/api");
 

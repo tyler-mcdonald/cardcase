@@ -3,8 +3,8 @@ import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
 import { useLogout } from "@/features/auth/queries";
-import { mockSignedInUser } from "./features/auth/fixtures";
-import { renderWithProviders } from "./render";
+import { mockSignedInUser } from "@tests/features/auth/fixtures";
+import { renderWithProviders } from "@tests/render";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),

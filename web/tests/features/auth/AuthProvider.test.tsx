@@ -10,8 +10,8 @@ import {
   SESSION_CHANNEL_NAME,
   USER_CHANGED_MESSAGE,
 } from "@/features/auth/session-channel";
-import { TestProviders } from "../../TestProviders";
-import { sessionResponse, TEST_USER } from "./fixtures";
+import { TestProviders } from "@tests/TestProviders";
+import { sessionResponse, TEST_USER } from "@tests/features/auth/fixtures";
 
 vi.mock("@/features/auth/api");
 
