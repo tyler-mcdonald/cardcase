@@ -1171,6 +1171,21 @@ describe("filtering by account", () => {
     ).toBe(true);
   });
 
+  it("can add a transaction when the accounts fail to load", async () => {
+    mockedListAllAccounts.mockRejectedValue(new Error("network down"));
+
+    renderFilterablePage("/?account=delta-id");
+
+    await screen.findByText(flight.description);
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Add transaction" })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+  });
+
   it("shows a filtered empty message when the account has no transactions", async () => {
     mockedListTransactions.mockResolvedValue(makePage([]));
 

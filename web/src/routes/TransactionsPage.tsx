@@ -43,7 +43,8 @@ export function TransactionsPage() {
   const { data, error, isPending, isError, isFetching, refetch } = useQuery(
     transactionsQuery({ page, ...filters }),
   );
-  const { data: accounts } = useQuery(allAccountsQuery());
+  const { data: accounts, isPending: isAccountsPending } =
+    useQuery(allAccountsQuery());
   const filteredAccountId =
     accounts && filters.account && hasAccount(accounts, filters.account)
       ? filters.account
@@ -96,7 +97,7 @@ export function TransactionsPage() {
           onClick={openNewTransaction}
           disabled={
             data === undefined ||
-            (filters.account !== undefined && accounts === undefined) ||
+            (filters.account !== undefined && isAccountsPending) ||
             isSaving
           }
         >
