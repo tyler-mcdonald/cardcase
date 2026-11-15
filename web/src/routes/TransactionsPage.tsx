@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
-import { hasAccount } from "@/features/accounts/format";
+import { hasAccount } from "@/features/accounts/lookup";
 import { allAccountsQuery } from "@/features/accounts/queries";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";

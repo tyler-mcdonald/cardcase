@@ -1,6 +1,6 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { hasAccount } from "./format";
+import { hasAccount } from "./lookup";
 import { allAccountsQuery } from "./queries";
 import type { Account } from "./types";
 
