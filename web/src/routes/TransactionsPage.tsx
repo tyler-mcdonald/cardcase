@@ -46,6 +46,14 @@ function knownAccountId(
   return accounts && id && hasAccount(accounts, id) ? id : undefined;
 }
 
+function EmptyTransactions({ filtered }: { filtered: boolean }) {
+  return (
+    <Text fw={600}>
+      {filtered ? "No transactions for this account" : "No transactions yet."}
+    </Text>
+  );
+}
+
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { filters, setFilters } = useTransactionFilters();
@@ -130,11 +138,7 @@ export function TransactionsPage() {
       )}
 
       {isEmpty && (
-        <Text fw={600}>
-          {filters.account
-            ? "No transactions for this account"
-            : "No transactions yet."}
-        </Text>
+        <EmptyTransactions filtered={filters.account !== undefined} />
       )}
 
       {showTable && (
