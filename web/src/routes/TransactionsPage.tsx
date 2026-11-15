@@ -46,6 +46,21 @@ function knownAccountId(
   return accounts && id && hasAccount(accounts, id) ? id : undefined;
 }
 
+// A filtered page waits for accounts so the new row can default to the filter.
+function canAddTransaction({
+  isLoaded,
+  isFiltered,
+  isAccountsPending,
+  isSaving,
+}: {
+  isLoaded: boolean;
+  isFiltered: boolean;
+  isAccountsPending: boolean;
+  isSaving: boolean;
+}): boolean {
+  return isLoaded && !(isFiltered && isAccountsPending) && !isSaving;
+}
+
 function EmptyTransactions({ filtered }: { filtered: boolean }) {
   return (
     <Text fw={600}>
@@ -73,11 +88,12 @@ export function TransactionsPage() {
   if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
-  // A filtered page waits for accounts so the new row can default to the filter.
-  const canAddTransaction =
-    data !== undefined &&
-    !(filters.account !== undefined && isAccountsPending) &&
-    !isSaving;
+  const isAddEnabled = canAddTransaction({
+    isLoaded: data !== undefined,
+    isFiltered: filters.account !== undefined,
+    isAccountsPending,
+    isSaving,
+  });
   const isAdding = editor?.kind === "new";
   const editTarget = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
@@ -108,7 +124,7 @@ export function TransactionsPage() {
         <Title order={1} size="h2">
           Transactions
         </Title>
-        <Button onClick={openNewTransaction} disabled={!canAddTransaction}>
+        <Button onClick={openNewTransaction} disabled={!isAddEnabled}>
           Add transaction
         </Button>
       </Group>
