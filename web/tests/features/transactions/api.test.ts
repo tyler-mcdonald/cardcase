@@ -26,7 +26,7 @@ describe("listTransactions", () => {
     };
     mockedRequest.mockResolvedValueOnce(response);
 
-    await expect(listTransactions(2)).resolves.toEqual(response);
+    await expect(listTransactions({ page: 2 })).resolves.toEqual(response);
     expect(mockedRequest).toHaveBeenCalledWith(
       "GET",
       "/v1/transactions?page=2",
@@ -36,7 +36,9 @@ describe("listTransactions", () => {
   it("propagates request failures", async () => {
     mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
 
-    await expect(listTransactions(1)).rejects.toMatchObject({ status: 403 });
+    await expect(listTransactions({ page: 1 })).rejects.toMatchObject({
+      status: 403,
+    });
   });
 });
 

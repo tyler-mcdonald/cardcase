@@ -17,7 +17,7 @@ import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
   const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } =
+  const { data, loadError, isPending, isFetching, refetch } =
     usePaginatedQuery(accountsQuery);
   const [createOpened, createModal] = useDisclosure(false);
   const [editOpened, editModal] = useDisclosure(false);
@@ -69,10 +69,10 @@ export function AccountsPage() {
         </Box>
       )}
 
-      {isError && (
+      {loadError && (
         <LoadErrorAlert
           title="Couldn't load your accounts"
-          error={error}
+          error={loadError}
           retrying={isFetching}
           onRetry={() => refetch()}
         />
