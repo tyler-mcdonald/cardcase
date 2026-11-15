@@ -1197,46 +1197,26 @@ describe("filtering by account", () => {
     expect(screen.queryByText("No transactions yet.")).toBeNull();
   });
 
-  it("shows an unknown account in the filter so it can be cleared", async () => {
-    mockedListTransactions.mockResolvedValue(makePage([]));
+  it("clears an unknown account from the URL once accounts load", async () => {
     renderFilterablePage("/?account=gone-id");
 
-    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({
-      page: 1,
-      account: "gone-id",
-    });
-
-    clearAccountFilter();
-
     await waitFor(() => expect(location()).toBe(""));
+    expect(accountFilter().value).toBe("");
+    await waitFor(() =>
+      expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 }),
+    );
   });
 
-  it("keeps the active filter visible when accounts fail to load", async () => {
+  it("keeps the account filter when accounts fail to load", async () => {
     mockedListAllAccounts.mockRejectedValue(new ApiError("Server error", 500));
     renderFilterablePage("/?account=starbucks-id");
     await screen.findByText(latte.description);
 
-    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
-  });
-
-  it("doesn't offer an unknown account when adding a transaction", async () => {
-    mockedListTransactions.mockResolvedValue(makePage([latte]));
-    renderFilterablePage("/?account=gone-id");
-    await screen.findByText(latte.description);
-    await waitFor(() => expect(accountFilter().value).toBe("Unknown account"));
-
-    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
-    const account = screen.getByRole<HTMLInputElement>("combobox", {
-      name: "Account",
+    expect(location()).toBe("?account=starbucks-id");
+    expect(mockedListTransactions).toHaveBeenLastCalledWith({
+      page: 1,
+      account: "starbucks-id",
     });
-    expect(account.value).toBe("");
-    fireEvent.click(account);
-
-    await screen.findByRole("option", { name: "Starbucks" });
-    expect(
-      screen.queryByRole("option", { name: "Unknown account" }),
-    ).toBeNull();
   });
 
   it("pre-selects the filtered account when adding a transaction", async () => {

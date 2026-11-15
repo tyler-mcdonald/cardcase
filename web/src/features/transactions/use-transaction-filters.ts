@@ -1,4 +1,5 @@
-import { useSearchParams } from "react-router-dom";
+import { useCallback } from "react";
+import { type NavigateOptions, useSearchParams } from "react-router-dom";
 import { paramsForPage } from "@/lib/hooks/use-page-param";
 import type { TransactionFilters } from "./types";
 
@@ -37,11 +38,16 @@ export function useTransactionFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = filtersFrom(searchParams);
 
-  function setFilters(changes: TransactionFilters) {
-    setSearchParams((current) =>
-      paramsForFilters(current, { ...filtersFrom(current), ...changes }),
-    );
-  }
+  const setFilters = useCallback(
+    (changes: TransactionFilters, options?: NavigateOptions) => {
+      setSearchParams(
+        (current) =>
+          paramsForFilters(current, { ...filtersFrom(current), ...changes }),
+        options,
+      );
+    },
+    [setSearchParams],
+  );
 
   return { filters, setFilters };
 }

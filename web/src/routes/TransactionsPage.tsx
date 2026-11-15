@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
@@ -34,6 +34,17 @@ function isEditedRowGone(
     editor?.kind === "edit" &&
     transactions !== undefined &&
     !transactions.some((transaction) => transaction.id === editor.id)
+  );
+}
+
+// True when the accounts have loaded and `id` isn't one of them, e.g. a stale
+// link to a deleted account.
+function isUnknownAccount(
+  accounts: Account[] | undefined,
+  id: string | undefined,
+): boolean {
+  return (
+    accounts !== undefined && id !== undefined && !hasAccount(accounts, id)
   );
 }
 
@@ -78,6 +89,12 @@ export function TransactionsPage() {
   const { data: accounts, isPending: isAccountsPending } =
     useQuery(allAccountsQuery());
   const filteredAccountId = knownAccountId(accounts, filters.account);
+  const isFilterUnknown = isUnknownAccount(accounts, filters.account);
+  useEffect(() => {
+    if (isFilterUnknown) {
+      setFilters({ account: undefined }, { replace: true });
+    }
+  }, [isFilterUnknown, setFilters]);
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   const [editorFilter, setEditorFilter] = useState(filters.account);
@@ -135,7 +152,6 @@ export function TransactionsPage() {
         searchable
         clearable
         clearButtonProps={{ "aria-label": "Clear account filter" }}
-        showUnknownValue
         value={filters.account ?? null}
         onChange={filterByAccount}
         disabled={isSaving}
