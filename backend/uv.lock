@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.13"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -108,6 +108,7 @@ dev = [
     { name = "pytest-django" },
     { name = "ruff" },
     { name = "time-machine" },
+    { name = "types-django-filter" },
 ]
 
 [package.metadata]
@@ -136,6 +137,7 @@ dev = [
     { name = "pytest-django", specifier = ">=4.14.0,<5.0.0" },
     { name = "ruff", specifier = ">=0.16.3,<0.16.4" },
     { name = "time-machine", specifier = ">=3.5.0,<4.0.0" },
+    { name = "types-django-filter", specifier = ">=26.2.0.20261107,<27.0.0.0" },
 ]
 
 [[package]]
@@ -1369,6 +1371,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/19/75/241269d1da26b624c0d5e110e8149093c759b7a286138f4efd61a60e75fe/tomli_w-1.2.0.tar.gz", hash = "sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021", size = 7184, upload-time = "2025-01-15T12:07:24.262Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/18/c86eb8e0202e32dd3df50d43d7ff9854f8e0603945ff398974c1d91ac1ef/tomli_w-1.2.0-py3-none-any.whl", hash = "sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90", size = 6675, upload-time = "2025-01-15T12:07:22.074Z" },
+]
+
+[[package]]
+name = "types-django-filter"
+version = "26.2.0.20261107"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django-stubs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ac/fd/8087b502f1624410aba99199fe4b9c55b6cefcc1cb88b7fabfa38970e3bd/types_django_filter-26.2.0.20261107.tar.gz", hash = "sha256:1e114c9bdd107dd0639c6009d77355516e5d46aab54974743e6f24f21ef85864", size = 16588, upload-time = "2026-11-07T07:55:38.906Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/e0/8e4ff4e5b33e1ec8078488fbe6eb4d0679543d9a3924bfb10e654ecbaf4a/types_django_filter-26.2.0.20261107-py3-none-any.whl", hash = "sha256:86312a808af5be6b3a3656c33789376c10a29fc69c6367c345e81b16567cd04f", size = 19437, upload-time = "2026-11-07T07:55:38.022Z" },
 ]
 
 [[package]]
