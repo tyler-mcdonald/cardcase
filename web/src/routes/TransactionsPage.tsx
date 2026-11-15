@@ -4,6 +4,7 @@ import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { hasAccount } from "@/features/accounts/lookup";
 import { allAccountsQuery } from "@/features/accounts/queries";
+import type { Account } from "@/features/accounts/types";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
@@ -36,6 +37,15 @@ function isEditedRowGone(
   );
 }
 
+// The filtered account's id, once it's confirmed to be one of the user's
+// accounts; new transactions default to it.
+function knownAccountId(
+  accounts: Account[] | undefined,
+  id: string | undefined,
+): string | undefined {
+  return accounts && id && hasAccount(accounts, id) ? id : undefined;
+}
+
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { filters, setFilters } = useTransactionFilters();
@@ -44,10 +54,7 @@ export function TransactionsPage() {
   );
   const { data: accounts, isPending: isAccountsPending } =
     useQuery(allAccountsQuery());
-  const filteredAccountId =
-    accounts && filters.account && hasAccount(accounts, filters.account)
-      ? filters.account
-      : undefined;
+  const filteredAccountId = knownAccountId(accounts, filters.account);
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   const [editorFilter, setEditorFilter] = useState(filters.account);
