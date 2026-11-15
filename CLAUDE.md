@@ -2,6 +2,10 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Package manager
+
+`web/` uses pnpm.
+
 ## Monorepo boundaries
 
 Each part of the stack (`backend/`, `web/`) should not document or assume the internal
