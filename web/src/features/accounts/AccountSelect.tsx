@@ -11,11 +11,15 @@ function toOptions(accounts: Account[]): ComboboxItem[] {
   }));
 }
 
+type AccountSelectProps = Omit<SelectProps, "data"> & {
+  showUnknownValue?: boolean;
+};
+
 export function AccountSelect({
   showUnknownValue = false,
   value,
   ...props
-}: Omit<SelectProps, "data"> & { showUnknownValue?: boolean }) {
+}: AccountSelectProps) {
   const { data: accounts, isError } = useQuery(allAccountsQuery());
   const options = toOptions(accounts ?? []);
   // Before accounts arrive, the value can only be called unknown if they failed.
