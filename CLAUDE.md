@@ -2,6 +2,11 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Package manager
+
+`web/` uses pnpm, not npm. Run `pnpm install`, `pnpm run <script>`, `pnpm add <pkg>`,
+etc. Never run `npm` or create a `package-lock.json`.
+
 ## Monorepo boundaries
 
 Each part of the stack (`backend/`, `web/`) should not document or assume the internal
