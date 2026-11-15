@@ -65,6 +65,11 @@ export function TransactionsPage() {
   if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
+  // A filtered page waits for accounts so the new row can default to the filter.
+  const canAddTransaction =
+    data !== undefined &&
+    !(filters.account !== undefined && isAccountsPending) &&
+    !isSaving;
   const isAdding = editor?.kind === "new";
   const editTarget = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAdding;
@@ -95,14 +100,7 @@ export function TransactionsPage() {
         <Title order={1} size="h2">
           Transactions
         </Title>
-        <Button
-          onClick={openNewTransaction}
-          disabled={
-            data === undefined ||
-            (filters.account !== undefined && isAccountsPending) ||
-            isSaving
-          }
-        >
+        <Button onClick={openNewTransaction} disabled={!canAddTransaction}>
           Add transaction
         </Button>
       </Group>
