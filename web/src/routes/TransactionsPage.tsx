@@ -12,7 +12,6 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
-import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
@@ -34,8 +33,9 @@ function isEditedRowGone(
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } =
-    usePaginatedQuery((page) => transactionsQuery({ page }));
+  const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
+    (page) => transactionsQuery({ page }),
+  );
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
@@ -77,10 +77,10 @@ export function TransactionsPage() {
 
       {isPending && <TransactionsTableSkeleton />}
 
-      {isError && !isPastLastPage(page, error) && (
+      {loadError && (
         <LoadErrorAlert
           title="Couldn't load your transactions"
-          error={error}
+          error={loadError}
           retrying={isFetching}
           onRetry={() => refetch()}
         />
