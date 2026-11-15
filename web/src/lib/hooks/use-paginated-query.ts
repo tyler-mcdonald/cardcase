@@ -27,5 +27,8 @@ export function usePaginatedQuery<
     }
   }, [pastLastPage, replaceWithFirstPage]);
 
-  return query;
+  // The error to show, or null while redirecting away from it.
+  const loadError = pastLastPage ? null : query.error;
+
+  return { ...query, loadError };
 }

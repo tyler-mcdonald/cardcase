@@ -33,8 +33,9 @@ function isEditedRowGone(
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
-  const { data, error, isPending, isError, isFetching, refetch } =
-    usePaginatedQuery(transactionsQuery);
+  const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
+    (page) => transactionsQuery({ page }),
+  );
   const isSaving = useIsSavingTransaction();
   const [editor, setEditor] = useState<Editor | null>(null);
   if (isEditedRowGone(editor, data?.items)) {
@@ -76,10 +77,10 @@ export function TransactionsPage() {
 
       {isPending && <TransactionsTableSkeleton />}
 
-      {isError && (
+      {loadError && (
         <LoadErrorAlert
           title="Couldn't load your transactions"
-          error={error}
+          error={loadError}
           retrying={isFetching}
           onRetry={() => refetch()}
         />

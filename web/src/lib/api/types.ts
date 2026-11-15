@@ -17,3 +17,7 @@ export type Paginated<T> = {
   previous: string | null;
   results: T[];
 };
+
+export type PageParams = {
+  page: number;
+};
