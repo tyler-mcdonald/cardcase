@@ -2,6 +2,7 @@ import json
 from functools import partial
 from typing import Any, Protocol, cast
 
+from django.db.models import Model
 from django.test import Client
 
 
@@ -57,6 +58,10 @@ def results(response: ApiResponse) -> list[dict[str, Any]]:
 
 def result_ids(response: ApiResponse) -> list[str]:
     return [result["id"] for result in results(response)]
+
+
+def ids(*objects: Model) -> list[str]:
+    return [str(obj.pk) for obj in objects]
 
 
 def get_session(client: Client) -> ApiResponse:
