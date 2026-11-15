@@ -7,7 +7,7 @@ from pytest_django import Settings
 from accounts.models import Account, Transaction
 from tests.accounts.client import get
 from tests.accounts.factories import create_account, create_transaction
-from tests.client import result_ids, results
+from tests.client import ids, result_ids, results
 from users.models import User
 
 
@@ -22,7 +22,7 @@ def test_list_all_returns_own_transactions_across_accounts(
     response = get(auth_client, "/transactions")
 
     assert response.status_code == 200
-    assert set(result_ids(response)) == {str(first.id), str(second.id)}
+    assert set(result_ids(response)) == set(ids(first, second))
 
 
 @pytest.mark.django_db
@@ -36,7 +36,7 @@ def test_list_all_excludes_soft_deleted_accounts(
 
     response = get(auth_client, "/transactions")
 
-    assert result_ids(response) == [str(kept.id)]
+    assert result_ids(response) == ids(kept)
 
 
 @pytest.mark.django_db
@@ -52,12 +52,9 @@ def test_list_all_orders_by_date_then_account_name_then_newest_created(
 
     response = get(auth_client, "/transactions")
 
-    assert result_ids(response) == [
-        str(amazon_last_created.id),
-        str(amazon_first_created.id),
-        str(delta_same_day.id),
-        str(older.id),
-    ]
+    assert result_ids(response) == ids(
+        amazon_last_created, amazon_first_created, delta_same_day, older
+    )
 
 
 @pytest.mark.django_db
@@ -91,6 +88,92 @@ def test_list_all_is_paginated(
     assert page_1.json()["next"] is not None
 
     page_2 = get(auth_client, "/transactions?page=2")
+    assert len(results(page_2)) == 1
+    assert page_2.json()["next"] is None
+
+
+@pytest.mark.django_db
+def test_list_filters_to_one_account(auth_client: Client, user: User) -> None:
+    account = create_account(user, name="Amazon")
+    kept = create_transaction(account)
+    create_transaction(create_account(user, name="Delta"))
+
+    response = get(auth_client, f"/transactions?account={account.id}")
+
+    assert response.status_code == 200
+    assert result_ids(response) == ids(kept)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("path", ["/transactions", "/transactions?account="])
+def test_list_without_account_filter_is_unchanged(
+    auth_client: Client, user: User, path: str
+) -> None:
+    first = create_transaction(create_account(user, name="Amazon"))
+    second = create_transaction(create_account(user, name="Delta"))
+
+    response = get(auth_client, path)
+
+    assert response.status_code == 200
+    assert set(result_ids(response)) == set(ids(first, second))
+
+
+@pytest.mark.django_db
+def test_list_filtered_by_other_users_account_is_empty(
+    auth_client: Client, user: User, other_user: User
+) -> None:
+    create_transaction(create_account(user))
+    other_account = create_account(other_user)
+    create_transaction(other_account)
+
+    response = get(auth_client, f"/transactions?account={other_account.id}")
+
+    assert response.status_code == 200
+    assert result_ids(response) == []
+
+
+@pytest.mark.django_db
+def test_list_filtered_by_deleted_account_is_empty(
+    auth_client: Client, user: User
+) -> None:
+    deleted_account = create_account(user)
+    create_transaction(deleted_account)
+    deleted_account.soft_delete()
+
+    response = get(auth_client, f"/transactions?account={deleted_account.id}")
+
+    assert response.status_code == 200
+    assert result_ids(response) == []
+
+
+@pytest.mark.django_db
+def test_list_filtered_by_malformed_account_id_is_rejected(
+    auth_client: Client,
+) -> None:
+    response = get(auth_client, "/transactions?account=not-a-uuid")
+
+    assert response.status_code == 400
+    assert "account" in response.json()
+
+
+@pytest.mark.django_db
+def test_list_filtered_by_account_is_paginated(
+    auth_client: Client, user: User, settings: Settings
+) -> None:
+    page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
+    account = create_account(user, name="Amazon")
+    Transaction.objects.bulk_create(
+        Transaction(account=account, amount="1.00", occurred_on="2026-01-01")
+        for _ in range(page_size + 1)
+    )
+    create_transaction(create_account(user, name="Delta"))
+
+    page_1 = get(auth_client, f"/transactions?account={account.id}")
+    assert page_1.json()["count"] == page_size + 1
+    assert len(results(page_1)) == page_size
+    assert page_1.json()["next"] is not None
+
+    page_2 = get(auth_client, f"/transactions?account={account.id}&page=2")
     assert len(results(page_2)) == 1
     assert page_2.json()["next"] is None
 
