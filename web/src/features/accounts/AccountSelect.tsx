@@ -1,19 +1,20 @@
-import { type ComboboxItem, Select, type SelectProps } from "@mantine/core";
+import { Select, type SelectProps } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { allAccountsQuery } from "./queries";
 import type { Account } from "./types";
 
-function toOptions(accounts: Account[]): ComboboxItem[] {
+function toOptions(accounts: Account[]) {
   return accounts.map((account) => ({
     value: account.id,
     label: account.name,
   }));
 }
 
-type AccountSelectProps = Omit<SelectProps, "data">;
+export function AccountSelect(props: Omit<SelectProps, "data">) {
+  const { data: options = [] } = useQuery({
+    ...allAccountsQuery(),
+    select: toOptions,
+  });
 
-export function AccountSelect(props: AccountSelectProps) {
-  const { data: accounts } = useQuery(allAccountsQuery());
-
-  return <Select data={toOptions(accounts ?? [])} {...props} />;
+  return <Select data={options} {...props} />;
 }
