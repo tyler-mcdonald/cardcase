@@ -6,7 +6,13 @@ import {
   type TransactionFormValues,
 } from "./transaction-form";
 
-export function NewTransactionRow({ onClose }: { onClose: () => void }) {
+export function NewTransactionRow({
+  accountId,
+  onClose,
+}: {
+  accountId?: string;
+  onClose: () => void;
+}) {
   const createTransaction = useCreateTransaction();
 
   function save(values: TransactionFormValues) {
@@ -18,7 +24,7 @@ export function NewTransactionRow({ onClose }: { onClose: () => void }) {
 
   return (
     <TransactionEditorRow
-      initialValues={emptyTransactionForm()}
+      initialValues={emptyTransactionForm(accountId)}
       mutation={createTransaction}
       onSave={save}
       onClose={onClose}

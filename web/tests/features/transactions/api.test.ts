@@ -33,6 +33,21 @@ describe("listTransactions", () => {
     );
   });
 
+  it("filters by account", async () => {
+    mockedRequest.mockResolvedValueOnce({
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    });
+
+    await listTransactions({ page: 1, account: "42" });
+    expect(mockedRequest).toHaveBeenCalledWith(
+      "GET",
+      "/v1/transactions?page=1&account=42",
+    );
+  });
+
   it("propagates request failures", async () => {
     mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
 
