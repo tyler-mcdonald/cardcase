@@ -1,17 +1,12 @@
 import { request } from "@/lib/api/client";
 import { accounts, transactions } from "@/lib/api/endpoints";
-import type { Paginated } from "@/lib/api/types";
-import type {
-  Transaction,
-  TransactionInput,
-  TransactionListParams,
-  TransactionUpdate,
-} from "./types";
+import type { PageParams, Paginated } from "@/lib/api/types";
+import type { Transaction, TransactionInput, TransactionUpdate } from "./types";
 
 const accountTransactions = (accountId: string) =>
   accounts.path(accountId, "transactions");
 
-export function listTransactions(params: TransactionListParams) {
+export function listTransactions(params: PageParams) {
   return request<Paginated<Transaction>>(
     "GET",
     transactions({ page: params.page }),

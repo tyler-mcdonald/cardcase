@@ -8,17 +8,14 @@ import {
 } from "@tanstack/react-query";
 import { ignoreNotFound } from "@/lib/api/errors";
 import { toPage } from "@/lib/api/pagination";
+import type { PageParams } from "@/lib/api/types";
 import {
   createTransaction,
   deleteTransaction,
   listTransactions,
   updateTransaction,
 } from "./api";
-import type {
-  TransactionInput,
-  TransactionListParams,
-  TransactionUpdate,
-} from "./types";
+import type { TransactionInput, TransactionUpdate } from "./types";
 
 const TRANSACTIONS_QUERY_KEY = ["transactions"] as const;
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
@@ -42,7 +39,7 @@ function invalidateTransactionsAndAccounts(queryClient: QueryClient) {
   ]);
 }
 
-export function transactionsQuery(params: TransactionListParams) {
+export function transactionsQuery(params: PageParams) {
   return queryOptions({
     queryKey: [...TRANSACTIONS_QUERY_KEY, params],
     queryFn: async () => toPage(await listTransactions(params), params.page),

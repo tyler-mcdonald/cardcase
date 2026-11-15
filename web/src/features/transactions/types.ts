@@ -1,5 +1,4 @@
 import type { Account } from "@/features/accounts/types";
-import type { PageParams } from "@/lib/api/types";
 
 export type Transaction = {
   id: string;
@@ -17,5 +16,3 @@ export type TransactionInput = Pick<
 >;
 
 export type TransactionUpdate = Partial<TransactionInput>;
-
-export type TransactionListParams = PageParams;
