@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
-import { FirstPageRedirect } from "@/components/FirstPageRedirect";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { hasAccount } from "@/features/accounts/format";
 import { allAccountsQuery } from "@/features/accounts/queries";
@@ -18,8 +17,8 @@ import {
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
 import { useTransactionFilters } from "@/features/transactions/use-transaction-filters";
-import { isPastLastPage } from "@/lib/api/pagination";
 import { usePageParam } from "@/lib/hooks/use-page-param";
+import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
 type NewTransactionEditor = { kind: "new"; key: number };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
@@ -40,8 +39,8 @@ function isEditedRowGone(
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
   const { filters, setFilters } = useTransactionFilters();
-  const { data, error, isPending, isError, isFetching, refetch } = useQuery(
-    transactionsQuery({ page, ...filters }),
+  const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
+    (page) => transactionsQuery({ page, ...filters }),
   );
   const { data: accounts, isPending: isAccountsPending } =
     useQuery(allAccountsQuery());
@@ -83,10 +82,6 @@ export function TransactionsPage() {
     setEditor((current) => (current === closing ? null : current));
   }
 
-  if (isPastLastPage(page, error)) {
-    return <FirstPageRedirect />;
-  }
-
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="flex-end">
@@ -120,10 +115,10 @@ export function TransactionsPage() {
 
       {isPending && <TransactionsTableSkeleton />}
 
-      {isError && (
+      {loadError && (
         <LoadErrorAlert
           title="Couldn't load your transactions"
-          error={error}
+          error={loadError}
           retrying={isFetching}
           onRetry={() => refetch()}
         />

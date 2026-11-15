@@ -1,4 +1,5 @@
 import type { Account } from "@/features/accounts/types";
+import type { PageParams } from "@/lib/api/types";
 
 export type Transaction = {
   id: string;
@@ -21,6 +22,4 @@ export type TransactionFilters = {
   account?: string;
 };
 
-export type TransactionListParams = TransactionFilters & {
-  page: number;
-};
+export type TransactionListParams = PageParams & TransactionFilters;
