@@ -6,7 +6,7 @@ import {
   within,
 } from "@testing-library/react";
 import { focusManager, QueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionsPage } from "@/routes/TransactionsPage";
 import { listAllAccounts } from "@/features/accounts/api";
@@ -1205,6 +1205,54 @@ describe("filtering by account", () => {
     await waitFor(() =>
       expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 }),
     );
+  });
+
+  it("keeps an account filter missing from cached accounts until they refresh", async () => {
+    const vouchers = makeAccount({ id: "vouchers-id", name: "Vouchers" });
+    renderWithProviders(
+      <>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <TransactionsPage />
+                <Link to="/away">Leave</Link>
+              </>
+            }
+          />
+          <Route
+            path="/away"
+            element={<Link to="/?account=vouchers-id">Show Vouchers</Link>}
+          />
+        </Routes>
+        <LocationDisplay />
+      </>,
+    );
+    await screen.findByText(latte.description);
+    await waitFor(() => expect(mockedListAllAccounts).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole("link", { name: "Leave" }));
+    let resolveAccounts!: () => void;
+    mockedListAllAccounts.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAccounts = () =>
+          resolve(
+            makePage([
+              makeAccount({ id: "starbucks-id", name: "Starbucks" }),
+              makeAccount({ id: "delta-id", name: "Delta" }),
+              vouchers,
+            ]),
+          );
+      }),
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: "Show Vouchers" }));
+    await waitFor(() => expect(mockedListAllAccounts).toHaveBeenCalledTimes(2));
+    expect(location()).toBe("?account=vouchers-id");
+    act(() => resolveAccounts());
+
+    await waitFor(() => expect(accountFilter().value).toBe("Vouchers"));
+    expect(location()).toBe("?account=vouchers-id");
   });
 
   it("keeps the account filter when accounts fail to load", async () => {

@@ -86,10 +86,19 @@ export function TransactionsPage() {
   const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
     (page) => transactionsQuery({ page, ...filters }),
   );
-  const { data: accounts, isPending: isAccountsPending } =
-    useQuery(allAccountsQuery());
+  const {
+    data: accounts,
+    isPending: isAccountsPending,
+    isSuccess: isAccountsLoaded,
+    isFetching: isAccountsFetching,
+  } = useQuery(allAccountsQuery());
   const filteredAccountId = knownAccountId(accounts, filters.account);
-  const isFilterUnknown = isUnknownAccount(accounts, filters.account);
+  // Only a settled, successful fetch can rule the filter out: cached accounts
+  // shown during a refetch may predate the filtered account.
+  const isFilterUnknown =
+    isAccountsLoaded &&
+    !isAccountsFetching &&
+    isUnknownAccount(accounts, filters.account);
   useEffect(() => {
     if (isFilterUnknown) {
       setFilters({ account: undefined }, { replace: true });
