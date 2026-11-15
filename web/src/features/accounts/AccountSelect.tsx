@@ -11,6 +11,28 @@ function toOptions(accounts: Account[]): ComboboxItem[] {
   }));
 }
 
+// Before accounts arrive, an id can only be called unknown if they failed.
+function isUnknownAccount(
+  accounts: Account[] | undefined,
+  isError: boolean,
+  id: string,
+): boolean {
+  return accounts ? !hasAccount(accounts, id) : isError;
+}
+
+// The account options, plus a placeholder option for `unknownId` when it
+// doesn't match any account.
+function selectData(
+  accounts: Account[] | undefined,
+  isError: boolean,
+  unknownId: string | null,
+): ComboboxItem[] {
+  const options = toOptions(accounts ?? []);
+  return unknownId && isUnknownAccount(accounts, isError, unknownId)
+    ? [...options, { value: unknownId, label: "Unknown account" }]
+    : options;
+}
+
 type AccountSelectProps = Omit<SelectProps, "data"> & {
   showUnknownValue?: boolean;
 };
@@ -21,14 +43,11 @@ export function AccountSelect({
   ...props
 }: AccountSelectProps) {
   const { data: accounts, isError } = useQuery(allAccountsQuery());
-  const options = toOptions(accounts ?? []);
-  // Before accounts arrive, the value can only be called unknown if they failed.
-  const isUnknown = (id: string) =>
-    accounts ? !hasAccount(accounts, id) : isError;
-  const data =
-    showUnknownValue && value && isUnknown(value)
-      ? [...options, { value, label: "Unknown account" }]
-      : options;
+  const data = selectData(
+    accounts,
+    isError,
+    showUnknownValue ? (value ?? null) : null,
+  );
 
   return <Select data={data} value={value} {...props} />;
 }
