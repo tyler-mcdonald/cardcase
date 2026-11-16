@@ -82,7 +82,7 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Starbucks")).toBeTruthy();
     expect(screen.getByText("Delta SkyMiles Credit")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenCalledWith(1);
+    expect(mockedListAccounts).toHaveBeenCalledWith(1, expect.any(AbortSignal));
     expect(screen.queryByRole("button", { name: "2" })).toBeNull();
   });
 
@@ -166,7 +166,10 @@ describe("AccountsPage", () => {
     expect(await screen.findByText("Amazon Prime")).toBeTruthy();
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(mockedUpdateAccount.mock.calls[0][0]).toBe("2");
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(
+      2,
+      expect.any(AbortSignal),
+    );
   });
 
   it("keeps the modal open while the account is being saved", async () => {
@@ -278,7 +281,10 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Starbucks")).toBeTruthy();
     expect(screen.queryByText("Amazon")).toBeNull();
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(
+      1,
+      expect.any(AbortSignal),
+    );
   });
 
   it("shows an error state and can retry", async () => {
@@ -304,7 +310,7 @@ describe("AccountsPage", () => {
     renderPage("/?page=3");
 
     expect(await screen.findByText("Target")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenCalledWith(3);
+    expect(mockedListAccounts).toHaveBeenCalledWith(3, expect.any(AbortSignal));
   });
 
   it("paginates through the accounts", async () => {
@@ -327,7 +333,10 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "2" }));
 
     expect(await screen.findByText("Amazon")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(2);
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(
+      2,
+      expect.any(AbortSignal),
+    );
   });
 
   it("falls back to the first page when the requested page doesn't exist", async () => {
@@ -338,8 +347,15 @@ describe("AccountsPage", () => {
     renderPage("/?page=9");
 
     expect(await screen.findByText("Starbucks")).toBeTruthy();
-    expect(mockedListAccounts).toHaveBeenNthCalledWith(1, 9);
-    expect(mockedListAccounts).toHaveBeenLastCalledWith(1);
+    expect(mockedListAccounts).toHaveBeenNthCalledWith(
+      1,
+      9,
+      expect.any(AbortSignal),
+    );
+    expect(mockedListAccounts).toHaveBeenLastCalledWith(
+      1,
+      expect.any(AbortSignal),
+    );
     expect(screen.queryByText("Couldn't load your accounts")).toBeNull();
   });
 });

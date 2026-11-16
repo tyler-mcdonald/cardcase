@@ -30,8 +30,11 @@ function allowExpectedStatus<T>(
   });
 }
 
-export function getSession() {
-  return request<ApiResponse<SessionData>>("GET", session());
+export function getSession(signal?: AbortSignal) {
+  return allowExpectedStatus(
+    request<ApiResponse<SessionData>>("GET", session(), { signal }),
+    [401],
+  );
 }
 
 export function requestLoginCode(email: string) {

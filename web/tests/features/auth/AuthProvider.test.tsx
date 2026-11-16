@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
-import { useLogout, useStartDemo } from "@/features/auth/queries";
+import { sessionQuery, useLogout, useStartDemo } from "@/features/auth/queries";
 import { getSession, logout, startDemo } from "@/features/auth/api";
 import {
   SESSION_CHANNEL_NAME,
@@ -54,12 +54,21 @@ describe("AuthProvider", () => {
     );
   });
 
-  it("reports null user when the session request fails", async () => {
+  it("keeps the user unresolved when the session request fails", async () => {
     mockedGetSession.mockRejectedValueOnce(new Error("network down"));
 
-    const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
+    const { result } = renderHook(
+      () => ({ auth: useAuth(), queryClient: useQueryClient() }),
+      { wrapper: Wrapper },
+    );
 
-    await waitFor(() => expect(result.current.user).toBeNull());
+    await waitFor(() =>
+      expect(
+        result.current.queryClient.getQueryState(sessionQuery().queryKey)
+          ?.status,
+      ).toBe("error"),
+    );
+    expect(result.current.auth.user).toBeUndefined();
   });
 
   it("falls back to null if an authenticated response is missing its user", async () => {

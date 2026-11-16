@@ -4,7 +4,29 @@ import { ApiError } from "@/lib/api/errors";
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
+
+function stubStalledFetch() {
+  const fetchMock = vi.fn(
+    (_url: URL, init: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () =>
+          reject(init.signal?.reason),
+        );
+      }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+function stubTimeout() {
+  const timeout = new AbortController();
+  const timeoutSpy = vi
+    .spyOn(AbortSignal, "timeout")
+    .mockReturnValue(timeout.signal);
+  return { timeout, timeoutSpy };
+}
 
 describe("api client", () => {
   it("parses and returns the JSON body on success", async () => {
@@ -57,5 +79,36 @@ describe("api client", () => {
     );
 
     await expect(request("GET", "/things")).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("gives up on a load once it times out", async () => {
+    stubStalledFetch();
+    const { timeout, timeoutSpy } = stubTimeout();
+
+    const pending = request("GET", "/things");
+    timeout.abort(new DOMException("timed out", "TimeoutError"));
+
+    await expect(pending).rejects.toBeInstanceOf(ApiError);
+    expect(timeoutSpy).toHaveBeenCalledWith(15_000);
+  });
+
+  it("cancels a load when its caller aborts", async () => {
+    stubStalledFetch();
+    const controller = new AbortController();
+
+    const pending = request("GET", "/things", { signal: controller.signal });
+    controller.abort();
+
+    await expect(pending).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("does not time out a save", async () => {
+    const fetchMock = stubStalledFetch();
+    const { timeoutSpy } = stubTimeout();
+
+    void request("POST", "/things", { body: "{}" });
+
+    expect(timeoutSpy).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls[0][1].signal).toBeUndefined();
   });
 });

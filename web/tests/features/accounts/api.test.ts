@@ -19,6 +19,7 @@ const mockedRequest = vi.mocked(request);
 
 describe("listAccounts", () => {
   it("requests the given page of accounts", async () => {
+    const signal = new AbortController().signal;
     const response = {
       count: 1,
       next: null,
@@ -27,8 +28,10 @@ describe("listAccounts", () => {
     };
     mockedRequest.mockResolvedValueOnce(response);
 
-    await expect(listAccounts(2)).resolves.toEqual(response);
-    expect(mockedRequest).toHaveBeenCalledWith("GET", "/v1/accounts?page=2");
+    await expect(listAccounts(2, signal)).resolves.toEqual(response);
+    expect(mockedRequest).toHaveBeenCalledWith("GET", "/v1/accounts?page=2", {
+      signal,
+    });
   });
 
   it("propagates request failures", async () => {
@@ -40,6 +43,7 @@ describe("listAccounts", () => {
 
 describe("listAllAccounts", () => {
   it("requests every account in one page", async () => {
+    const signal = new AbortController().signal;
     mockedRequest.mockResolvedValueOnce({
       count: 0,
       next: null,
@@ -47,11 +51,12 @@ describe("listAllAccounts", () => {
       results: [],
     });
 
-    await listAllAccounts();
+    await listAllAccounts(signal);
 
     expect(mockedRequest).toHaveBeenCalledWith(
       "GET",
       "/v1/accounts?page_size=250",
+      { signal },
     );
   });
 });

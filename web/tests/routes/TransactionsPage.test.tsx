@@ -128,7 +128,10 @@ it("shows each transaction's date, account, description, and amount", async () =
     "",
     "$150.00",
   ]);
-  expect(mockedListTransactions).toHaveBeenCalledWith({ page: 1 });
+  expect(mockedListTransactions).toHaveBeenCalledWith(
+    { page: 1 },
+    expect.any(AbortSignal),
+  );
   expect(screen.queryByRole("button", { name: "2" })).toBeNull();
 });
 
@@ -191,7 +194,10 @@ it("paginates through the transactions", async () => {
   fireEvent.click(screen.getByRole("button", { name: "2" }));
 
   expect(await screen.findByText("Movies")).toBeTruthy();
-  expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 2 });
+  expect(mockedListTransactions).toHaveBeenLastCalledWith(
+    { page: 2 },
+    expect.any(AbortSignal),
+  );
 });
 
 it("falls back to the first page when the requested page doesn't exist", async () => {
@@ -204,8 +210,15 @@ it("falls back to the first page when the requested page doesn't exist", async (
   renderPage("/?page=9");
 
   expect(await screen.findByText("Groceries")).toBeTruthy();
-  expect(mockedListTransactions).toHaveBeenNthCalledWith(1, { page: 9 });
-  expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
+  expect(mockedListTransactions).toHaveBeenNthCalledWith(
+    1,
+    { page: 9 },
+    expect.any(AbortSignal),
+  );
+  expect(mockedListTransactions).toHaveBeenLastCalledWith(
+    { page: 1 },
+    expect.any(AbortSignal),
+  );
   expect(screen.queryByText("Couldn't load your transactions")).toBeNull();
 });
 
@@ -743,7 +756,10 @@ describe("editing a transaction", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: "Save" })).toBeNull(),
     );
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 2 });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      { page: 2 },
+      expect.any(AbortSignal),
+    );
   });
 
   it("doesn't reopen the editor after leaving its page", async () => {
@@ -981,7 +997,10 @@ describe("deleting a transaction", () => {
 
     expect(await screen.findByText(refund.description)).toBeTruthy();
     expect(screen.queryByText(latte.description)).toBeNull();
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      { page: 1 },
+      expect.any(AbortSignal),
+    );
   });
 
   it("treats a transaction that's already gone as deleted", async () => {
@@ -1082,10 +1101,13 @@ describe("filtering by account", () => {
     );
     expect(screen.getByText(latte.description)).toBeTruthy();
     expect(location()).toBe("?account=starbucks-id");
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({
-      page: 1,
-      account: "starbucks-id",
-    });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      {
+        page: 1,
+        account: "starbucks-id",
+      },
+      expect.any(AbortSignal),
+    );
   });
 
   it("shows every account's transactions when cleared", async () => {
@@ -1097,7 +1119,10 @@ describe("filtering by account", () => {
 
     expect(await screen.findByText(flight.description)).toBeTruthy();
     expect(location()).toBe("");
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      { page: 1 },
+      expect.any(AbortSignal),
+    );
   });
 
   it("returns to the first page when the filter changes", async () => {
@@ -1107,10 +1132,13 @@ describe("filtering by account", () => {
     await filterBy("Delta");
 
     await waitFor(() => expect(location()).toBe("?sort=date&account=delta-id"));
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({
-      page: 1,
-      account: "delta-id",
-    });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      {
+        page: 1,
+        account: "delta-id",
+      },
+      expect.any(AbortSignal),
+    );
   });
 
   it("closes an open editor when the filter changes", async () => {
@@ -1203,7 +1231,10 @@ describe("filtering by account", () => {
     await waitFor(() => expect(location()).toBe(""));
     expect(accountFilter().value).toBe("");
     await waitFor(() =>
-      expect(mockedListTransactions).toHaveBeenLastCalledWith({ page: 1 }),
+      expect(mockedListTransactions).toHaveBeenLastCalledWith(
+        { page: 1 },
+        expect.any(AbortSignal),
+      ),
     );
   });
 
@@ -1261,10 +1292,13 @@ describe("filtering by account", () => {
     await screen.findByText(latte.description);
 
     expect(location()).toBe("?account=starbucks-id");
-    expect(mockedListTransactions).toHaveBeenLastCalledWith({
-      page: 1,
-      account: "starbucks-id",
-    });
+    expect(mockedListTransactions).toHaveBeenLastCalledWith(
+      {
+        page: 1,
+        account: "starbucks-id",
+      },
+      expect.any(AbortSignal),
+    );
   });
 
   it("pre-selects the filtered account when adding a transaction", async () => {

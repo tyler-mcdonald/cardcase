@@ -18,6 +18,7 @@ const mockedRequest = vi.mocked(request);
 
 describe("listTransactions", () => {
   it("requests the given page of transactions", async () => {
+    const signal = new AbortController().signal;
     const response = {
       count: 1,
       next: null,
@@ -26,10 +27,13 @@ describe("listTransactions", () => {
     };
     mockedRequest.mockResolvedValueOnce(response);
 
-    await expect(listTransactions({ page: 2 })).resolves.toEqual(response);
+    await expect(listTransactions({ page: 2 }, signal)).resolves.toEqual(
+      response,
+    );
     expect(mockedRequest).toHaveBeenCalledWith(
       "GET",
       "/v1/transactions?page=2",
+      { signal },
     );
   });
 
@@ -45,6 +49,7 @@ describe("listTransactions", () => {
     expect(mockedRequest).toHaveBeenCalledWith(
       "GET",
       "/v1/transactions?page=1&account=42",
+      { signal: undefined },
     );
   });
 

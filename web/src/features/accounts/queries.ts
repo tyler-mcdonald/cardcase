@@ -25,7 +25,8 @@ function invalidateAccounts(queryClient: QueryClient) {
 export function accountsQuery(page: number) {
   return queryOptions({
     queryKey: [...ACCOUNTS_QUERY_KEY, page],
-    queryFn: async () => toPage(await listAccounts(page), page),
+    queryFn: async ({ signal }) =>
+      toPage(await listAccounts(page, signal), page),
     placeholderData: keepPreviousData,
   });
 }
@@ -33,7 +34,7 @@ export function accountsQuery(page: number) {
 export function allAccountsQuery() {
   return queryOptions({
     queryKey: [...ACCOUNTS_QUERY_KEY, "all"],
-    queryFn: async () => (await listAllAccounts()).results,
+    queryFn: async ({ signal }) => (await listAllAccounts(signal)).results,
   });
 }
 

@@ -5,14 +5,15 @@ import type { Account, AccountCreateInput, AccountUpdate } from "./types";
 
 const MAX_ACCOUNTS = 250;
 
-export function listAccounts(page: number) {
-  return request<Paginated<Account>>("GET", accounts({ page }));
+export function listAccounts(page: number, signal?: AbortSignal) {
+  return request<Paginated<Account>>("GET", accounts({ page }), { signal });
 }
 
-export function listAllAccounts() {
+export function listAllAccounts(signal?: AbortSignal) {
   return request<Paginated<Account>>(
     "GET",
     accounts({ page_size: MAX_ACCOUNTS }),
+    { signal },
   );
 }
 

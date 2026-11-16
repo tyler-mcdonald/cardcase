@@ -11,8 +11,13 @@ import type {
 const accountTransactions = (accountId: string) =>
   accounts.path(accountId, "transactions");
 
-export function listTransactions(params: TransactionListParams) {
-  return request<Paginated<Transaction>>("GET", transactions(params));
+export function listTransactions(
+  params: TransactionListParams,
+  signal?: AbortSignal,
+) {
+  return request<Paginated<Transaction>>("GET", transactions(params), {
+    signal,
+  });
 }
 
 export function createTransaction(accountId: string, input: TransactionInput) {
