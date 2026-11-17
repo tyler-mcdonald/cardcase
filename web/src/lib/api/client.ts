@@ -9,7 +9,10 @@ function requestSignal(method: string, signal?: AbortSignal | null) {
     return signal;
   }
   const timeout = AbortSignal.timeout(LOAD_TIMEOUT_MS);
-  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+  if (!signal || typeof AbortSignal.any !== "function") {
+    return timeout;
+  }
+  return AbortSignal.any([signal, timeout]);
 }
 
 function networkError(cause: unknown) {

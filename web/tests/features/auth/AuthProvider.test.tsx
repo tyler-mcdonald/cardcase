@@ -1,10 +1,16 @@
 import type { ReactNode } from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/use-auth";
-import { sessionQuery, useLogout, useStartDemo } from "@/features/auth/queries";
+import { useLogout, useStartDemo } from "@/features/auth/queries";
 import { getSession, logout, startDemo } from "@/features/auth/api";
 import {
   SESSION_CHANNEL_NAME,
@@ -25,6 +31,10 @@ function Wrapper({ children }: { children: ReactNode }) {
       <AuthProvider>{children}</AuthProvider>
     </TestProviders>
   );
+}
+
+function UserEmail() {
+  return <p>{useAuth().user?.email}</p>;
 }
 
 describe("AuthProvider", () => {
@@ -54,21 +64,20 @@ describe("AuthProvider", () => {
     );
   });
 
-  it("keeps the user unresolved when the session request fails", async () => {
-    mockedGetSession.mockRejectedValueOnce(new Error("network down"));
+  it("shows a retryable error when the session request fails", async () => {
+    mockedGetSession
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce(sessionResponse(TEST_USER));
 
-    const { result } = renderHook(
-      () => ({ auth: useAuth(), queryClient: useQueryClient() }),
-      { wrapper: Wrapper },
+    render(
+      <Wrapper>
+        <UserEmail />
+      </Wrapper>,
     );
 
-    await waitFor(() =>
-      expect(
-        result.current.queryClient.getQueryState(sessionQuery().queryKey)
-          ?.status,
-      ).toBe("error"),
-    );
-    expect(result.current.auth.user).toBeUndefined();
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByText("test@example.com")).toBeTruthy();
   });
 
   it("falls back to null if an authenticated response is missing its user", async () => {
