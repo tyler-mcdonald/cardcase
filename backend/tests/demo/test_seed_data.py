@@ -27,10 +27,10 @@ TWINS = (
 )
 
 
-def _rows(account: Account) -> set[tuple[str, str]]:
+def _generated_spends(account: Account) -> set[tuple[str, str]]:
     return {
         (str(t.amount), t.description)
-        for t in account.transactions.filter(description="Twin purchase")
+        for t in account.transactions.filter(description=f"{account.name} purchase")
     }
 
 
@@ -46,7 +46,7 @@ def test_seed_user_keeps_same_name_accounts_and_their_transactions_apart(
     )
     assert first != second
     assert first.name == second.name == "Twin"
-    assert _rows(first) != _rows(second)
+    assert _generated_spends(first) != _generated_spends(second)
 
 
 def test_seed_user_adds_nothing_when_user_has_accounts(user: User) -> None:

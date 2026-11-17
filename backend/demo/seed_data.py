@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from allauth.account.models import EmailAddress
+from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import Account, Transaction
@@ -44,6 +45,7 @@ def get_or_create_seed_user(email: str) -> User:
     return User.objects.filter(email=email).first() or create_verified_user(email)
 
 
+@transaction.atomic
 def seed_user(user: User, dataset: Sequence[SeedAccount]) -> SeedResult:
     if Account.objects.filter(user=user).exists():
         return SeedResult()
@@ -53,9 +55,9 @@ def seed_user(user: User, dataset: Sequence[SeedAccount]) -> SeedResult:
         _build_account(user, seed, today) for seed in dataset
     )
     transactions = Transaction.objects.bulk_create(
-        transaction
+        row
         for account, seed in zip(accounts, dataset, strict=True)
-        for transaction in _build_transactions(account, seed, today, rng)
+        for row in _build_transactions(account, seed, today, rng)
     )
     return SeedResult(len(accounts), len(transactions))
 
