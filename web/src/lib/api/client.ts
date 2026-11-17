@@ -9,10 +9,23 @@ function requestSignal(method: string, signal?: AbortSignal | null) {
     return signal;
   }
   const timeout = AbortSignal.timeout(LOAD_TIMEOUT_MS);
-  if (!signal || typeof AbortSignal.any !== "function") {
+  if (!signal) {
     return timeout;
   }
-  return AbortSignal.any([signal, timeout]);
+  if (typeof AbortSignal.any === "function") {
+    return AbortSignal.any([signal, timeout]);
+  }
+  const controller = new AbortController();
+  for (const source of [signal, timeout]) {
+    if (source.aborted) {
+      controller.abort(source.reason);
+      break;
+    }
+    source.addEventListener("abort", () => controller.abort(source.reason), {
+      once: true,
+    });
+  }
+  return controller.signal;
 }
 
 function networkError(cause: unknown) {

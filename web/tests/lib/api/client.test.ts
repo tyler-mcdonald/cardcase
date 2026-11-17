@@ -120,6 +120,23 @@ describe("api client", () => {
     }
   });
 
+  it("still cancels a load in browsers without AbortSignal.any", async () => {
+    stubStalledFetch();
+    stubTimeout();
+    const { any } = AbortSignal;
+    Reflect.deleteProperty(AbortSignal, "any");
+
+    try {
+      const controller = new AbortController();
+      const pending = request("GET", "/things", { signal: controller.signal });
+      controller.abort();
+
+      await expect(pending).rejects.toBeInstanceOf(ApiError);
+    } finally {
+      AbortSignal.any = any;
+    }
+  });
+
   it("does not time out a save", async () => {
     const fetchMock = stubStalledFetch();
     const { timeoutSpy } = stubTimeout();
