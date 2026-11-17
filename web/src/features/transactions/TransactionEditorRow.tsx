@@ -24,11 +24,7 @@ import type {
   TransactionField,
   TransactionFormValues,
 } from "./transaction-form";
-import {
-  type AmountField,
-  type SaveMutation,
-  useTransactionForm,
-} from "./use-transaction-form";
+import { type SaveMutation, useTransactionForm } from "./use-transaction-form";
 
 function ErrorMessages({ messages }: { messages: string[] }) {
   return (
@@ -77,13 +73,6 @@ export function TransactionEditorRow({
   }, []);
 
   useClickOutside(cancel, ["click"], [editorRow, actionsRow], openingClickDone);
-
-  function moneyInputProps(field: AmountField) {
-    return {
-      ...amountInputProps(field),
-      autoFocus: focusField === field,
-    };
-  }
 
   function saveOnEnter(event: KeyboardEvent) {
     if (event.key === "Enter" && !event.defaultPrevented) {
@@ -183,14 +172,16 @@ export function TransactionEditorRow({
           <MoneyInput
             aria-label="Outflow"
             size="xs"
-            {...moneyInputProps("outflow")}
+            autoFocus={focusField === "outflow"}
+            {...amountInputProps("outflow")}
           />
         </Table.Td>
         <Table.Td>
           <MoneyInput
             aria-label="Inflow"
             size="xs"
-            {...moneyInputProps("inflow")}
+            autoFocus={focusField === "inflow"}
+            {...amountInputProps("inflow")}
           />
         </Table.Td>
       </Table.Tr>
