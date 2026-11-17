@@ -1,4 +1,6 @@
 import random
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
@@ -9,99 +11,92 @@ from django.utils import timezone
 from accounts.models import Account, Transaction
 from users.models import User
 
-
-def sample_accounts(today: date) -> dict[str, dict[str, Any]]:
-    return {
-        "Amazon": {
-            "type": Account.Type.GIFT_CARD,
-            "brand_domain": "amazon.com",
-            "description": "Birthday gift from Mom",
-        },
-        "Delta": {
-            "type": Account.Type.FLIGHT_CREDIT,
-            "brand_domain": "delta.com",
-            "expires_on": today + timedelta(days=365),
-        },
-        "Starbucks": {
-            "type": Account.Type.GIFT_CARD,
-            "brand_domain": "starbucks.com",
-            "expires_on": today - timedelta(days=30),
-        },
-    }
-
-
 GENERATED_SPENDS_PER_ACCOUNT = 17
 GENERATED_SPEND_CENTS_RANGE = (100, 2000)
 GENERATED_SPEND_DAYS_AGO_RANGE = (0, 120)
+GENERATED_SPENDS_RANDOM_SEED = 0
 
 
-def sample_transactions(today: date) -> dict[str, list[tuple[str, str, date]]]:
-    return {
-        "Amazon": [
-            ("250.00", "Birthday gift", today - timedelta(days=120)),
-            ("-23.99", "Phone case", today - timedelta(days=60)),
-            ("-12.49", "Kindle book", today - timedelta(days=7)),
-        ],
-        "Delta": [
-            ("450.00", "Cancelled flight credit", today - timedelta(days=90)),
-            ("-75.00", "Seat upgrade", today - timedelta(days=45)),
-            ("-30.00", "Checked bag fee", today - timedelta(days=45)),
-        ],
-        "Starbucks": [
-            ("200.00", "Gift card reload", today - timedelta(days=100)),
-            ("-5.45", "Latte", today - timedelta(days=3)),
-            ("-8.90", "Breakfast sandwich and coffee", today),
-        ],
-    }
+@dataclass(frozen=True)
+class SeedTransaction:
+    amount: str
+    description: str
+    days_ago: int
 
 
-def generated_spends(name: str, today: date) -> list[tuple[str, str, date]]:
-    rng = random.Random(name)
-    return [
-        _random_spend(rng, name, today) for _ in range(GENERATED_SPENDS_PER_ACCOUNT)
-    ]
+@dataclass(frozen=True)
+class SeedAccount:
+    name: str
+    type: Account.Type
+    brand_domain: str = ""
+    description: str = ""
+    expires_in_days: int | None = None
+    transactions: tuple[SeedTransaction, ...] = ()
 
 
-def _random_spend(rng: random.Random, name: str, today: date) -> tuple[str, str, date]:
-    cents = rng.randint(*GENERATED_SPEND_CENTS_RANGE)
-    days_ago = rng.randint(*GENERATED_SPEND_DAYS_AGO_RANGE)
-    amount = -Decimal(cents) / 100
-    return str(amount), f"{name} purchase", today - timedelta(days=days_ago)
+@dataclass(frozen=True)
+class SeedResult:
+    account_count: int = 0
+    transaction_count: int = 0
 
 
 def get_or_create_seed_user(email: str) -> User:
     return User.objects.filter(email=email).first() or create_verified_user(email)
 
 
-def seed_accounts(user: User) -> int:
-    created_count = 0
-    for name, defaults in sample_accounts(timezone.localdate()).items():
-        _, created = Account.objects.get_or_create(
-            user=user, name=name, defaults=defaults
-        )
-        created_count += created
-    return created_count
-
-
-def seed_transactions(user: User) -> int:
+def seed_user(user: User, dataset: Sequence[SeedAccount]) -> SeedResult:
+    if Account.objects.filter(user=user).exists():
+        return SeedResult()
     today = timezone.localdate()
-    created_count = 0
-    for name, hand_written in sample_transactions(today).items():
-        account = Account.objects.filter(user=user, name=name).first()
-        if account is None or account.transactions.exists():
-            continue
-        rows = hand_written + generated_spends(name, today)
-        Transaction.objects.bulk_create(
-            Transaction(
-                account=account,
-                amount=amount,
-                description=description,
-                occurred_on=occurred_on,
-            )
-            for amount, description, occurred_on in rows
+    rng = random.Random(GENERATED_SPENDS_RANDOM_SEED)
+    accounts = Account.objects.bulk_create(
+        _build_account(user, seed, today) for seed in dataset
+    )
+    transactions = Transaction.objects.bulk_create(
+        transaction
+        for account, seed in zip(accounts, dataset, strict=True)
+        for transaction in _build_transactions(account, seed, today, rng)
+    )
+    return SeedResult(len(accounts), len(transactions))
+
+
+def _build_account(user: User, seed: SeedAccount, today: date) -> Account:
+    expires_on = (
+        None
+        if seed.expires_in_days is None
+        else today + timedelta(days=seed.expires_in_days)
+    )
+    return Account(
+        user=user,
+        name=seed.name,
+        type=seed.type,
+        brand_domain=seed.brand_domain,
+        description=seed.description,
+        expires_on=expires_on,
+    )
+
+
+def _build_transactions(
+    account: Account, seed: SeedAccount, today: date, rng: random.Random
+) -> list[Transaction]:
+    rows = list(seed.transactions) + [
+        _random_spend(rng, seed.name) for _ in range(GENERATED_SPENDS_PER_ACCOUNT)
+    ]
+    return [
+        Transaction(
+            account=account,
+            amount=Decimal(row.amount),
+            description=row.description,
+            occurred_on=today - timedelta(days=row.days_ago),
         )
-        created_count += len(rows)
-    return created_count
+        for row in rows
+    ]
+
+
+def _random_spend(rng: random.Random, name: str) -> SeedTransaction:
+    cents = rng.randint(*GENERATED_SPEND_CENTS_RANGE)
+    days_ago = rng.randint(*GENERATED_SPEND_DAYS_AGO_RANGE)
+    return SeedTransaction(str(-Decimal(cents) / 100), f"{name} purchase", days_ago)
 
 
 def create_verified_user(email: str, **extra_fields: Any) -> User:
