@@ -102,6 +102,32 @@ describe("api client", () => {
     await expect(pending).rejects.toBeInstanceOf(ApiError);
   });
 
+  it("keeps the status of a failed load whose body times out", async () => {
+    const { timeout } = stubTimeout();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: () =>
+          new Promise((_resolve, reject) => {
+            timeout.signal.addEventListener("abort", () =>
+              reject(timeout.signal.reason),
+            );
+          }),
+      }),
+    );
+
+    const pending = request("GET", "/things");
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
+    timeout.abort(new DOMException("timed out", "TimeoutError"));
+
+    await expect(pending).rejects.toMatchObject({
+      name: "ApiError",
+      status: 403,
+    });
+  });
+
   it("still times out a load in browsers without AbortSignal.any", async () => {
     stubStalledFetch();
     const { timeout } = stubTimeout();

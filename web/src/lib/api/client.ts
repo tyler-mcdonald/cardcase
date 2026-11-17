@@ -66,7 +66,7 @@ export async function request<T = unknown>(
   try {
     body = await response.json();
   } catch (cause) {
-    if (signal?.aborted) {
+    if (response.ok && signal?.aborted) {
       throw networkError(cause);
     }
   }
