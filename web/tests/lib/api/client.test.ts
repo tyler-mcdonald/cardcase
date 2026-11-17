@@ -164,15 +164,26 @@ describe("api client", () => {
   });
 
   it("does not time out a save", async () => {
-    const fetchMock = stubStalledFetch();
-    const { timeoutSpy } = stubTimeout();
-
-    void request("POST", "/things", { body: "{}" });
-
-    expect(timeoutSpy).not.toHaveBeenCalled();
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ signal: undefined }),
+    const { timeout, timeoutSpy } = stubTimeout();
+    let respond: (response: Response) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_url: URL, init: RequestInit) =>
+          new Promise<Response>((resolve, reject) => {
+            respond = resolve;
+            init.signal?.addEventListener("abort", () =>
+              reject(init.signal?.reason),
+            );
+          }),
+      ),
     );
+
+    const pending = request("POST", "/things", { body: "{}" });
+    timeout.abort(new DOMException("timed out", "TimeoutError"));
+    respond(new Response(JSON.stringify({ id: 1 }), { status: 201 }));
+
+    await expect(pending).resolves.toEqual({ id: 1 });
+    expect(timeoutSpy).not.toHaveBeenCalled();
   });
 });
