@@ -339,6 +339,41 @@ describe("AccountsPage", () => {
     );
   });
 
+  it("cancels a pending load when the page is left", async () => {
+    mockedListAccounts.mockReturnValueOnce(new Promise(() => {}));
+
+    const { unmount } = renderPage();
+    await waitFor(() => expect(mockedListAccounts).toHaveBeenCalled());
+    unmount();
+
+    expect(mockedListAccounts.mock.calls[0][1]?.aborted).toBe(true);
+  });
+
+  it("cancels a pending page's load when paging away from it", async () => {
+    mockedListAccounts
+      .mockResolvedValueOnce(
+        makePage([makeAccount({ name: "Starbucks" })], {
+          count: 3,
+          hasNext: true,
+        }),
+      )
+      .mockReturnValueOnce(new Promise(() => {}))
+      .mockReturnValueOnce(new Promise(() => {}));
+
+    renderPage();
+    await screen.findByText("Starbucks");
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    await waitFor(() => expect(mockedListAccounts).toHaveBeenCalledTimes(2));
+    fireEvent.click(screen.getByRole("button", { name: "1" }));
+    await waitFor(() => expect(mockedListAccounts).toHaveBeenCalledTimes(3));
+
+    const [, pageTwoLoad, pageOneReload] = mockedListAccounts.mock.calls;
+    expect(pageTwoLoad[0]).toBe(2);
+    expect(pageTwoLoad[1]?.aborted).toBe(true);
+    expect(pageOneReload[0]).toBe(1);
+    expect(pageOneReload[1]?.aborted).toBe(false);
+  });
+
   it("falls back to the first page when the requested page doesn't exist", async () => {
     mockedListAccounts
       .mockRejectedValueOnce(new ApiError("Not found", 404))
