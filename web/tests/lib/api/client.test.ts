@@ -109,6 +109,9 @@ describe("api client", () => {
     void request("POST", "/things", { body: "{}" });
 
     expect(timeoutSpy).not.toHaveBeenCalled();
-    expect(fetchMock.mock.calls[0][1].signal).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ signal: undefined }),
+    );
   });
 });

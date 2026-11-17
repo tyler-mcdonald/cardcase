@@ -6,7 +6,7 @@ const LOAD_TIMEOUT_MS = 15_000;
 
 function requestSignal(method: string, signal?: AbortSignal | null) {
   if (method !== "GET") {
-    return signal ?? undefined;
+    return signal;
   }
   const timeout = AbortSignal.timeout(LOAD_TIMEOUT_MS);
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
@@ -46,12 +46,14 @@ export async function request<T = unknown>(
     throw networkError(cause);
   }
 
-  const body = await response.json().catch((cause) => {
+  let body: unknown = null;
+  try {
+    body = await response.json();
+  } catch (cause) {
     if (signal?.aborted) {
       throw networkError(cause);
     }
-    return null;
-  });
+  }
 
   if (!response.ok) {
     throw new ApiError(
