@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { accountLabels } from "./labels";
 import { allAccountsQuery } from "./queries";
@@ -10,9 +9,6 @@ export function useAccountLabel() {
     select: accountLabels,
   });
 
-  return useCallback(
-    (account: Pick<Account, "id" | "name">) =>
-      labels?.get(account.id) ?? account.name,
-    [labels],
-  );
+  return (account: Pick<Account, "id" | "name">) =>
+    labels?.get(account.id) ?? account.name;
 }

@@ -119,12 +119,13 @@ export function TransactionsTable({
   return (
     <TransactionsTableFrame>
       {newRow}
-      {transactions.map((transaction) =>
-        transaction.id === editTarget?.id ? (
+      {transactions.map((transaction) => {
+        const label = accountLabel(transaction.account);
+        return transaction.id === editTarget?.id ? (
           <EditTransactionRow
             key={transaction.id}
             transaction={transaction}
-            accountLabel={accountLabel(transaction.account)}
+            accountLabel={label}
             focusField={editTarget.focusField}
             onClose={onEditClose}
           />
@@ -132,11 +133,11 @@ export function TransactionsTable({
           <TransactionRow
             key={transaction.id}
             transaction={transaction}
-            accountLabel={accountLabel(transaction.account)}
+            accountLabel={label}
             onEdit={onEdit}
           />
-        ),
-      )}
+        );
+      })}
     </TransactionsTableFrame>
   );
 }
