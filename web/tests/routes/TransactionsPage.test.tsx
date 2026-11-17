@@ -309,6 +309,20 @@ describe("adding a transaction", () => {
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
+  it("refreshes the accounts after saving", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("4.75");
+    save();
+
+    await waitFor(() =>
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["accounts"] }),
+    );
+  });
+
   it("saves an inflow as a positive amount", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
     await openNewTransactionForm();
