@@ -1,15 +1,13 @@
-import { render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { mockMobileViewport } from "@tests/viewport";
 
 function renderFirstValue() {
   const values: boolean[] = [];
-  function Probe() {
+  renderHook(() => {
     values.push(useIsMobile());
-    return null;
-  }
-  render(<Probe />);
+  });
   return values[0];
 }
 
