@@ -15,10 +15,12 @@ import type { Transaction } from "./types";
 
 export function EditTransactionRow({
   transaction,
+  accountLabel,
   focusField,
   onClose,
 }: {
   transaction: Transaction;
+  accountLabel: string;
   focusField: TransactionField;
   onClose: () => void;
 }) {
@@ -53,7 +55,7 @@ export function EditTransactionRow({
     <>
       <TransactionEditorRow
         initialValues={transactionFormFrom(openedWith)}
-        lockedAccountName={openedWith.account.name}
+        lockedAccountLabel={accountLabel}
         focusField={focusField === "accountId" ? "occurredOn" : focusField}
         mutation={updateTransaction}
         onSave={save}

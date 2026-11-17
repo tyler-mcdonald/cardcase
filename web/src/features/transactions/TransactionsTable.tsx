@@ -54,9 +54,11 @@ function EditableCell({
 
 function TransactionRow({
   transaction,
+  accountLabel,
   onEdit,
 }: {
   transaction: Transaction;
+  accountLabel: string;
   onEdit?: (target: EditTarget) => void;
 }) {
   const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
@@ -71,7 +73,7 @@ function TransactionRow({
       </EditableCell>
       <EditableCell field="accountId" onEdit={editField}>
         <Text size="sm" truncate>
-          {transaction.account.name}
+          {accountLabel}
         </Text>
       </EditableCell>
       <EditableCell
@@ -101,12 +103,14 @@ function TransactionRow({
 
 export function TransactionsTable({
   transactions,
+  accountLabel,
   newRow,
   editTarget,
   onEdit,
   onEditClose,
 }: {
   transactions: Transaction[];
+  accountLabel: (account: Transaction["account"]) => string;
   newRow?: ReactNode;
   editTarget: EditTarget | null;
   onEdit?: (target: EditTarget) => void;
@@ -120,6 +124,7 @@ export function TransactionsTable({
           <EditTransactionRow
             key={transaction.id}
             transaction={transaction}
+            accountLabel={accountLabel(transaction.account)}
             focusField={editTarget.focusField}
             onClose={onEditClose}
           />
@@ -127,6 +132,7 @@ export function TransactionsTable({
           <TransactionRow
             key={transaction.id}
             transaction={transaction}
+            accountLabel={accountLabel(transaction.account)}
             onEdit={onEdit}
           />
         ),
