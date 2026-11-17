@@ -14,31 +14,21 @@ import {
   useComputedColorScheme,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { useForm } from "@mantine/form";
 import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { toTwoDecimalString } from "@/lib/format";
 import { THEME_SHADES } from "@/theme";
-import {
-  type ClosableMutation,
-  useGuardedClose,
-} from "@/lib/hooks/use-guarded-close";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
-import {
-  type Amount,
-  type TransactionField,
-  type TransactionFormValues,
-  validateTransactionForm,
+import type {
+  TransactionField,
+  TransactionFormValues,
 } from "./transaction-form";
-
-type AmountField = "outflow" | "inflow";
-
-function oppositeAmountField(field: AmountField): AmountField {
-  return field === "outflow" ? "inflow" : "outflow";
-}
+import {
+  type AmountField,
+  type SaveMutation,
+  useTransactionForm,
+} from "./use-transaction-form";
 
 function ErrorMessages({ messages }: { messages: string[] }) {
   return (
@@ -51,8 +41,6 @@ function ErrorMessages({ messages }: { messages: string[] }) {
     </Stack>
   );
 }
-
-type SaveMutation = ClosableMutation & { error: unknown };
 
 export function TransactionEditorRow({
   initialValues,
@@ -78,19 +66,9 @@ export function TransactionEditorRow({
   const colorScheme = useComputedColorScheme();
   const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
   const [dateDropdownOpened, setDateDropdownOpened] = useState(false);
-  const form = useForm<TransactionFormValues>({
-    initialValues,
-    validate: validateTransactionForm,
-  });
-
-  const save = form.onSubmit((values) => {
-    if (mutation.isPending) {
-      return;
-    }
-    onSave(values);
-  });
-
-  const cancel = useGuardedClose([mutation], onClose);
+  const { form, save, cancel, amountInputProps, messages } = useTransactionForm(
+    { initialValues, mutation, onSave, onClose },
+  );
 
   const [openingClickDone, setOpeningClickDone] = useState(false);
   useEffect(() => {
@@ -100,27 +78,9 @@ export function TransactionEditorRow({
 
   useClickOutside(cancel, ["click"], [editorRow, actionsRow], openingClickDone);
 
-  function setAmount(field: AmountField, value: Amount) {
-    form.setFieldValue(field, value);
-    form.clearFieldError("amount");
-    if (value !== "") {
-      form.setFieldValue(oppositeAmountField(field), "");
-    }
-  }
-
-  function formatAmount(field: AmountField) {
-    const value = form.values[field];
-    if (value !== "") {
-      form.setFieldValue(field, toTwoDecimalString(value));
-    }
-  }
-
-  function amountInputProps(field: AmountField) {
+  function moneyInputProps(field: AmountField) {
     return {
-      value: form.values[field],
-      onChange: (value: Amount) => setAmount(field, value),
-      onBlur: () => formatAmount(field),
-      error: Boolean(form.errors.amount),
+      ...amountInputProps(field),
       autoFocus: focusField === field,
     };
   }
@@ -158,11 +118,6 @@ export function TransactionEditorRow({
   function closeAccountDropdownOnBlur(event: FocusEvent) {
     setAccountDropdownOpened(false);
     accountInputProps.onBlur(event);
-  }
-
-  const messages = Object.values(form.errors).map(String);
-  if (mutation.error) {
-    messages.push(apiErrorMessage(mutation.error));
   }
 
   return (
@@ -228,14 +183,14 @@ export function TransactionEditorRow({
           <MoneyInput
             aria-label="Outflow"
             size="xs"
-            {...amountInputProps("outflow")}
+            {...moneyInputProps("outflow")}
           />
         </Table.Td>
         <Table.Td>
           <MoneyInput
             aria-label="Inflow"
             size="xs"
-            {...amountInputProps("inflow")}
+            {...moneyInputProps("inflow")}
           />
         </Table.Td>
       </Table.Tr>
