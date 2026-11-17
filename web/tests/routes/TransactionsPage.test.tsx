@@ -311,15 +311,17 @@ describe("adding a transaction", () => {
 
   it("refreshes the accounts after saving", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
-    const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
     await openNewTransactionForm();
 
     await chooseAccount("Starbucks");
     enterOutflow("4.75");
+    const callsBeforeSave = mockedListAllAccounts.mock.calls.length;
     save();
 
     await waitFor(() =>
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["accounts"] }),
+      expect(mockedListAllAccounts.mock.calls.length).toBeGreaterThan(
+        callsBeforeSave,
+      ),
     );
   });
 
