@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { requestLoginCode, logout } from "@/features/auth/api";
+import { getSession, requestLoginCode, logout } from "@/features/auth/api";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -11,6 +11,21 @@ function stubFetchResponse(status: number, body: unknown) {
     vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status })),
   );
 }
+
+describe("getSession", () => {
+  it("resolves on the API's expected 401 not-authenticated response", async () => {
+    const body = { status: 401, meta: { is_authenticated: false } };
+    stubFetchResponse(401, body);
+
+    await expect(getSession()).resolves.toEqual(body);
+  });
+
+  it("still rejects on a server error", async () => {
+    stubFetchResponse(500, {});
+
+    await expect(getSession()).rejects.toMatchObject({ status: 500 });
+  });
+});
 
 describe("requestLoginCode", () => {
   it("resolves on the API's expected 401 pending-flow response", async () => {

@@ -48,12 +48,7 @@ function resetSession(queryClient: QueryClient, user: User | null) {
 }
 
 async function loadSession(): Promise<User | null> {
-  try {
-    const response = await getSession();
-    return sessionUser(response);
-  } catch {
-    return null;
-  }
+  return sessionUser(await getSession());
 }
 
 export function sessionQuery() {

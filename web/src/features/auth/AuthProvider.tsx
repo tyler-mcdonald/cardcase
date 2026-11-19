@@ -2,6 +2,7 @@ import { useEffect, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { sessionQuery } from "./queries";
 import { onUserChangeElsewhere } from "./session-channel";
+import { SessionLoadError } from "./SessionLoadError";
 import { AuthContext } from "./use-auth";
 
 function reloadPage() {
@@ -23,6 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({ user: session.data }), [session.data]);
 
   useEffect(() => onUserChangeElsewhere(refreshForNewUser), []);
+
+  if (session.isLoadingError) {
+    return (
+      <SessionLoadError
+        error={session.error}
+        retrying={session.isFetching}
+        onRetry={() => void session.refetch()}
+      />
+    );
+  }
 
   return <AuthContext value={value}>{children}</AuthContext>;
 }
