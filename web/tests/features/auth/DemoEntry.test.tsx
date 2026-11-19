@@ -97,7 +97,7 @@ describe("DemoEntry", () => {
   it("explains when too many demo sessions were started", async () => {
     mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
     mockedStartDemo.mockRejectedValueOnce(
-      new ApiError("Request failed (429)", 429, {}),
+      new ApiError("Request failed (429)", { status: 429, body: {} }),
     );
 
     renderDemoEntry();

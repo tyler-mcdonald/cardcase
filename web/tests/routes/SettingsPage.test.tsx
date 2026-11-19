@@ -162,7 +162,9 @@ describe("delete account", () => {
   });
 
   it("shows an error and stays on the page when deletion fails", async () => {
-    mockedDeleteMe.mockRejectedValue(new ApiError("Request failed (500)", 500));
+    mockedDeleteMe.mockRejectedValue(
+      new ApiError("Request failed (500)", { status: 500 }),
+    );
     renderSettingsPage();
     const input = clickDeleteAccountButton();
 

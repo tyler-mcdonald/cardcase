@@ -4,10 +4,6 @@ import { ApiError } from "./errors";
 const API_URL = import.meta.env.VITE_API_URL;
 const LOAD_TIMEOUT_MS = 15_000;
 
-function requestFailed(cause: unknown) {
-  return new ApiError("Request failed", undefined, undefined, { cause });
-}
-
 export async function request<T = unknown>(
   method: string,
   path: string,
@@ -36,7 +32,7 @@ export async function request<T = unknown>(
       credentials: "include",
     });
   } catch (cause) {
-    throw requestFailed(cause);
+    throw new ApiError("Request failed", { cause });
   }
 
   let body: unknown = null;
@@ -44,16 +40,15 @@ export async function request<T = unknown>(
     body = await response.json();
   } catch (cause) {
     if (response.ok && signal?.aborted) {
-      throw requestFailed(cause);
+      throw new ApiError("Request failed", { cause });
     }
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      `Request failed (${response.status})`,
-      response.status,
+    throw new ApiError(`Request failed (${response.status})`, {
+      status: response.status,
       body,
-    );
+    });
   }
 
   return body as T;
