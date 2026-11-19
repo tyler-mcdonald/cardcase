@@ -51,15 +51,30 @@ def seed_user(user: User, dataset: Sequence[SeedAccount]) -> SeedResult:
         return SeedResult()
     today = timezone.localdate()
     rng = random.Random(GENERATED_SPENDS_RANDOM_SEED)
-    accounts = Account.objects.bulk_create(
+    accounts = _create_accounts(user, dataset, today)
+    transactions = _create_transactions(accounts, dataset, today, rng)
+    return SeedResult(len(accounts), len(transactions))
+
+
+def _create_accounts(
+    user: User, dataset: Sequence[SeedAccount], today: date
+) -> list[Account]:
+    return Account.objects.bulk_create(
         _build_account(user, seed, today) for seed in dataset
     )
-    transactions = Transaction.objects.bulk_create(
+
+
+def _create_transactions(
+    accounts: Sequence[Account],
+    dataset: Sequence[SeedAccount],
+    today: date,
+    rng: random.Random,
+) -> list[Transaction]:
+    return Transaction.objects.bulk_create(
         row
         for account, seed in zip(accounts, dataset, strict=True)
         for row in _build_transactions(account, seed, today, rng)
     )
-    return SeedResult(len(accounts), len(transactions))
 
 
 def _build_account(user: User, seed: SeedAccount, today: date) -> Account:
