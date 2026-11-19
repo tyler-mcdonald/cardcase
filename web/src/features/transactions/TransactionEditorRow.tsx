@@ -62,9 +62,8 @@ export function TransactionEditorRow({
   const colorScheme = useComputedColorScheme();
   const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
   const [dateDropdownOpened, setDateDropdownOpened] = useState(false);
-  const { form, save, cancel, amountInputProps, messages } = useTransactionForm(
-    { initialValues, mutation, onSave, onClose },
-  );
+  const { form, save, cancel, amountInputProps, errorMessages } =
+    useTransactionForm({ initialValues, mutation, onSave, onClose });
 
   const [openingClickDone, setOpeningClickDone] = useState(false);
   useEffect(() => {
@@ -203,7 +202,7 @@ export function TransactionEditorRow({
                   Delete
                 </Button>
               )}
-              <ErrorMessages messages={messages} />
+              <ErrorMessages messages={errorMessages} />
             </Group>
             <Group gap="xs" wrap="nowrap">
               <Button

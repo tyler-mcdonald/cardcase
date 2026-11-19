@@ -70,10 +70,10 @@ export function useTransactionForm({
     };
   }
 
-  const messages = Object.values(form.errors).map(String);
+  const errorMessages = Object.values(form.errors).map(String);
   if (mutation.error) {
-    messages.push(apiErrorMessage(mutation.error));
+    errorMessages.push(apiErrorMessage(mutation.error));
   }
 
-  return { form, save, cancel, amountInputProps, messages };
+  return { form, save, cancel, amountInputProps, errorMessages };
 }
