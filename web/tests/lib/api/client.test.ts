@@ -28,6 +28,16 @@ function stubTimeout() {
   return { timeout, timeoutSpy };
 }
 
+async function withoutAbortSignalAny(run: () => Promise<void>) {
+  const { any } = AbortSignal;
+  Reflect.deleteProperty(AbortSignal, "any");
+  try {
+    await run();
+  } finally {
+    AbortSignal.any = any;
+  }
+}
+
 describe("api client", () => {
   it("parses and returns the JSON body on success", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
@@ -131,36 +141,28 @@ describe("api client", () => {
   it("still times out a load in browsers without AbortSignal.any", async () => {
     stubStalledFetch();
     const { timeout } = stubTimeout();
-    const { any } = AbortSignal;
-    Reflect.deleteProperty(AbortSignal, "any");
 
-    try {
+    await withoutAbortSignalAny(async () => {
       const pending = request("GET", "/things", {
         signal: new AbortController().signal,
       });
       timeout.abort(new DOMException("timed out", "TimeoutError"));
 
       await expect(pending).rejects.toBeInstanceOf(ApiError);
-    } finally {
-      AbortSignal.any = any;
-    }
+    });
   });
 
   it("still cancels a load in browsers without AbortSignal.any", async () => {
     stubStalledFetch();
     stubTimeout();
-    const { any } = AbortSignal;
-    Reflect.deleteProperty(AbortSignal, "any");
 
-    try {
+    await withoutAbortSignalAny(async () => {
       const controller = new AbortController();
       const pending = request("GET", "/things", { signal: controller.signal });
       controller.abort();
 
       await expect(pending).rejects.toBeInstanceOf(ApiError);
-    } finally {
-      AbortSignal.any = any;
-    }
+    });
   });
 
   it("does not time out a save", async () => {
