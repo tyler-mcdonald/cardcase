@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import {
   useCreateTransaction,
@@ -50,9 +50,9 @@ export function useTransactionDelete(
   transaction: Transaction,
   onClose: () => void,
 ) {
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, { open: request, close }] = useDisclosure(false);
   const mutation = useDeleteTransaction();
-  const cancel = useGuardedClose([mutation], () => setConfirming(false));
+  const cancel = useGuardedClose([mutation], close);
 
   function confirm() {
     mutation.mutate(
@@ -63,7 +63,7 @@ export function useTransactionDelete(
 
   return {
     confirming,
-    request: () => setConfirming(true),
+    request,
     cancel,
     confirm,
     isPending: mutation.isPending,
