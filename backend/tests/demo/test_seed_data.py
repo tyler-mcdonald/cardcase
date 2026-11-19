@@ -6,7 +6,7 @@ from demo.seed_data import (
     SeedAccount,
     SeedResult,
     SeedTransaction,
-    seed_user,
+    seed_accounts_and_transactions,
 )
 from tests.accounts.factories import create_account
 from users.models import User
@@ -37,7 +37,7 @@ def _generated_spends(account: Account) -> set[tuple[str, str]]:
 def test_seed_user_keeps_same_name_accounts_and_their_transactions_apart(
     user: User,
 ) -> None:
-    result = seed_user(user, TWINS)
+    result = seed_accounts_and_transactions(user, TWINS)
 
     assert result == SeedResult(2, 2 * (1 + GENERATED_SPENDS_PER_ACCOUNT))
     first = Account.objects.get(user=user, transactions__description="First twin load")
@@ -52,7 +52,7 @@ def test_seed_user_keeps_same_name_accounts_and_their_transactions_apart(
 def test_seed_user_adds_nothing_when_user_has_accounts(user: User) -> None:
     create_account(user)
 
-    result = seed_user(user, TWINS)
+    result = seed_accounts_and_transactions(user, TWINS)
 
     assert result == SeedResult()
     assert Account.objects.filter(user=user).count() == 1
