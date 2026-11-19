@@ -17,7 +17,7 @@ const logout = vi.fn();
 const TITLE = "Welcome to the cardcase demo 👋";
 
 function signInAs(user: User) {
-  mockedUseAuth.mockReturnValue({ user });
+  mockedUseAuth.mockReturnValue({ user, sessionError: null });
 }
 
 beforeEach(() => {
