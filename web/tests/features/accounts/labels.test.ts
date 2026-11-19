@@ -70,14 +70,29 @@ describe("accountLabels", () => {
     expect(labels.get("b")?.detail).toBe("$10.00");
   });
 
-  it("matches names ignoring case, surrounding whitespace, and type", () => {
+  it("adds no detail when every field is shared", () => {
     const labels = accountLabels([
-      makeAccount({ id: "a", name: "Amazon", type: "gift_card" }),
-      makeAccount({ id: "b", name: " amazon ", type: "flight_credit" }),
+      makeAccount({ id: "a", name: "Southwest", balance: "0" }),
+      makeAccount({ id: "b", name: "Southwest", balance: "0" }),
     ]);
 
-    expect(labels.get("a")?.detail).toBe("$0.00");
-    expect(labels.get("b")?.detail).toBe("$0.00");
+    expect(labels.get("a")).toEqual({ name: "Southwest" });
+    expect(labels.get("b")).toEqual({ name: "Southwest" });
+  });
+
+  it("matches names ignoring case, surrounding whitespace, and type", () => {
+    const labels = accountLabels([
+      makeAccount({ id: "a", name: "Amazon", type: "gift_card", balance: "5" }),
+      makeAccount({
+        id: "b",
+        name: " amazon ",
+        type: "flight_credit",
+        balance: "10",
+      }),
+    ]);
+
+    expect(labels.get("a")?.detail).toBe("$5.00");
+    expect(labels.get("b")?.detail).toBe("$10.00");
   });
 
   it("cuts a long description and keeps the full one", () => {
@@ -109,11 +124,16 @@ describe("accountLabels", () => {
 
   it("falls back past a whitespace-only description", () => {
     const labels = accountLabels([
-      makeAccount({ id: "a", name: "Southwest", description: " \n " }),
+      makeAccount({
+        id: "a",
+        name: "Southwest",
+        description: " \n ",
+        balance: "5",
+      }),
       makeAccount({ id: "b", name: "Southwest" }),
     ]);
 
-    expect(labels.get("a")?.detail).toBe("$0.00");
+    expect(labels.get("a")?.detail).toBe("$5.00");
   });
 });
 

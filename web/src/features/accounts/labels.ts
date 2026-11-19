@@ -29,23 +29,21 @@ const DETAIL_FIELDS: DetailField[] = [
     value: (account) => account.expires_on ?? "",
     detail: (expiresOn) => ({ detail: describeExpiry(expiresOn).label }),
   },
+  {
+    value: (account) => account.balance,
+    detail: (balance) => ({ detail: describeBalance(balance).label }),
+  },
 ];
 
-const BALANCE_FIELD: DetailField = {
-  value: (account) => account.balance,
-  detail: (balance) => ({ detail: describeBalance(balance).label }),
-};
-
-function distinguishingField(twins: Account[]): DetailField {
-  return (
-    DETAIL_FIELDS.find((field) => new Set(twins.map(field.value)).size > 1) ??
-    BALANCE_FIELD
+function distinguishingField(twins: Account[]): DetailField | undefined {
+  return DETAIL_FIELDS.find(
+    (field) => new Set(twins.map(field.value)).size > 1,
   );
 }
 
-function fieldDetail(field: DetailField, account: Account): Detail {
-  const value = field.value(account);
-  return value ? field.detail(value) : {};
+function fieldDetail(field: DetailField | undefined, account: Account): Detail {
+  const value = field?.value(account);
+  return field && value ? field.detail(value) : {};
 }
 
 export function accountLabels(accounts: Account[]): Map<string, AccountLabel> {
