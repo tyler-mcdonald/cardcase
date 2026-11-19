@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user: data,
       sessionError: isLoadingError
-        ? { error, retrying: isFetching, retry: () => void refetch() }
+        ? { error, retrying: isFetching, onRetry: () => void refetch() }
         : null,
     }),
     [data, error, isLoadingError, isFetching, refetch],

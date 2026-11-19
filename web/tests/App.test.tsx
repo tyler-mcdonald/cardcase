@@ -51,7 +51,11 @@ it("shows a retryable error in the layout instead of signing out when the sessio
   const retry = vi.fn();
   vi.mocked(useAuth).mockReturnValue({
     user: undefined,
-    sessionError: { error: new Error("network down"), retrying: false, retry },
+    sessionError: {
+      error: new Error("network down"),
+      retrying: false,
+      onRetry: retry,
+    },
   });
 
   renderWithProviders(<App />, { route: "/settings" });

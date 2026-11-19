@@ -64,7 +64,7 @@ describe("AuthProvider", () => {
     await waitFor(() => expect(result.current.sessionError).not.toBeNull());
     expect(result.current.user).toBeUndefined();
 
-    act(() => result.current.sessionError?.retry());
+    act(() => result.current.sessionError?.onRetry());
 
     await waitFor(() =>
       expect(result.current.user?.email).toBe("test@example.com"),

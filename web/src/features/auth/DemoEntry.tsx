@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Anchor, Button, Group, Loader, Stack, Text } from "@mantine/core";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { FormError } from "@/components/FormError";
 import { apiErrorMessage, GENERIC_ERROR, hasApiStatus } from "@/lib/api/errors";
 import { useLogout, useStartDemo } from "./queries";
-import { SessionErrorAlert } from "./SessionErrorAlert";
 import { useAuth } from "./use-auth";
 
 const THROTTLED_ERROR =
@@ -14,7 +14,7 @@ export function DemoEntry() {
   const { user, sessionError } = useAuth();
 
   if (sessionError) {
-    return <SessionErrorAlert sessionError={sessionError} />;
+    return <LoadErrorAlert {...sessionError} />;
   }
 
   if (user === undefined) {

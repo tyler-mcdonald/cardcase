@@ -4,7 +4,7 @@ import type { User } from "./types";
 export type SessionError = {
   error: unknown;
   retrying: boolean;
-  retry: () => void;
+  onRetry: () => void;
 };
 
 type AuthContextValue = {

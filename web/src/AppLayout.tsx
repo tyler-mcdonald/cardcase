@@ -11,9 +11,7 @@ const NAV_LINKS = [
   { to: "/transactions", label: "Transactions" },
 ];
 
-// Renders the matched child route, unless `children` overrides the content
-// (e.g. while the session is still loading).
-export function AppLayout({ children }: { children?: ReactNode }) {
+export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Container py="xl">
       <Group justify="space-between" mb="xl">
@@ -46,8 +44,16 @@ export function AppLayout({ children }: { children?: ReactNode }) {
         </Group>
         <HeaderAccount />
       </Group>
-      {children ?? <Outlet />}
+      {children}
       <DemoWelcomeModal />
     </Container>
+  );
+}
+
+export function AppLayout() {
+  return (
+    <AppShell>
+      <Outlet />
+    </AppShell>
   );
 }
