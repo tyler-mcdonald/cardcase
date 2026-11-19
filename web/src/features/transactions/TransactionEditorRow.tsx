@@ -216,6 +216,7 @@ export function TransactionEditorRow({
               aria-readonly
               size="xs"
               disabled
+              withAria={false}
             >
               <AccountName label={lockedAccountLabel} inherit />
             </Input>

@@ -17,7 +17,7 @@ describe("accountLabels", () => {
     expect(labels.get("b")).toEqual({ name: "Delta" });
   });
 
-  it("shows the same field for every same-name account", () => {
+  it("compares every same-name account by the same field, even ones missing it", () => {
     const labels = accountLabels([
       makeAccount({ id: "a", name: "Southwest", description: "Chase Visa" }),
       makeAccount({ id: "b", name: "Southwest", expires_on: "2027-03-14" }),
