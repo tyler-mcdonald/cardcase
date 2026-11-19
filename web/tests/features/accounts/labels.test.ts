@@ -17,7 +17,7 @@ describe("accountLabels", () => {
     expect(labels.get("b")).toEqual({ name: "Delta" });
   });
 
-  it("adds each same-name account's own detail", () => {
+  it("shows the same field for every same-name account", () => {
     const labels = accountLabels([
       makeAccount({ id: "a", name: "Southwest", description: "Chase Visa" }),
       makeAccount({ id: "b", name: "Southwest", expires_on: "2027-03-14" }),
@@ -28,11 +28,46 @@ describe("accountLabels", () => {
       name: "Southwest",
       detail: "Chase Visa",
     });
-    expect(labels.get("b")).toEqual({
-      name: "Southwest",
+    expect(labels.get("b")).toEqual({ name: "Southwest" });
+    expect(labels.get("c")).toEqual({ name: "Southwest" });
+  });
+
+  it("uses the expiry when no same-name account has a description", () => {
+    const labels = accountLabels([
+      makeAccount({ id: "a", name: "Starbucks", expires_on: "2027-03-14" }),
+      makeAccount({ id: "b", name: "Starbucks" }),
+    ]);
+
+    expect(labels.get("a")).toEqual({
+      name: "Starbucks",
       detail: "Expires Mar 14, 2027",
     });
-    expect(labels.get("c")).toEqual({ name: "Southwest", detail: "$89.50" });
+    expect(labels.get("b")).toEqual({ name: "Starbucks" });
+  });
+
+  it("skips a field that every same-name account shares", () => {
+    const labels = accountLabels([
+      makeAccount({
+        id: "a",
+        name: "Southwest",
+        description: "Chase Visa",
+        expires_on: "2027-03-14",
+      }),
+      makeAccount({ id: "b", name: "Southwest", description: "Chase Visa" }),
+    ]);
+
+    expect(labels.get("a")?.detail).toBe("Expires Mar 14, 2027");
+    expect(labels.get("b")?.detail).toBeUndefined();
+  });
+
+  it("falls back to the balance", () => {
+    const labels = accountLabels([
+      makeAccount({ id: "a", name: "Southwest", balance: "89.5" }),
+      makeAccount({ id: "b", name: "Southwest", balance: "10" }),
+    ]);
+
+    expect(labels.get("a")?.detail).toBe("$89.50");
+    expect(labels.get("b")?.detail).toBe("$10.00");
   });
 
   it("matches names ignoring case, surrounding whitespace, and type", () => {

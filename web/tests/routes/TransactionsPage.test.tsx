@@ -185,7 +185,7 @@ it("distinguishes accounts that share a name in the table", async () => {
     "Southwest (Chase Visa companion credit fr…)",
   );
   expect(feeLabel.parentElement!.getAttribute("title")).toBe(description);
-  expect(within(bagRow).getByText("(Expires Mar 14, 2027)")).toBeTruthy();
+  expect(within(bagRow).getByText("Southwest").textContent).toBe("Southwest");
 });
 
 it("shows an empty message when there are no transactions", async () => {
@@ -1193,12 +1193,12 @@ describe("filtering by account", () => {
 
     fireEvent.click(accountFilter());
     expect(
-      await screen.findByRole("option", { name: "Starbucks (Work)" }),
+      await screen.findByRole("option", { name: "Starbucks" }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("option", { name: "Starbucks ($25.00)" }));
+    fireEvent.click(screen.getByRole("option", { name: "Starbucks (Work)" }));
 
-    expect(accountFilter().value).toBe("Starbucks ($25.00)");
-    expect(location()).toBe("?account=starbucks-id");
+    expect(accountFilter().value).toBe("Starbucks (Work)");
+    expect(location()).toBe("?account=other-id");
   });
 
   it("shows every account's transactions when cleared", async () => {

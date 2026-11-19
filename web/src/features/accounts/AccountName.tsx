@@ -6,7 +6,7 @@ export function AccountName({
   ...props
 }: { label: AccountLabel } & TextProps) {
   return (
-    <Text truncate title={label.fullDescription} {...props}>
+    <Text truncate miw={0} title={label.fullDescription} {...props}>
       {label.name}
       {label.detail && (
         <>
