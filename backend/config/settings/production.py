@@ -42,6 +42,7 @@ MAILERS = {
         "BACKEND": "anymail.backends.resend.EmailBackend",
         "OPTIONS": {  # type: ignore[dict-item]
             "api_key": RESEND_API_KEY,
+            "requests_timeout": (5, 10),
         },
     },
 }
