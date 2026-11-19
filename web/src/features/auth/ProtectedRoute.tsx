@@ -1,7 +1,7 @@
 import { Center, Loader } from "@mantine/core";
 import { Navigate } from "react-router-dom";
 import { AppLayout, AppShell } from "@/AppLayout";
-import { LoadErrorAlert } from "@/components/LoadErrorAlert";
+import { SessionErrorAlert } from "./SessionErrorAlert";
 import { useAuth } from "./use-auth";
 
 export function ProtectedRoute() {
@@ -10,11 +10,7 @@ export function ProtectedRoute() {
   if (sessionError) {
     return (
       <AppShell>
-        <LoadErrorAlert
-          error={sessionError.error}
-          retrying={sessionError.retrying}
-          onRetry={sessionError.retry}
-        />
+        <SessionErrorAlert sessionError={sessionError} />
       </AppShell>
     );
   }
