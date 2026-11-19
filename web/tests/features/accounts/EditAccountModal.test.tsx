@@ -211,7 +211,7 @@ describe("EditAccountModal", () => {
 
     it("shows an error when the account can't be saved", async () => {
       mockedUpdateAccount.mockRejectedValueOnce(
-        new ApiError("Request failed (400)", 400),
+        new ApiError("Request failed (400)", { status: 400 }),
       );
 
       submit();
@@ -224,8 +224,11 @@ describe("EditAccountModal", () => {
 
     it("shows the API's field errors on the matching field", async () => {
       mockedUpdateAccount.mockRejectedValueOnce(
-        new ApiError("Request failed (400)", 400, {
-          name: ["Ensure this field has no more than 255 characters."],
+        new ApiError("Request failed (400)", {
+          status: 400,
+          body: {
+            name: ["Ensure this field has no more than 255 characters."],
+          },
         }),
       );
 
@@ -246,8 +249,11 @@ describe("EditAccountModal", () => {
 
     it("shows the API's type error under the type field", async () => {
       mockedUpdateAccount.mockRejectedValueOnce(
-        new ApiError("Request failed (400)", 400, {
-          type: ['"foo" is not a valid choice.'],
+        new ApiError("Request failed (400)", {
+          status: 400,
+          body: {
+            type: ['"foo" is not a valid choice.'],
+          },
         }),
       );
 
@@ -260,7 +266,7 @@ describe("EditAccountModal", () => {
 
     it("clears a failed save's error when starting to delete", async () => {
       mockedUpdateAccount.mockRejectedValueOnce(
-        new ApiError("Request failed (400)", 400),
+        new ApiError("Request failed (400)", { status: 400 }),
       );
 
       submit();
@@ -349,7 +355,10 @@ describe("EditAccountModal", () => {
 
     it("treats an account that's already gone as deleted", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
-        new ApiError("Not found", 404, { detail: "Not found." }),
+        new ApiError("Not found", {
+          status: 404,
+          body: { detail: "Not found." },
+        }),
       );
 
       confirmDelete();
@@ -360,7 +369,7 @@ describe("EditAccountModal", () => {
 
     it("shows an error when the delete request isn't handled by the API", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
-        new ApiError("Not found", 404, null),
+        new ApiError("Not found", { status: 404, body: null }),
       );
 
       confirmDelete();
@@ -373,7 +382,10 @@ describe("EditAccountModal", () => {
 
     it("shows an error on a not-found response that isn't the API's", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
-        new ApiError("Not found", 404, { message: "Route not found" }),
+        new ApiError("Not found", {
+          status: 404,
+          body: { message: "Route not found" },
+        }),
       );
 
       confirmDelete();
@@ -386,7 +398,7 @@ describe("EditAccountModal", () => {
 
     it("shows an error when the account can't be deleted", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
-        new ApiError("Server error", 500),
+        new ApiError("Server error", { status: 500 }),
       );
 
       confirmDelete();
@@ -400,7 +412,7 @@ describe("EditAccountModal", () => {
 
     it("clears a failed delete's error when returning to the form", async () => {
       mockedDeleteAccount.mockRejectedValueOnce(
-        new ApiError("Server error", 500),
+        new ApiError("Server error", { status: 500 }),
       );
 
       confirmDelete();

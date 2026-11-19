@@ -46,11 +46,15 @@ describe("totalPages", () => {
 
 describe("isMissingPage", () => {
   it("returns true for a 404 API error", () => {
-    expect(isMissingPage(new ApiError("Not found", 404))).toBe(true);
+    expect(isMissingPage(new ApiError("Not found", { status: 404 }))).toBe(
+      true,
+    );
   });
 
   it("returns false for other errors", () => {
-    expect(isMissingPage(new ApiError("Server error", 500))).toBe(false);
+    expect(isMissingPage(new ApiError("Server error", { status: 500 }))).toBe(
+      false,
+    );
   });
 });
 
@@ -62,7 +66,7 @@ describe("isPastLastPage", () => {
   ])(
     "returns $expected for page $page with a $status error",
     ({ page, status, expected }) => {
-      expect(isPastLastPage(page, new ApiError("Error", status))).toBe(
+      expect(isPastLastPage(page, new ApiError("Error", { status }))).toBe(
         expected,
       );
     },

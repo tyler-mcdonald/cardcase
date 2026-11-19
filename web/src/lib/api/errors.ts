@@ -2,15 +2,18 @@ import type { ApiResponse } from "./types";
 
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
 
+type ApiErrorOptions = ErrorOptions & {
+  status?: number;
+  body?: unknown;
+};
+
 export class ApiError extends Error {
   status?: number;
   body?: unknown;
 
   constructor(
     message: string,
-    status?: number,
-    body?: unknown,
-    options?: ErrorOptions,
+    { status, body, ...options }: ApiErrorOptions = {},
   ) {
     super(message, options);
     this.name = "ApiError";
