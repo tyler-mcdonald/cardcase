@@ -62,7 +62,7 @@ export function TransactionEditorRow({
   const colorScheme = useComputedColorScheme();
   const [accountDropdownOpened, setAccountDropdownOpened] = useState(false);
   const [dateDropdownOpened, setDateDropdownOpened] = useState(false);
-  const { form, save, cancel, amountInputProps, errorMessages } =
+  const { form, save, cancel, setAmount, formatAmount, errorMessages } =
     useTransactionForm({ initialValues, mutation, onSave, onClose });
 
   const [openingClickDone, setOpeningClickDone] = useState(false);
@@ -172,7 +172,10 @@ export function TransactionEditorRow({
             aria-label="Outflow"
             size="xs"
             autoFocus={focusField === "outflow"}
-            {...amountInputProps("outflow")}
+            value={form.values.outflow}
+            onChange={(value) => setAmount("outflow", value)}
+            onBlur={() => formatAmount("outflow")}
+            error={Boolean(form.errors.amount)}
           />
         </Table.Td>
         <Table.Td>
@@ -180,7 +183,10 @@ export function TransactionEditorRow({
             aria-label="Inflow"
             size="xs"
             autoFocus={focusField === "inflow"}
-            {...amountInputProps("inflow")}
+            value={form.values.inflow}
+            onChange={(value) => setAmount("inflow", value)}
+            onBlur={() => formatAmount("inflow")}
+            error={Boolean(form.errors.amount)}
           />
         </Table.Td>
       </Table.Tr>

@@ -61,19 +61,10 @@ export function useTransactionForm({
     }
   }
 
-  function amountInputProps(field: AmountField) {
-    return {
-      value: form.values[field],
-      onChange: (value: Amount) => setAmount(field, value),
-      onBlur: () => formatAmount(field),
-      error: Boolean(form.errors.amount),
-    };
-  }
-
   const errorMessages = Object.values(form.errors).map(String);
   if (mutation.error) {
     errorMessages.push(apiErrorMessage(mutation.error));
   }
 
-  return { form, save, cancel, amountInputProps, errorMessages };
+  return { form, save, cancel, setAmount, formatAmount, errorMessages };
 }
