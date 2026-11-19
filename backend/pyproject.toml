@@ -26,7 +26,7 @@ strict = true
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["environ", "allauth.*", "health_check.*"]
+module = ["environ", "allauth.*", "health_check.*", "anymail.*"]
 ignore_missing_imports = true
 
 [tool.django-stubs]
