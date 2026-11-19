@@ -26,6 +26,11 @@ import type {
 } from "./transaction-form";
 import { type SaveMutation, useTransactionForm } from "./use-transaction-form";
 
+const AMOUNT_COLUMNS = [
+  { field: "outflow", label: "Outflow" },
+  { field: "inflow", label: "Inflow" },
+] as const;
+
 function ErrorMessages({ messages }: { messages: string[] }) {
   return (
     <Stack gap={2} role={messages.length > 0 ? "alert" : undefined}>
@@ -167,28 +172,19 @@ export function TransactionEditorRow({
             {...form.getInputProps("description")}
           />
         </Table.Td>
-        <Table.Td>
-          <MoneyInput
-            aria-label="Outflow"
-            size="xs"
-            autoFocus={focusField === "outflow"}
-            value={form.values.outflow}
-            onChange={(value) => setAmount("outflow", value)}
-            onBlur={() => formatAmount("outflow")}
-            error={Boolean(form.errors.amount)}
-          />
-        </Table.Td>
-        <Table.Td>
-          <MoneyInput
-            aria-label="Inflow"
-            size="xs"
-            autoFocus={focusField === "inflow"}
-            value={form.values.inflow}
-            onChange={(value) => setAmount("inflow", value)}
-            onBlur={() => formatAmount("inflow")}
-            error={Boolean(form.errors.amount)}
-          />
-        </Table.Td>
+        {AMOUNT_COLUMNS.map(({ field, label }) => (
+          <Table.Td key={field}>
+            <MoneyInput
+              aria-label={label}
+              size="xs"
+              autoFocus={focusField === field}
+              value={form.values[field]}
+              onChange={(value) => setAmount(field, value)}
+              onBlur={() => formatAmount(field)}
+              error={Boolean(form.errors.amount)}
+            />
+          </Table.Td>
+        ))}
       </Table.Tr>
       <Table.Tr
         ref={setActionsRow}
