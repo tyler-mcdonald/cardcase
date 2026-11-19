@@ -365,18 +365,32 @@ describe("adding a transaction", () => {
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
-  it("refreshes the accounts after saving", async () => {
+  it("refreshes the account labels after saving", async () => {
+    const account = { id: "a", name: "Starbucks", type: "gift_card" } as const;
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ ...account, balance: "10.00" }),
+        makeAccount({ id: "b", name: "Starbucks", balance: "20.00" }),
+      ]),
+    );
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
-    const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
     await openNewTransactionForm();
 
-    await chooseAccount("Starbucks");
+    await chooseAccount("Starbucks ($10.00)");
     enterOutflow("4.75");
+    mockedListTransactions.mockResolvedValue(
+      makePage([makeTransaction({ id: "2", description: "Latte", account })]),
+    );
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ ...account, balance: "5.25" }),
+        makeAccount({ id: "b", name: "Starbucks", balance: "20.00" }),
+      ]),
+    );
     save();
 
-    await waitFor(() =>
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["accounts"] }),
-    );
+    const latteRow = (await screen.findByText("Latte")).closest("tr")!;
+    expect(await within(latteRow).findByText("($5.25)")).toBeTruthy();
   });
 
   it("saves an inflow as a positive amount", async () => {
