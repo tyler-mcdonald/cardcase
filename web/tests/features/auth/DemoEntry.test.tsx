@@ -94,6 +94,24 @@ describe("DemoEntry", () => {
     expect(mockedStartDemo).toHaveBeenCalledTimes(1);
   });
 
+  it("shows a retryable error when the session check fails, then starts the demo", async () => {
+    mockedGetSession
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce(sessionResponse(null))
+      .mockResolvedValueOnce(sessionResponse(demoUser));
+    mockedStartDemo.mockResolvedValueOnce(null);
+
+    renderDemoEntry();
+
+    await screen.findByText("Something went wrong. Please try again.");
+    expect(mockedStartDemo).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    await screen.findByText("Home");
+    expect(mockedStartDemo).toHaveBeenCalledTimes(1);
+  });
+
   it("explains when too many demo sessions were started", async () => {
     mockedGetSession.mockResolvedValueOnce(sessionResponse(null));
     mockedStartDemo.mockRejectedValueOnce(
