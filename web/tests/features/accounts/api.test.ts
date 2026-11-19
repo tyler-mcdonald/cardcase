@@ -32,7 +32,9 @@ describe("listAccounts", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Forbidden", { status: 403 }),
+    );
 
     await expect(listAccounts(1)).rejects.toMatchObject({ status: 403 });
   });
@@ -77,7 +79,9 @@ describe("createAccount", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Bad request", { status: 400 }),
+    );
 
     await expect(createAccount(input)).rejects.toMatchObject({ status: 400 });
   });
@@ -97,7 +101,9 @@ describe("updateAccount", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Not found", 404));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Not found", { status: 404 }),
+    );
 
     await expect(updateAccount("42", input)).rejects.toMatchObject({
       status: 404,
@@ -115,7 +121,9 @@ describe("deleteAccount", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Server error", 500));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Server error", { status: 500 }),
+    );
 
     await expect(deleteAccount("42")).rejects.toMatchObject({ status: 500 });
   });

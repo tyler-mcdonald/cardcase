@@ -75,7 +75,7 @@ describe("DemoWelcomeModal", () => {
     mockedUseLogout.mockReturnValue({
       mutate: logout,
       isPending: false,
-      error: new ApiError("Request failed (500)", 500, {}),
+      error: new ApiError("Request failed (500)", { status: 500, body: {} }),
     } as unknown as ReturnType<typeof useLogout>);
 
     renderWithProviders(<DemoWelcomeModal />);
