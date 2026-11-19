@@ -108,6 +108,14 @@ DATABASES = {
 }
 _db_url_options = DATABASES["default"].get("OPTIONS", {})
 _db_statement_timeout = env.int("DB_STATEMENT_TIMEOUT", default=5000)
+# PostgreSQL applies the last `-c` assignment, so an explicit DB_STATEMENT_TIMEOUT
+# overrides a statement_timeout in DATABASE_URL, and the default yields to it.
+_db_options = [
+    f"-c statement_timeout={_db_statement_timeout}",
+    _db_url_options.get("options"),
+]
+if "DB_STATEMENT_TIMEOUT" in env:
+    _db_options.reverse()
 DATABASES["default"]["OPTIONS"] = {
     "connect_timeout": env.int("DB_CONNECT_TIMEOUT", default=10),
     "keepalives": 1,
@@ -116,15 +124,7 @@ DATABASES["default"]["OPTIONS"] = {
     "keepalives_count": 5,
     "tcp_user_timeout": 10000,
     **_db_url_options,
-    "options": " ".join(
-        filter(
-            None,
-            [
-                f"-c statement_timeout={_db_statement_timeout}",
-                _db_url_options.get("options"),
-            ],
-        )
-    ),
+    "options": " ".join(filter(None, _db_options)),
 }
 
 
