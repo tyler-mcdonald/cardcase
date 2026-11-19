@@ -1,20 +1,16 @@
 import importlib
 from collections.abc import Iterator
-from typing import Any
+from types import ModuleType
 
 import pytest
 from django.conf import settings
 from django.db import connections
+from django.db.backends.base.base import BaseDatabaseWrapper
 
 import config.settings.base
 
 
-def _fresh_connection_setting(name: str, options: dict[str, Any] | None = None) -> int:
-    default = connections["default"]
-    settings_dict = default.settings_dict
-    if options is not None:
-        settings_dict = {**settings_dict, "OPTIONS": options}
-    connection = type(default)(settings_dict, "default")
+def _read_setting(connection: BaseDatabaseWrapper, name: str) -> int:
     try:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -27,28 +23,30 @@ def _fresh_connection_setting(name: str, options: dict[str, Any] | None = None) 
 
 
 @pytest.fixture
-def reload_base_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    yield
-    monkeypatch.undo()
+def base_settings_with_lock_timeout() -> Iterator[ModuleType]:
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("DB_LOCK_TIMEOUT", "1234")
+        yield importlib.reload(config.settings.base)
     importlib.reload(config.settings.base)
 
 
 @pytest.mark.django_db
 def test_fresh_connection_has_statement_timeout() -> None:
-    assert (
-        _fresh_connection_setting("statement_timeout") == settings.DB_STATEMENT_TIMEOUT
-    )
+    connection = connections.create_connection("default")
+
+    timeout_ms = _read_setting(connection, "statement_timeout")
+
+    assert timeout_ms == settings.DB_STATEMENT_TIMEOUT
 
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("reload_base_settings")
 def test_db_lock_timeout_reaches_fresh_connection(
-    monkeypatch: pytest.MonkeyPatch,
+    base_settings_with_lock_timeout: ModuleType,
 ) -> None:
-    monkeypatch.setenv("DB_LOCK_TIMEOUT", "1234")
-    base = importlib.reload(config.settings.base)
+    default = connections["default"]
+    options = base_settings_with_lock_timeout.DATABASES["default"]["OPTIONS"]
+    connection = type(default)({**default.settings_dict, "OPTIONS": options}, "default")
 
-    assert (
-        _fresh_connection_setting("lock_timeout", base.DATABASES["default"]["OPTIONS"])
-        == 1234
-    )
+    timeout_ms = _read_setting(connection, "lock_timeout")
+
+    assert timeout_ms == 1234
