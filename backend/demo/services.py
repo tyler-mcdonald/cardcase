@@ -6,7 +6,8 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from demo.seed_data import create_verified_user, seed_accounts, seed_transactions
+from demo.dataset import DEMO_DATASET
+from demo.seed_data import create_verified_user, seed_accounts_and_transactions
 from users.models import User
 
 DEMO_EMAIL_DOMAIN = "demo.invalid"
@@ -36,6 +37,5 @@ def create_demo_user() -> User:
 @transaction.atomic
 def start_demo() -> User:
     user = create_demo_user()
-    seed_accounts(user)
-    seed_transactions(user)
+    seed_accounts_and_transactions(user, DEMO_DATASET)
     return user
