@@ -20,6 +20,22 @@ function stubStalledFetch() {
   return fetchMock;
 }
 
+function stubStalledBody(
+  signal: AbortSignal,
+  status: { ok: boolean; status: number },
+) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ...status,
+      json: () =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason));
+        }),
+    }),
+  );
+}
+
 function stubTimeout() {
   const timeout = new AbortController();
   const timeoutSpy = vi
@@ -94,19 +110,7 @@ describe("api client", () => {
 
   it("keeps the status of a failed load whose body times out", async () => {
     const { timeout } = stubTimeout();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: () =>
-          new Promise((_resolve, reject) => {
-            timeout.signal.addEventListener("abort", () =>
-              reject(timeout.signal.reason),
-            );
-          }),
-      }),
-    );
+    stubStalledBody(timeout.signal, { ok: false, status: 403 });
 
     const pending = request("GET", "/things");
     await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -116,6 +120,17 @@ describe("api client", () => {
       name: "ApiError",
       status: 403,
     });
+  });
+
+  it("gives up on a successful load whose body times out", async () => {
+    const { timeout } = stubTimeout();
+    stubStalledBody(timeout.signal, { ok: true, status: 200 });
+
+    const pending = request("GET", "/things");
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
+    timeout.abort(new DOMException("timed out", "TimeoutError"));
+
+    await expect(pending).rejects.toBeInstanceOf(ApiError);
   });
 
   it("does not time out a save", async () => {
