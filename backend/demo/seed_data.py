@@ -46,7 +46,9 @@ def get_or_create_seed_user(email: str) -> User:
 
 
 @transaction.atomic
-def seed_user(user: User, dataset: Sequence[SeedAccount]) -> SeedResult:
+def seed_accounts_and_transactions(
+    user: User, dataset: Sequence[SeedAccount]
+) -> SeedResult:
     if Account.objects.filter(user=user).exists():
         return SeedResult()
     today = timezone.localdate()
