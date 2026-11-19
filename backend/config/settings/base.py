@@ -107,6 +107,7 @@ DATABASES = {
     "default": env.db("DATABASE_URL"),
 }
 DB_STATEMENT_TIMEOUT = env.int("DB_STATEMENT_TIMEOUT", default=5000)
+DB_LOCK_TIMEOUT = env.int("DB_LOCK_TIMEOUT", default=0)
 DATABASES["default"]["OPTIONS"] = {
     "connect_timeout": env.int("DB_CONNECT_TIMEOUT", default=10),
     "keepalives": 1,
@@ -114,7 +115,9 @@ DATABASES["default"]["OPTIONS"] = {
     "keepalives_interval": 1,
     "keepalives_count": 5,
     "tcp_user_timeout": 10000,
-    "options": f"-c statement_timeout={DB_STATEMENT_TIMEOUT}",
+    "options": (
+        f"-c statement_timeout={DB_STATEMENT_TIMEOUT} -c lock_timeout={DB_LOCK_TIMEOUT}"
+    ),
 }
 
 
