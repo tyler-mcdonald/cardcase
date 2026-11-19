@@ -26,7 +26,7 @@ import type {
 } from "./transaction-form";
 import { type SaveMutation, useTransactionForm } from "./use-transaction-form";
 
-const AMOUNT_COLUMNS = [
+const MONEY_INPUT_COLUMNS = [
   { field: "outflow", label: "Outflow" },
   { field: "inflow", label: "Inflow" },
 ] as const;
@@ -172,7 +172,7 @@ export function TransactionEditorRow({
             {...form.getInputProps("description")}
           />
         </Table.Td>
-        {AMOUNT_COLUMNS.map(({ field, label }) => (
+        {MONEY_INPUT_COLUMNS.map(({ field, label }) => (
           <Table.Td key={field}>
             <MoneyInput
               aria-label={label}
