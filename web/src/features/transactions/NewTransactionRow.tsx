@@ -1,10 +1,6 @@
-import { useCreateTransaction } from "./queries";
 import { TransactionEditorRow } from "./TransactionEditorRow";
-import {
-  emptyTransactionForm,
-  toTransactionInput,
-  type TransactionFormValues,
-} from "./transaction-form";
+import { emptyTransactionForm } from "./transaction-form";
+import { useCreateTransactionSave } from "./use-transaction-mutations";
 
 export function NewTransactionRow({
   accountId,
@@ -13,19 +9,12 @@ export function NewTransactionRow({
   accountId?: string;
   onClose: () => void;
 }) {
-  const createTransaction = useCreateTransaction();
-
-  function save(values: TransactionFormValues) {
-    createTransaction.mutate(
-      { accountId: values.accountId!, input: toTransactionInput(values) },
-      { onSuccess: onClose },
-    );
-  }
+  const { mutation, save } = useCreateTransactionSave(onClose);
 
   return (
     <TransactionEditorRow
       initialValues={emptyTransactionForm(accountId)}
-      mutation={createTransaction}
+      mutation={mutation}
       onSave={save}
       onClose={onClose}
     />
