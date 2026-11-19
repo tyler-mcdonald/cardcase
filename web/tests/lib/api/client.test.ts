@@ -89,12 +89,12 @@ describe("api client", () => {
   });
 
   it("wraps a network failure into ApiError", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
-    );
+    const failure = new TypeError("Failed to fetch");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(failure));
 
-    await expect(request("GET", "/things")).rejects.toBeInstanceOf(ApiError);
+    const error = await request("GET", "/things").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ message: "Request failed", cause: failure });
   });
 
   it("gives up on a load once it times out", async () => {

@@ -4,8 +4,8 @@ import { ApiError } from "./errors";
 const API_URL = import.meta.env.VITE_API_URL;
 const LOAD_TIMEOUT_MS = 15_000;
 
-function networkError(cause: unknown) {
-  return new ApiError(cause instanceof Error ? cause.message : "Network error");
+function requestFailed(cause: unknown) {
+  return new ApiError("Request failed", undefined, undefined, { cause });
 }
 
 export async function request<T = unknown>(
@@ -36,7 +36,7 @@ export async function request<T = unknown>(
       credentials: "include",
     });
   } catch (cause) {
-    throw networkError(cause);
+    throw requestFailed(cause);
   }
 
   let body: unknown = null;
@@ -44,7 +44,7 @@ export async function request<T = unknown>(
     body = await response.json();
   } catch (cause) {
     if (response.ok && signal?.aborted) {
-      throw networkError(cause);
+      throw requestFailed(cause);
     }
   }
 
