@@ -45,8 +45,7 @@ function invalidateTransactionsAndAccounts(queryClient: QueryClient) {
 export function transactionsQuery(params: TransactionListParams) {
   return queryOptions({
     queryKey: [...TRANSACTIONS_QUERY_KEY, params],
-    queryFn: async ({ signal }) =>
-      toPage(await listTransactions(params, signal), params.page),
+    queryFn: async () => toPage(await listTransactions(params), params.page),
     placeholderData: keepPreviousData,
   });
 }

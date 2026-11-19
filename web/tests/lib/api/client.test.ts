@@ -28,16 +28,6 @@ function stubTimeout() {
   return { timeout, timeoutSpy };
 }
 
-async function withoutAbortSignalAny(run: () => Promise<void>) {
-  const { any } = AbortSignal;
-  Reflect.deleteProperty(AbortSignal, "any");
-  try {
-    await run();
-  } finally {
-    AbortSignal.any = any;
-  }
-}
-
 describe("api client", () => {
   it("parses and returns the JSON body on success", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
@@ -102,16 +92,6 @@ describe("api client", () => {
     expect(timeoutSpy).toHaveBeenCalledWith(15_000);
   });
 
-  it("cancels a load when its caller aborts", async () => {
-    stubStalledFetch();
-    const controller = new AbortController();
-
-    const pending = request("GET", "/things", { signal: controller.signal });
-    controller.abort();
-
-    await expect(pending).rejects.toBeInstanceOf(ApiError);
-  });
-
   it("keeps the status of a failed load whose body times out", async () => {
     const { timeout } = stubTimeout();
     vi.stubGlobal(
@@ -135,33 +115,6 @@ describe("api client", () => {
     await expect(pending).rejects.toMatchObject({
       name: "ApiError",
       status: 403,
-    });
-  });
-
-  it("still times out a load in browsers without AbortSignal.any", async () => {
-    stubStalledFetch();
-    const { timeout } = stubTimeout();
-
-    await withoutAbortSignalAny(async () => {
-      const pending = request("GET", "/things", {
-        signal: new AbortController().signal,
-      });
-      timeout.abort(new DOMException("timed out", "TimeoutError"));
-
-      await expect(pending).rejects.toBeInstanceOf(ApiError);
-    });
-  });
-
-  it("still cancels a load in browsers without AbortSignal.any", async () => {
-    stubStalledFetch();
-    stubTimeout();
-
-    await withoutAbortSignalAny(async () => {
-      const controller = new AbortController();
-      const pending = request("GET", "/things", { signal: controller.signal });
-      controller.abort();
-
-      await expect(pending).rejects.toBeInstanceOf(ApiError);
     });
   });
 

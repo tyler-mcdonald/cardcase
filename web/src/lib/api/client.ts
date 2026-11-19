@@ -4,30 +4,6 @@ import { ApiError } from "./errors";
 const API_URL = import.meta.env.VITE_API_URL;
 const LOAD_TIMEOUT_MS = 15_000;
 
-function requestSignal(method: string, signal?: AbortSignal | null) {
-  if (method !== "GET") {
-    return signal;
-  }
-  const timeout = AbortSignal.timeout(LOAD_TIMEOUT_MS);
-  if (!signal) {
-    return timeout;
-  }
-  if (typeof AbortSignal.any === "function") {
-    return AbortSignal.any([signal, timeout]);
-  }
-  const controller = new AbortController();
-  for (const source of [signal, timeout]) {
-    if (source.aborted) {
-      controller.abort(source.reason);
-      break;
-    }
-    source.addEventListener("abort", () => controller.abort(source.reason), {
-      once: true,
-    });
-  }
-  return controller.signal;
-}
-
 function networkError(cause: unknown) {
   return new ApiError(cause instanceof Error ? cause.message : "Network error");
 }
@@ -47,7 +23,8 @@ export async function request<T = unknown>(
     }
   }
 
-  const signal = requestSignal(method, options.signal);
+  const signal =
+    method === "GET" ? AbortSignal.timeout(LOAD_TIMEOUT_MS) : options.signal;
 
   let response: Response;
   try {
