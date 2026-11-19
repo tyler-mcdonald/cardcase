@@ -106,8 +106,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": env.db("DATABASE_URL"),
 }
+DB_STATEMENT_TIMEOUT = env.int("DB_STATEMENT_TIMEOUT", default=5000)
 DATABASES["default"]["OPTIONS"] = {
-    "connect_timeout": env.int("DB_CONNECT_TIMEOUT", default=10)
+    "connect_timeout": env.int("DB_CONNECT_TIMEOUT", default=10),
+    "keepalives": 1,
+    "keepalives_idle": 5,
+    "keepalives_interval": 1,
+    "keepalives_count": 5,
+    "tcp_user_timeout": 10000,
+    "options": f"-c statement_timeout={DB_STATEMENT_TIMEOUT}",
 }
 
 
