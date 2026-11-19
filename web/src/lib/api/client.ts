@@ -4,6 +4,10 @@ import { ApiError } from "./errors";
 const API_URL = import.meta.env.VITE_API_URL;
 const LOAD_TIMEOUT_MS = 15_000;
 
+function requestFailed(cause: unknown) {
+  return new ApiError("Request failed", { cause });
+}
+
 export async function request<T = unknown>(
   method: string,
   path: string,
@@ -32,7 +36,7 @@ export async function request<T = unknown>(
       credentials: "include",
     });
   } catch (cause) {
-    throw new ApiError("Request failed", { cause });
+    throw requestFailed(cause);
   }
 
   let body: unknown = null;
@@ -40,7 +44,7 @@ export async function request<T = unknown>(
     body = await response.json();
   } catch (cause) {
     if (response.ok && signal?.aborted) {
-      throw new ApiError("Request failed", { cause });
+      throw requestFailed(cause);
     }
   }
 
