@@ -19,17 +19,19 @@ function oppositeAmountField(field: AmountField): AmountField {
   return field === "outflow" ? "inflow" : "outflow";
 }
 
+type UseTransactionFormOptions = {
+  initialValues: TransactionFormValues;
+  mutation: SaveMutation;
+  onSave: (values: TransactionFormValues) => void;
+  onClose: () => void;
+};
+
 export function useTransactionForm({
   initialValues,
   mutation,
   onSave,
   onClose,
-}: {
-  initialValues: TransactionFormValues;
-  mutation: SaveMutation;
-  onSave: (values: TransactionFormValues) => void;
-  onClose: () => void;
-}) {
+}: UseTransactionFormOptions) {
   const form = useForm<TransactionFormValues>({
     initialValues,
     validate: validateTransactionForm,
