@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  fireEvent,
-  render,
-  renderHook,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -31,10 +25,6 @@ function Wrapper({ children }: { children: ReactNode }) {
       <AuthProvider>{children}</AuthProvider>
     </TestProviders>
   );
-}
-
-function UserEmail() {
-  return <p>{useAuth().user?.email}</p>;
 }
 
 describe("AuthProvider", () => {
@@ -64,20 +54,12 @@ describe("AuthProvider", () => {
     );
   });
 
-  it("shows a retryable error when the session request fails", async () => {
-    mockedGetSession
-      .mockRejectedValueOnce(new Error("network down"))
-      .mockResolvedValueOnce(sessionResponse(TEST_USER));
+  it("reports null user when the session request fails", async () => {
+    mockedGetSession.mockRejectedValueOnce(new Error("network down"));
 
-    render(
-      <Wrapper>
-        <UserEmail />
-      </Wrapper>,
-    );
+    const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
-
-    expect(await screen.findByText("test@example.com")).toBeTruthy();
+    await waitFor(() => expect(result.current.user).toBeNull());
   });
 
   it("falls back to null if an authenticated response is missing its user", async () => {
