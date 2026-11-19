@@ -1,21 +1,26 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { accountLabels } from "./labels";
+import { AccountName } from "./AccountName";
+import { accountLabels, accountLabelText } from "./labels";
 import { allAccountsQuery } from "./queries";
-import type { Account } from "./types";
-
-function toOptions(accounts: Account[]) {
-  return Array.from(accountLabels(accounts), ([value, label]) => ({
-    value,
-    label,
-  }));
-}
 
 export function AccountSelect(props: Omit<SelectProps, "data">) {
-  const { data: options = [] } = useQuery({
+  const { data: labels = new Map() } = useQuery({
     ...allAccountsQuery(),
-    select: toOptions,
+    select: accountLabels,
   });
+  const options = Array.from(labels, ([value, label]) => ({
+    value,
+    label: accountLabelText(label),
+  }));
 
-  return <Select data={options} {...props} />;
+  return (
+    <Select
+      data={options}
+      renderOption={({ option }) => (
+        <AccountName label={labels.get(option.value)!} inherit />
+      )}
+      {...props}
+    />
+  );
 }

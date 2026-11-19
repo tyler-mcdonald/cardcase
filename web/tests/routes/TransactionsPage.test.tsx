@@ -151,6 +151,43 @@ it("labels each transaction's account from the account list", async () => {
   expect(await within(latteRow).findByText("Starbucks Reserve")).toBeTruthy();
 });
 
+it("distinguishes accounts that share a name in the table", async () => {
+  const description = "Chase Visa companion credit from Feb trip";
+  mockedListTransactions.mockResolvedValueOnce(
+    makePage([
+      makeTransaction({
+        id: "1",
+        description: "Change fee",
+        account: { id: "a", name: "Southwest", type: "flight_credit" },
+      }),
+      makeTransaction({
+        id: "2",
+        description: "Carry-on bag",
+        account: { id: "b", name: "Southwest", type: "flight_credit" },
+      }),
+    ]),
+  );
+  mockedListAllAccounts.mockResolvedValueOnce(
+    makePage([
+      makeAccount({ id: "a", name: "Southwest", description }),
+      makeAccount({ id: "b", name: "Southwest", expires_on: "2027-03-14" }),
+    ]),
+  );
+
+  renderPage();
+
+  const feeRow = (await screen.findByText("Change fee")).closest("tr")!;
+  const bagRow = screen.getByText("Carry-on bag").closest("tr")!;
+  const feeLabel = await within(feeRow).findByText(
+    "(Chase Visa companion credit fr…)",
+  );
+  expect(feeLabel.parentElement!.textContent).toBe(
+    "Southwest (Chase Visa companion credit fr…)",
+  );
+  expect(feeLabel.parentElement!.getAttribute("title")).toBe(description);
+  expect(within(bagRow).getByText("(Expires Mar 14, 2027)")).toBeTruthy();
+});
+
 it("shows an empty message when there are no transactions", async () => {
   mockedListTransactions.mockResolvedValueOnce(makePage([]));
 
@@ -670,8 +707,8 @@ describe("editing a transaction", () => {
     await openEditor(latte.description);
 
     const account = screen.getByRole("textbox", { name: "Account" });
-    expect((account as HTMLInputElement).value).toBe(latte.account.name);
-    expect(account.hasAttribute("disabled")).toBe(true);
+    expect(account.textContent).toBe(latte.account.name);
+    expect(account.getAttribute("aria-disabled")).toBe("true");
   });
 
   it("labels the locked account from the account list", async () => {
@@ -687,7 +724,28 @@ describe("editing a transaction", () => {
     await within(latteRow).findByText("Starbucks Reserve");
     fireEvent.click(within(latteRow).getByText(latte.description));
 
-    expect(inputValue("Account")).toBe("Starbucks Reserve");
+    expect(screen.getByRole("textbox", { name: "Account" }).textContent).toBe(
+      "Starbucks Reserve",
+    );
+  });
+
+  it("distinguishes a locked account that shares a name", async () => {
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks", balance: "25" }),
+        makeAccount({ id: "other-id", name: "starbucks" }),
+      ]),
+    );
+    renderPage();
+    const latteRow = (await screen.findByText(latte.description)).closest(
+      "tr",
+    )!;
+    await within(latteRow).findByText("($25.00)");
+    fireEvent.click(within(latteRow).getByText(latte.description));
+
+    expect(screen.getByRole("textbox", { name: "Account" }).textContent).toBe(
+      "Starbucks ($25.00)",
+    );
   });
 
   it("sends only the changed fields", async () => {
@@ -1121,6 +1179,26 @@ describe("filtering by account", () => {
       page: 1,
       account: "starbucks-id",
     });
+  });
+
+  it("distinguishes accounts that share a name", async () => {
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks", balance: "25" }),
+        makeAccount({ id: "other-id", name: "Starbucks", description: "Work" }),
+      ]),
+    );
+    renderFilterablePage();
+    await screen.findByText(flight.description);
+
+    fireEvent.click(accountFilter());
+    expect(
+      await screen.findByRole("option", { name: "Starbucks (Work)" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("option", { name: "Starbucks ($25.00)" }));
+
+    expect(accountFilter().value).toBe("Starbucks ($25.00)");
+    expect(location()).toBe("?account=starbucks-id");
   });
 
   it("shows every account's transactions when cleared", async () => {

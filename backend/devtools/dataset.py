@@ -35,4 +35,31 @@ DEV_DATASET = (
             SeedTransaction("-8.90", "Breakfast sandwich and coffee", 0),
         ),
     ),
+    SeedAccount(
+        name="Southwest Airlines",
+        type=Account.Type.FLIGHT_CREDIT,
+        brand_domain="southwest.com",
+        description="Chase Visa companion credit from Feb trip",
+        expires_in_days=300,
+        transactions=(
+            SeedTransaction("320.00", "Companion credit", 80),
+            SeedTransaction("-75.00", "Flight change fee", 20),
+        ),
+    ),
+    SeedAccount(
+        name="Southwest Airlines",
+        type=Account.Type.FLIGHT_CREDIT,
+        brand_domain="southwest.com",
+        expires_in_days=180,
+        transactions=(
+            SeedTransaction("150.00", "Cancelled flight credit", 70),
+            SeedTransaction("-35.00", "Carry-on bag", 10),
+        ),
+    ),
+    SeedAccount(
+        name="starbucks",
+        type=Account.Type.GIFT_CARD,
+        brand_domain="starbucks.com",
+        transactions=(SeedTransaction("50.00", "Holiday gift card", 40),),
+    ),
 )

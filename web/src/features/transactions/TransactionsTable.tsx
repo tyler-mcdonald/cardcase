@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { Skeleton, Table, Text } from "@mantine/core";
+import { Skeleton, Table } from "@mantine/core";
+import { AccountName } from "@/features/accounts/AccountName";
+import type { AccountLabel } from "@/features/accounts/types";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
 import { EditTransactionRow } from "./EditTransactionRow";
@@ -58,7 +60,7 @@ function TransactionRow({
   onEdit,
 }: {
   transaction: Transaction;
-  accountLabel: string;
+  accountLabel: AccountLabel;
   onEdit?: (target: EditTarget) => void;
 }) {
   const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
@@ -72,9 +74,7 @@ function TransactionRow({
         {formatDate(transaction.occurred_on)}
       </EditableCell>
       <EditableCell field="accountId" onEdit={editField}>
-        <Text size="sm" truncate>
-          {accountLabel}
-        </Text>
+        <AccountName label={accountLabel} size="sm" />
       </EditableCell>
       <EditableCell
         field="description"
@@ -110,7 +110,7 @@ export function TransactionsTable({
   onEditClose,
 }: {
   transactions: Transaction[];
-  accountLabel: (account: Transaction["account"]) => string;
+  accountLabel: (account: Transaction["account"]) => AccountLabel;
   newRow?: ReactNode;
   editTarget: EditTarget | null;
   onEdit?: (target: EditTarget) => void;
