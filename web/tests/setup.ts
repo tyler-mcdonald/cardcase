@@ -1,21 +1,10 @@
 import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
+import { mockDesktopViewport } from "@tests/viewport";
 
 configure({ asyncUtilTimeout: 3_000 });
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => false,
-  }),
-});
+mockDesktopViewport();
 
 class ResizeObserverStub {
   observe() {}
@@ -40,4 +29,5 @@ Object.defineProperty(Element.prototype, "scrollIntoView", {
 
 afterEach(() => {
   cleanup();
+  mockDesktopViewport();
 });
