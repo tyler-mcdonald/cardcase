@@ -7,6 +7,7 @@ from django.test import Client
 from pytest_django import Settings
 
 from accounts.models import Account, Transaction
+from devtools.dataset import DEV_DATASET
 from tests.client import AUTH_BASE, get_session, scoped
 from users.models import User
 
@@ -34,7 +35,7 @@ def test_seed_dev_uses_existing_user(user: User) -> None:
     call_command("seed_dev", email=user.email)
 
     assert User.objects.count() == 1
-    assert Account.objects.filter(user=user).count() == 3
+    assert Account.objects.filter(user=user).count() == len(DEV_DATASET)
 
 
 def test_seed_dev_is_idempotent() -> None:
@@ -42,7 +43,7 @@ def test_seed_dev_is_idempotent() -> None:
     call_command("seed_dev", email=EMAIL)
 
     assert User.objects.count() == 1
-    assert Account.objects.count() == 3
+    assert Account.objects.count() == len(DEV_DATASET)
 
 
 def test_seed_dev_creates_more_than_one_page_of_transactions(
