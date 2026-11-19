@@ -7,17 +7,22 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function stubStalledFetch() {
-  const fetchMock = vi.fn(
-    (_url: URL, init: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        init.signal?.addEventListener("abort", () =>
-          reject(init.signal?.reason),
-        );
-      }),
+/** Stubs a fetch that hangs until aborted, or until `respond` is called. */
+function stubPendingFetch() {
+  let respond: (response: Response) => void = () => {};
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      (_url: URL, init: RequestInit) =>
+        new Promise<Response>((resolve, reject) => {
+          respond = resolve;
+          init.signal?.addEventListener("abort", () =>
+            reject(init.signal?.reason),
+          );
+        }),
+    ),
   );
-  vi.stubGlobal("fetch", fetchMock);
-  return fetchMock;
+  return { respond: (response: Response) => respond(response) };
 }
 
 function stubStalledBody(
@@ -98,7 +103,7 @@ describe("api client", () => {
   });
 
   it("gives up on a load once it times out", async () => {
-    stubStalledFetch();
+    stubPendingFetch();
     const { timeout, timeoutSpy } = stubTimeout();
 
     const pending = request("GET", "/things");
@@ -135,19 +140,7 @@ describe("api client", () => {
 
   it("does not time out a save", async () => {
     const { timeout, timeoutSpy } = stubTimeout();
-    let respond: (response: Response) => void = () => {};
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        (_url: URL, init: RequestInit) =>
-          new Promise<Response>((resolve, reject) => {
-            respond = resolve;
-            init.signal?.addEventListener("abort", () =>
-              reject(init.signal?.reason),
-            );
-          }),
-      ),
-    );
+    const { respond } = stubPendingFetch();
 
     const pending = request("POST", "/things", { body: "{}" });
     timeout.abort(new DOMException("timed out", "TimeoutError"));
