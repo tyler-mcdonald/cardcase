@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
@@ -93,7 +93,7 @@ export function TransactionsPage() {
     isSuccess: isAccountsLoaded,
     isFetching: isAccountsFetching,
   } = useQuery(allAccountsQuery());
-  const accountLabel = accountLabeler(accounts);
+  const accountLabel = useMemo(() => accountLabeler(accounts), [accounts]);
   const filteredAccountId = knownAccountId(accounts, filters.account);
   // Only a settled, successful fetch can rule the filter out: cached accounts
   // shown during a refetch may predate the filtered account.
