@@ -7,6 +7,7 @@ import {
 import {
   Button,
   Group,
+  Input,
   Stack,
   Table,
   Text,
@@ -16,7 +17,9 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
+import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
+import type { AccountLabel } from "@/features/accounts/types";
 import { THEME_SHADES } from "@/theme";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
@@ -53,7 +56,7 @@ export function TransactionEditorRow({
   onDelete,
 }: {
   initialValues: TransactionFormValues;
-  lockedAccountLabel?: string;
+  lockedAccountLabel?: AccountLabel;
   focusField?: TransactionField;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
@@ -153,13 +156,18 @@ export function TransactionEditorRow({
               onBlur={closeAccountDropdownOnBlur}
             />
           ) : (
-            <TextInput
+            <Input
+              component="div"
+              role="textbox"
               aria-label="Account"
+              aria-disabled
+              aria-readonly
               size="xs"
-              value={lockedAccountLabel}
               disabled
-              readOnly
-            />
+              withAria={false}
+            >
+              <AccountDisplayName label={lockedAccountLabel} inherit />
+            </Input>
           )}
         </Table.Td>
         <Table.Td>

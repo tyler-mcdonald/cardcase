@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@mantine/core";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
+import type { AccountLabel } from "@/features/accounts/types";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { useDeleteTransaction, useUpdateTransaction } from "./queries";
 import { TransactionEditorRow } from "./TransactionEditorRow";
@@ -20,7 +21,7 @@ export function EditTransactionRow({
   onClose,
 }: {
   transaction: Transaction;
-  accountLabel: string;
+  accountLabel: AccountLabel;
   focusField: TransactionField;
   onClose: () => void;
 }) {
