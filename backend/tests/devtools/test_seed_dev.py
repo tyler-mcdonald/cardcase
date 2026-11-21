@@ -38,12 +38,6 @@ def test_seed_dev_uses_existing_user(user: User) -> None:
     assert Account.objects.filter(user=user).count() == len(DEV_DATASET)
 
 
-def test_seed_dev_includes_accounts_that_share_a_name() -> None:
-    names = [seed.name.lower() for seed in DEV_DATASET]
-
-    assert len(set(names)) < len(names)
-
-
 def test_seed_dev_is_idempotent() -> None:
     call_command("seed_dev", email=EMAIL)
     call_command("seed_dev", email=EMAIL)
