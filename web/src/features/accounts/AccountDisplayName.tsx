@@ -1,6 +1,14 @@
 import { Text, type TextProps } from "@mantine/core";
 import type { AccountLabel } from "./types";
 
+function AccountDetail({ detail }: { detail: string }) {
+  return (
+    <Text span inherit c="dimmed">
+      ({detail})
+    </Text>
+  );
+}
+
 export function AccountDisplayName({
   label,
   ...props
@@ -11,9 +19,7 @@ export function AccountDisplayName({
       {label.detail && (
         <>
           {" "}
-          <Text span inherit c="dimmed">
-            ({label.detail})
-          </Text>
+          <AccountDetail detail={label.detail} />
         </>
       )}
     </Text>
