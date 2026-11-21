@@ -54,32 +54,27 @@ function fieldDetail(field: DetailField | undefined, account: Account): Detail {
   return field && value ? field.detail(value) : {};
 }
 
-export function accountLabels(accounts: Account[]): Map<string, AccountLabel> {
+function groupBySameName(accounts: Account[]): Account[][] {
   const groups = new Map<string, Account[]>();
   for (const account of accounts) {
     const key = account.name.trim().toLowerCase();
-    const group = groups.get(key);
-    if (group) {
-      group.push(account);
-    } else {
-      groups.set(key, [account]);
-    }
+    const group = groups.get(key) ?? [];
+    group.push(account);
+    groups.set(key, group);
   }
-  const labels = new Map<string, AccountLabel>();
-  for (const twins of groups.values()) {
-    if (twins.length === 1) {
-      labels.set(twins[0].id, { name: twins[0].name });
-      continue;
-    }
-    const field = distinguishingField(twins);
-    for (const account of twins) {
-      labels.set(account.id, {
-        name: account.name,
-        ...fieldDetail(field, account),
-      });
-    }
-  }
-  return labels;
+  return [...groups.values()];
+}
+
+function labelGroup(twins: Account[]): [string, AccountLabel][] {
+  const field = distinguishingField(twins);
+  return twins.map((account) => [
+    account.id,
+    { name: account.name, ...fieldDetail(field, account) },
+  ]);
+}
+
+export function accountLabels(accounts: Account[]): Map<string, AccountLabel> {
+  return new Map(groupBySameName(accounts).flatMap(labelGroup));
 }
 
 export function accountLabeler(accounts: Account[] | undefined) {
