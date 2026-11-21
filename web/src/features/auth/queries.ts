@@ -47,19 +47,10 @@ function resetSession(queryClient: QueryClient, user: User | null) {
   queryClient.setQueryData(SESSION_QUERY_KEY, user);
 }
 
-async function loadSession(): Promise<User | null> {
-  try {
-    const response = await getSession();
-    return sessionUser(response);
-  } catch {
-    return null;
-  }
-}
-
 export function sessionQuery() {
   return queryOptions({
     queryKey: SESSION_QUERY_KEY,
-    queryFn: loadSession,
+    queryFn: async ({ signal }) => sessionUser(await getSession(signal)),
     // The session is only ever updated in response to an explicit auth
     // action below, never by a background refetch.
     staleTime: Infinity,
