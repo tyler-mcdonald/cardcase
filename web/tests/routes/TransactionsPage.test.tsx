@@ -252,7 +252,7 @@ it("paginates through the transactions", async () => {
 
 it("falls back to the first page when the requested page doesn't exist", async () => {
   mockedListTransactions
-    .mockRejectedValueOnce(new ApiError("Not found", 404))
+    .mockRejectedValueOnce(new ApiError("Not found", { status: 404 }))
     .mockResolvedValueOnce(
       makePage([makeTransaction({ description: "Groceries" })]),
     );
@@ -508,7 +508,7 @@ describe("adding a transaction", () => {
 
   it("shows an error and stays open when saving fails", async () => {
     mockedCreateTransaction.mockRejectedValueOnce(
-      new ApiError("Request failed (500)", 500),
+      new ApiError("Request failed (500)", { status: 500 }),
     );
     await openNewTransactionForm();
 
@@ -962,7 +962,7 @@ describe("editing a transaction", () => {
 
   it("shows an error and stays open when saving fails", async () => {
     mockedUpdateTransaction.mockRejectedValueOnce(
-      new ApiError("Request failed (500)", 500),
+      new ApiError("Request failed (500)", { status: 500 }),
     );
     await openEditor(latte.description);
 
@@ -1091,7 +1091,7 @@ describe("deleting a transaction", () => {
         return makePage([refund], { count: 2, hasNext: true });
       }
       if (mockedDeleteTransaction.mock.calls.length > 0) {
-        throw new ApiError("Not found", 404);
+        throw new ApiError("Not found", { status: 404 });
       }
       return makePage([latte], { count: 2 });
     });
@@ -1107,7 +1107,10 @@ describe("deleting a transaction", () => {
 
   it("treats a transaction that's already gone as deleted", async () => {
     mockedDeleteTransaction.mockRejectedValueOnce(
-      new ApiError("Not found", 404, { detail: "Not found." }),
+      new ApiError("Not found", {
+        status: 404,
+        body: { detail: "Not found." },
+      }),
     );
     const dialog = await startDelete();
 
@@ -1122,7 +1125,7 @@ describe("deleting a transaction", () => {
 
   it("shows an error in the dialog when deleting fails", async () => {
     mockedDeleteTransaction.mockRejectedValueOnce(
-      new ApiError("Server error", 500),
+      new ApiError("Server error", { status: 500 }),
     );
     const dialog = await startDelete();
 
@@ -1397,7 +1400,9 @@ describe("filtering by account", () => {
   });
 
   it("keeps the account filter when accounts fail to load", async () => {
-    mockedListAllAccounts.mockRejectedValue(new ApiError("Server error", 500));
+    mockedListAllAccounts.mockRejectedValue(
+      new ApiError("Server error", { status: 500 }),
+    );
     renderFilterablePage("/?account=starbucks-id");
     await screen.findByText(latte.description);
 

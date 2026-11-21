@@ -11,7 +11,7 @@ function itemsQuery(page: number) {
     queryKey: ["items", page],
     queryFn: async () => {
       if (page > 1) {
-        throw new ApiError("Not found", 404);
+        throw new ApiError("Not found", { status: 404 });
       }
       return ["item"];
     },

@@ -162,10 +162,13 @@ describe("CreateAccountModal", () => {
 
   it("shows the API's error under the initial balance", async () => {
     mockedCreateAccount.mockRejectedValueOnce(
-      new ApiError("Request failed (400)", 400, {
-        initial_balance: [
-          "Ensure that there are no more than 10 digits in total.",
-        ],
+      new ApiError("Request failed (400)", {
+        status: 400,
+        body: {
+          initial_balance: [
+            "Ensure that there are no more than 10 digits in total.",
+          ],
+        },
       }),
     );
     renderForm();
@@ -215,7 +218,7 @@ describe("CreateAccountModal", () => {
 
   it("shows an error when the account can't be created", async () => {
     mockedCreateAccount.mockRejectedValueOnce(
-      new ApiError("Request failed (400)", 400),
+      new ApiError("Request failed (400)", { status: 400 }),
     );
     const { onCreated } = renderForm();
 
