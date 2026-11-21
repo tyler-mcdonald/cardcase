@@ -45,7 +45,7 @@ function ErrorMessages({ messages }: { messages: string[] }) {
 
 export function TransactionEditorRow({
   initialValues,
-  lockedAccountName,
+  lockedAccountLabel,
   focusField = "occurredOn",
   mutation,
   onSave,
@@ -53,7 +53,7 @@ export function TransactionEditorRow({
   onDelete,
 }: {
   initialValues: TransactionFormValues;
-  lockedAccountName?: string;
+  lockedAccountLabel?: string;
   focusField?: TransactionField;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
@@ -137,7 +137,7 @@ export function TransactionEditorRow({
           />
         </Table.Td>
         <Table.Td>
-          {lockedAccountName === undefined ? (
+          {lockedAccountLabel === undefined ? (
             <AccountSelect
               aria-label="Account"
               placeholder="Account"
@@ -156,7 +156,7 @@ export function TransactionEditorRow({
             <TextInput
               aria-label="Account"
               size="xs"
-              value={lockedAccountName}
+              value={lockedAccountLabel}
               disabled
               readOnly
             />

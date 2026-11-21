@@ -132,6 +132,25 @@ it("shows each transaction's date, account, description, and amount", async () =
   expect(screen.queryByRole("button", { name: "2" })).toBeNull();
 });
 
+it("labels each transaction's account from the account list", async () => {
+  mockedListTransactions.mockResolvedValueOnce(
+    makePage([
+      makeTransaction({
+        description: "Latte",
+        account: { id: "a", name: "Starbucks", type: "gift_card" },
+      }),
+    ]),
+  );
+  mockedListAllAccounts.mockResolvedValueOnce(
+    makePage([makeAccount({ id: "a", name: "Starbucks Reserve" })]),
+  );
+
+  renderPage();
+
+  const latteRow = (await screen.findByText("Latte")).closest("tr")!;
+  expect(await within(latteRow).findByText("Starbucks Reserve")).toBeTruthy();
+});
+
 it("shows an empty message when there are no transactions", async () => {
   mockedListTransactions.mockResolvedValueOnce(makePage([]));
 
@@ -669,6 +688,22 @@ describe("editing a transaction", () => {
     const account = screen.getByRole("textbox", { name: "Account" });
     expect((account as HTMLInputElement).value).toBe(latte.account.name);
     expect(account.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("labels the locked account from the account list", async () => {
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks Reserve" }),
+      ]),
+    );
+    renderPage();
+    const latteRow = (await screen.findByText(latte.description)).closest(
+      "tr",
+    )!;
+    await within(latteRow).findByText("Starbucks Reserve");
+    fireEvent.click(within(latteRow).getByText(latte.description));
+
+    expect(inputValue("Account")).toBe("Starbucks Reserve");
   });
 
   it("sends only the changed fields", async () => {
