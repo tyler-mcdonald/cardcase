@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { hasAccount } from "@/features/accounts/lookup";
 import { allAccountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
+import { accountLabeler } from "@/features/accounts/labels";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
@@ -92,6 +93,7 @@ export function TransactionsPage() {
     isSuccess: isAccountsLoaded,
     isFetching: isAccountsFetching,
   } = useQuery(allAccountsQuery());
+  const accountLabel = useMemo(() => accountLabeler(accounts), [accounts]);
   const filteredAccountId = knownAccountId(accounts, filters.account);
   // Only a settled, successful fetch can rule the filter out: cached accounts
   // shown during a refetch may predate the filtered account.
@@ -185,6 +187,7 @@ export function TransactionsPage() {
       {showTable && (
         <TransactionsTable
           transactions={data.items}
+          accountLabel={accountLabel}
           editTarget={editTarget}
           onEdit={isSaving ? undefined : openEditTransaction}
           onEditClose={() => closeEditor(editor)}

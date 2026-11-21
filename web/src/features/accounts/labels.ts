@@ -1,13 +1,7 @@
 import { describeBalance, describeExpiry } from "./format";
-import type { Account } from "./types";
+import type { Account, AccountLabel } from "./types";
 
 const DESCRIPTION_MAX_LENGTH = 30;
-
-export type AccountLabel = {
-  name: string;
-  detail?: string;
-  fullDescription?: string;
-};
 
 export function accountLabelText({ name, detail }: AccountLabel): string {
   return detail ? `${name} (${detail})` : name;
@@ -81,4 +75,10 @@ function labelGroup(twins: Account[]): [string, AccountLabel][] {
 
 export function accountLabels(accounts: Account[]): Map<string, AccountLabel> {
   return new Map(groupBySameName(accounts).flatMap(labelGroup));
+}
+
+export function accountLabeler(accounts: Account[] | undefined) {
+  const labels = accounts && accountLabels(accounts);
+  return (account: Pick<Account, "id" | "name">): AccountLabel =>
+    labels?.get(account.id) ?? { name: account.name };
 }

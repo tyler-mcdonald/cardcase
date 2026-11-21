@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@mantine/core";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
+import type { AccountLabel } from "@/features/accounts/types";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { useDeleteTransaction, useUpdateTransaction } from "./queries";
 import { TransactionEditorRow } from "./TransactionEditorRow";
@@ -15,10 +16,12 @@ import type { Transaction } from "./types";
 
 export function EditTransactionRow({
   transaction,
+  accountLabel,
   focusField,
   onClose,
 }: {
   transaction: Transaction;
+  accountLabel: AccountLabel;
   focusField: TransactionField;
   onClose: () => void;
 }) {
@@ -53,7 +56,7 @@ export function EditTransactionRow({
     <>
       <TransactionEditorRow
         initialValues={transactionFormFrom(openedWith)}
-        lockedAccount={openedWith.account}
+        lockedAccountLabel={accountLabel}
         focusField={focusField === "accountId" ? "occurredOn" : focusField}
         mutation={updateTransaction}
         onSave={save}

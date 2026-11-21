@@ -19,7 +19,7 @@ import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
-import type { Account } from "@/features/accounts/types";
+import type { AccountLabel } from "@/features/accounts/types";
 import { THEME_SHADES } from "@/theme";
 import { COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
@@ -48,7 +48,7 @@ function ErrorMessages({ messages }: { messages: string[] }) {
 
 export function TransactionEditorRow({
   initialValues,
-  lockedAccount,
+  lockedAccountLabel,
   focusField = "occurredOn",
   mutation,
   onSave,
@@ -56,7 +56,7 @@ export function TransactionEditorRow({
   onDelete,
 }: {
   initialValues: TransactionFormValues;
-  lockedAccount?: Pick<Account, "id" | "name">;
+  lockedAccountLabel?: AccountLabel;
   focusField?: TransactionField;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
@@ -140,7 +140,7 @@ export function TransactionEditorRow({
           />
         </Table.Td>
         <Table.Td>
-          {lockedAccount === undefined ? (
+          {lockedAccountLabel === undefined ? (
             <AccountSelect
               aria-label="Account"
               placeholder="Account"
@@ -166,7 +166,7 @@ export function TransactionEditorRow({
               disabled
               withAria={false}
             >
-              <AccountDisplayName account={lockedAccount} inherit />
+              <AccountDisplayName label={lockedAccountLabel} inherit />
             </Input>
           )}
         </Table.Td>

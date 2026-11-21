@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Skeleton, Table } from "@mantine/core";
 import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
+import type { AccountLabel } from "@/features/accounts/types";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
 import { EditTransactionRow } from "./EditTransactionRow";
@@ -55,9 +56,11 @@ function EditableCell({
 
 function TransactionRow({
   transaction,
+  accountLabel,
   onEdit,
 }: {
   transaction: Transaction;
+  accountLabel: AccountLabel;
   onEdit?: (target: EditTarget) => void;
 }) {
   const { outflow, inflow } = formatOutflowAndInflow(transaction.amount);
@@ -71,7 +74,7 @@ function TransactionRow({
         {formatDate(transaction.occurred_on)}
       </EditableCell>
       <EditableCell field="accountId" onEdit={editField}>
-        <AccountDisplayName account={transaction.account} size="sm" />
+        <AccountDisplayName label={accountLabel} size="sm" />
       </EditableCell>
       <EditableCell
         field="description"
@@ -100,12 +103,14 @@ function TransactionRow({
 
 export function TransactionsTable({
   transactions,
+  accountLabel,
   newRow,
   editTarget,
   onEdit,
   onEditClose,
 }: {
   transactions: Transaction[];
+  accountLabel: (account: Transaction["account"]) => AccountLabel;
   newRow?: ReactNode;
   editTarget: EditTarget | null;
   onEdit?: (target: EditTarget) => void;
@@ -114,11 +119,13 @@ export function TransactionsTable({
   return (
     <TransactionsTableFrame>
       {newRow}
-      {transactions.map((transaction) =>
-        transaction.id === editTarget?.id ? (
+      {transactions.map((transaction) => {
+        const label = accountLabel(transaction.account);
+        return transaction.id === editTarget?.id ? (
           <EditTransactionRow
             key={transaction.id}
             transaction={transaction}
+            accountLabel={label}
             focusField={editTarget.focusField}
             onClose={onEditClose}
           />
@@ -126,10 +133,11 @@ export function TransactionsTable({
           <TransactionRow
             key={transaction.id}
             transaction={transaction}
+            accountLabel={label}
             onEdit={onEdit}
           />
-        ),
-      )}
+        );
+      })}
     </TransactionsTableFrame>
   );
 }

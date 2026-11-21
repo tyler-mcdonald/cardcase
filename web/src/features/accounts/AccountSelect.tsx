@@ -3,30 +3,41 @@ import { useQuery } from "@tanstack/react-query";
 import { AccountDisplayName } from "./AccountDisplayName";
 import { accountLabels, accountLabelText } from "./labels";
 import { allAccountsQuery } from "./queries";
-import type { Account } from "./types";
+import type { Account, AccountLabel } from "./types";
+
+const NO_ACCOUNTS = {
+  labels: new Map<string, AccountLabel>(),
+  options: [],
+};
 
 function toOptions(accounts: Account[]) {
-  return Array.from(accountLabels(accounts), ([value, label]) => ({
+  const labels = accountLabels(accounts);
+  const options = Array.from(labels, ([value, label]) => ({
     value,
     label: accountLabelText(label),
   }));
+  return { labels, options };
 }
 
-const renderOption: SelectProps["renderOption"] = ({ option, checked }) => (
-  <Group gap="xs" wrap="nowrap" miw={0}>
-    {checked && <CheckIcon size={12} />}
-    <AccountDisplayName
-      account={{ id: option.value, name: option.label }}
-      inherit
-    />
-  </Group>
-);
-
 export function AccountSelect(props: Omit<SelectProps, "data">) {
-  const { data: options = [] } = useQuery({
+  const { data: { labels, options } = NO_ACCOUNTS } = useQuery({
     ...allAccountsQuery(),
     select: toOptions,
   });
 
-  return <Select data={options} renderOption={renderOption} {...props} />;
+  return (
+    <Select
+      data={options}
+      renderOption={({ option, checked }) => (
+        <Group gap="xs" wrap="nowrap" miw={0}>
+          {checked && <CheckIcon size={12} />}
+          <AccountDisplayName
+            label={labels.get(option.value) ?? { name: option.label }}
+            inherit
+          />
+        </Group>
+      )}
+      {...props}
+    />
+  );
 }
