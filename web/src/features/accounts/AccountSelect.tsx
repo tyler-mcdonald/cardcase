@@ -3,24 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { AccountDisplayName } from "./AccountDisplayName";
 import { accountLabels, accountLabelText } from "./labels";
 import { allAccountsQuery } from "./queries";
-import type { Account, AccountLabel } from "./types";
-
-const NO_ACCOUNTS = {
-  labels: new Map<string, AccountLabel>(),
-  options: [],
-};
+import type { Account } from "./types";
 
 function toOptions(accounts: Account[]) {
-  const labels = accountLabels(accounts);
-  const options = Array.from(labels, ([value, label]) => ({
+  return Array.from(accountLabels(accounts), ([value, label]) => ({
     value,
     label: accountLabelText(label),
   }));
-  return { labels, options };
 }
 
 export function AccountSelect(props: Omit<SelectProps, "data">) {
-  const { data: { labels, options } = NO_ACCOUNTS } = useQuery({
+  const { data: options = [] } = useQuery({
     ...allAccountsQuery(),
     select: toOptions,
   });
@@ -32,7 +25,7 @@ export function AccountSelect(props: Omit<SelectProps, "data">) {
         <Group gap="xs" wrap="nowrap" miw={0}>
           {checked && <CheckIcon size={12} />}
           <AccountDisplayName
-            label={labels.get(option.value) ?? { name: option.label }}
+            account={{ id: option.value, name: option.label }}
             inherit
           />
         </Group>

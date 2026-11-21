@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  accountLabeler,
-  accountLabels,
-  accountLabelText,
-} from "@/features/accounts/labels";
+import { accountLabels, accountLabelText } from "@/features/accounts/labels";
 import { makeAccount } from "@tests/features/accounts/factories";
 
 describe("accountLabels", () => {
@@ -134,16 +130,6 @@ describe("accountLabels", () => {
     ]);
 
     expect(labels.get("a")?.detail).toBe("$5.00");
-  });
-});
-
-describe("accountLabeler", () => {
-  it("falls back to the given name for an unknown account", () => {
-    const label = accountLabeler(undefined);
-
-    expect(label({ id: "a", name: "Starbucks" })).toEqual({
-      name: "Starbucks",
-    });
   });
 });
 

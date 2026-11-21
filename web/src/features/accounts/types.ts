@@ -18,9 +18,3 @@ export type AccountInput = Pick<
 export type AccountCreateInput = AccountInput & { initial_balance: string };
 
 export type AccountUpdate = Partial<Omit<AccountInput, "type">>;
-
-export type AccountLabel = {
-  name: string;
-  detail?: string;
-  fullDescription?: string;
-};
