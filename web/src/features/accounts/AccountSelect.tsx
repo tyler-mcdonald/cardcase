@@ -12,25 +12,21 @@ function toOptions(accounts: Account[]) {
   }));
 }
 
+const renderOption: SelectProps["renderOption"] = ({ option, checked }) => (
+  <Group gap="xs" wrap="nowrap" miw={0}>
+    {checked && <CheckIcon size={12} />}
+    <AccountDisplayName
+      account={{ id: option.value, name: option.label }}
+      inherit
+    />
+  </Group>
+);
+
 export function AccountSelect(props: Omit<SelectProps, "data">) {
   const { data: options = [] } = useQuery({
     ...allAccountsQuery(),
     select: toOptions,
   });
 
-  return (
-    <Select
-      data={options}
-      renderOption={({ option, checked }) => (
-        <Group gap="xs" wrap="nowrap" miw={0}>
-          {checked && <CheckIcon size={12} />}
-          <AccountDisplayName
-            account={{ id: option.value, name: option.label }}
-            inherit
-          />
-        </Group>
-      )}
-      {...props}
-    />
-  );
+  return <Select data={options} renderOption={renderOption} {...props} />;
 }
