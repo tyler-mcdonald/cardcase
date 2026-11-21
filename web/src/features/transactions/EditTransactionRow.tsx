@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { AccountLabel } from "@/features/accounts/types";
 import { DeleteTransactionModal } from "./DeleteTransactionModal";
 import { TransactionEditorRow } from "./TransactionEditorRow";
 import { transactionFormFrom, type TransactionField } from "./transaction-form";
@@ -10,10 +11,12 @@ import {
 
 export function EditTransactionRow({
   transaction,
+  accountLabel,
   focusField,
   onClose,
 }: {
   transaction: Transaction;
+  accountLabel: AccountLabel;
   focusField: TransactionField;
   onClose: () => void;
 }) {
@@ -25,7 +28,7 @@ export function EditTransactionRow({
     <>
       <TransactionEditorRow
         initialValues={transactionFormFrom(openedWith)}
-        lockedAccountName={openedWith.account.name}
+        lockedAccountLabel={accountLabel}
         focusField={focusField === "accountId" ? "occurredOn" : focusField}
         mutation={mutation}
         onSave={save}

@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const LOAD_TIMEOUT_MS = 15_000;
 
 function requestFailed(cause: unknown) {
-  return new ApiError("Request failed", undefined, undefined, { cause });
+  return new ApiError("Request failed", { cause });
 }
 
 export async function request<T = unknown>(
@@ -49,11 +49,10 @@ export async function request<T = unknown>(
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      `Request failed (${response.status})`,
-      response.status,
+    throw new ApiError(`Request failed (${response.status})`, {
+      status: response.status,
       body,
-    );
+    });
   }
 
   return body as T;

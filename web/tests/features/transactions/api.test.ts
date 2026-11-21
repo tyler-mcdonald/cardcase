@@ -49,7 +49,9 @@ describe("listTransactions", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Forbidden", 403));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Forbidden", { status: 403 }),
+    );
 
     await expect(listTransactions({ page: 1 })).rejects.toMatchObject({
       status: 403,
@@ -77,7 +79,9 @@ describe("createTransaction", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Bad request", { status: 400 }),
+    );
 
     await expect(createTransaction("42", input)).rejects.toMatchObject({
       status: 400,
@@ -103,7 +107,9 @@ describe("updateTransaction", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Bad request", 400));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Bad request", { status: 400 }),
+    );
 
     await expect(updateTransaction("42", "7", changes)).rejects.toMatchObject({
       status: 400,
@@ -123,7 +129,9 @@ describe("deleteTransaction", () => {
   });
 
   it("propagates request failures", async () => {
-    mockedRequest.mockRejectedValueOnce(new ApiError("Server error", 500));
+    mockedRequest.mockRejectedValueOnce(
+      new ApiError("Server error", { status: 500 }),
+    );
 
     await expect(deleteTransaction("42", "7")).rejects.toMatchObject({
       status: 500,

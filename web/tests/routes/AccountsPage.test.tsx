@@ -192,7 +192,7 @@ describe("AccountsPage", () => {
         makePage([makeAccount({ id: "2", name: "Renamed elsewhere" })]),
       );
     mockedUpdateAccount
-      .mockRejectedValueOnce(new ApiError("Server error", 500))
+      .mockRejectedValueOnce(new ApiError("Server error", { status: 500 }))
       .mockResolvedValueOnce(makeAccount({ id: "2", name: "Amazon" }));
 
     renderPage();
@@ -219,7 +219,7 @@ describe("AccountsPage", () => {
       makePage([makeAccount({ id: "2", name: "Amazon" })]),
     );
     mockedUpdateAccount.mockRejectedValueOnce(
-      new ApiError("Request failed (400)", 400),
+      new ApiError("Request failed (400)", { status: 400 }),
     );
 
     renderPage();
@@ -265,7 +265,7 @@ describe("AccountsPage", () => {
         return makePage([makeAccount({ id: "1", name: "Starbucks" })]);
       }
       if (mockedDeleteAccount.mock.calls.length > 0) {
-        throw new ApiError("Not found", 404);
+        throw new ApiError("Not found", { status: 404 });
       }
       return makePage([makeAccount({ id: "2", name: "Amazon" })]);
     });
@@ -332,7 +332,7 @@ describe("AccountsPage", () => {
 
   it("falls back to the first page when the requested page doesn't exist", async () => {
     mockedListAccounts
-      .mockRejectedValueOnce(new ApiError("Not found", 404))
+      .mockRejectedValueOnce(new ApiError("Not found", { status: 404 }))
       .mockResolvedValueOnce(makePage([makeAccount({ name: "Starbucks" })]));
 
     renderPage("/?page=9");

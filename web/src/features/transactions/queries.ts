@@ -61,8 +61,7 @@ export function useCreateTransaction() {
       accountId: string;
       input: TransactionInput;
     }) => createTransaction(accountId, input),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+    onSuccess: () => invalidateTransactionsAndAccounts(queryClient),
   });
 }
 
