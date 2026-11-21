@@ -1,5 +1,4 @@
 import { Route, Routes } from "react-router-dom";
-import { AppLayout } from "./AppLayout";
 import { AccountsPage } from "./routes/AccountsPage";
 import { DemoPage } from "./routes/DemoPage";
 import { LoginPage } from "./routes/LoginPage";
@@ -13,13 +12,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/demo" element={<DemoPage />} />
-      <Route
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<ProtectedRoute />}>
         <Route index element={<AccountsPage />} />
         <Route path="transactions" element={<TransactionsPage />} />
         <Route path="settings" element={<SettingsPage />} />

@@ -31,7 +31,10 @@ function allowExpectedStatus<T>(
 }
 
 export function getSession() {
-  return request<ApiResponse<SessionData>>("GET", session());
+  return allowExpectedStatus(
+    request<ApiResponse<SessionData>>("GET", session()),
+    [401],
+  );
 }
 
 export function requestLoginCode(email: string) {

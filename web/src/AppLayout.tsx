@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Anchor, Container, Group } from "@mantine/core";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { DemoWelcomeModal } from "@/features/auth/DemoWelcomeModal";
@@ -10,7 +11,7 @@ const NAV_LINKS = [
   { to: "/transactions", label: "Transactions" },
 ];
 
-export function AppLayout() {
+export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Container py="xl">
       <Group justify="space-between" mb="xl">
@@ -43,8 +44,16 @@ export function AppLayout() {
         </Group>
         <HeaderAccount />
       </Group>
-      <Outlet />
+      {children}
       <DemoWelcomeModal />
     </Container>
+  );
+}
+
+export function AppLayout() {
+  return (
+    <AppShell>
+      <Outlet />
+    </AppShell>
   );
 }

@@ -11,7 +11,7 @@ export const TEST_USER: User = {
 };
 
 export function mockSignedInUser(user: User = TEST_USER) {
-  vi.mocked(useAuth).mockReturnValue({ user });
+  vi.mocked(useAuth).mockReturnValue({ user, sessionError: null });
 }
 
 /** The session API's response for the given user, or for no user. */

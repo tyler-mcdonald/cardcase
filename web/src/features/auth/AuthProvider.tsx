@@ -19,8 +19,17 @@ function refreshForNewUser() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const session = useQuery(sessionQuery());
-  const value = useMemo(() => ({ user: session.data }), [session.data]);
+  const { data, error, isLoadingError, isFetching, refetch } =
+    useQuery(sessionQuery());
+  const value = useMemo(
+    () => ({
+      user: data,
+      sessionError: isLoadingError
+        ? { error, retrying: isFetching, onRetry: () => void refetch() }
+        : null,
+    }),
+    [data, error, isLoadingError, isFetching, refetch],
+  );
 
   useEffect(() => onUserChangeElsewhere(refreshForNewUser), []);
 

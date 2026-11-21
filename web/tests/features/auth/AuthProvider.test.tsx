@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -54,12 +54,22 @@ describe("AuthProvider", () => {
     );
   });
 
-  it("reports null user when the session request fails", async () => {
-    mockedGetSession.mockRejectedValueOnce(new Error("network down"));
+  it("reports a retryable session error instead of signing out when the session request fails", async () => {
+    mockedGetSession
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce(sessionResponse(TEST_USER));
 
     const { result } = renderHook(() => useAuth(), { wrapper: Wrapper });
 
-    await waitFor(() => expect(result.current.user).toBeNull());
+    await waitFor(() => expect(result.current.sessionError).not.toBeNull());
+    expect(result.current.user).toBeUndefined();
+
+    act(() => result.current.sessionError?.onRetry());
+
+    await waitFor(() =>
+      expect(result.current.user?.email).toBe("test@example.com"),
+    );
+    expect(result.current.sessionError).toBeNull();
   });
 
   it("falls back to null if an authenticated response is missing its user", async () => {

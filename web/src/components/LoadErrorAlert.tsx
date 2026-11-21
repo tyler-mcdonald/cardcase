@@ -8,7 +8,7 @@ export function LoadErrorAlert({
   retrying,
   onRetry,
 }: {
-  title: string;
+  title?: string;
   error: unknown;
   retrying: boolean;
   onRetry: () => void;
