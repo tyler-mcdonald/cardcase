@@ -14,26 +14,34 @@ type DetailField = {
   detail: (value: string) => Detail;
 };
 
-const DETAIL_FIELDS: DetailField[] = [
-  {
-    value: (account) => account.description.replace(/\s+/g, " ").trim(),
-    detail: (description) =>
-      description.length > DESCRIPTION_MAX_LENGTH
-        ? {
-            detail: `${description.slice(0, DESCRIPTION_MAX_LENGTH).trimEnd()}…`,
-            fullDescription: description,
-          }
-        : { detail: description },
-  },
-  {
-    value: (account) => account.expires_on ?? "",
-    detail: (expiresOn) => ({ detail: describeExpiry(expiresOn).label }),
-  },
-  {
-    value: (account) => account.balance,
-    detail: (balance) => ({ detail: describeBalance(balance).label }),
-  },
-];
+function normalizedDescription(account: Account): string {
+  return account.description.replace(/\s+/g, " ").trim();
+}
+
+function descriptionDetail(description: string): Detail {
+  if (description.length <= DESCRIPTION_MAX_LENGTH) {
+    return { detail: description };
+  }
+  const truncated = description.slice(0, DESCRIPTION_MAX_LENGTH).trimEnd();
+  return { detail: `${truncated}…`, fullDescription: description };
+}
+
+const descriptionField: DetailField = {
+  value: normalizedDescription,
+  detail: descriptionDetail,
+};
+
+const expiryField: DetailField = {
+  value: (account) => account.expires_on ?? "",
+  detail: (expiresOn) => ({ detail: describeExpiry(expiresOn).label }),
+};
+
+const balanceField: DetailField = {
+  value: (account) => account.balance,
+  detail: (balance) => ({ detail: describeBalance(balance).label }),
+};
+
+const DETAIL_FIELDS = [descriptionField, expiryField, balanceField];
 
 function distinguishingField(twins: Account[]): DetailField | undefined {
   return DETAIL_FIELDS.find(
