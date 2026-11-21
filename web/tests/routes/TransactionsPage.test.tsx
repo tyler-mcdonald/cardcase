@@ -309,6 +309,22 @@ describe("adding a transaction", () => {
     expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
   });
 
+  it("refreshes the accounts after saving", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterOutflow("4.75");
+    const callsBeforeSave = mockedListAllAccounts.mock.calls.length;
+    save();
+
+    await waitFor(() =>
+      expect(mockedListAllAccounts.mock.calls.length).toBeGreaterThan(
+        callsBeforeSave,
+      ),
+    );
+  });
+
   it("saves an inflow as a positive amount", async () => {
     mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
     await openNewTransactionForm();
