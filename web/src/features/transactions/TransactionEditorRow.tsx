@@ -17,7 +17,7 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
-import { AccountName } from "@/features/accounts/AccountName";
+import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import type { AccountLabel } from "@/features/accounts/types";
 import { THEME_SHADES } from "@/theme";
@@ -166,7 +166,7 @@ export function TransactionEditorRow({
               disabled
               withAria={false}
             >
-              <AccountName label={lockedAccountLabel} inherit />
+              <AccountDisplayName label={lockedAccountLabel} inherit />
             </Input>
           )}
         </Table.Td>

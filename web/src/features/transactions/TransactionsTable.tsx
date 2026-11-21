@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Skeleton, Table } from "@mantine/core";
-import { AccountName } from "@/features/accounts/AccountName";
+import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import type { AccountLabel } from "@/features/accounts/types";
 import { formatDate } from "@/lib/format";
 import { COLUMN_COUNT } from "./constants";
@@ -74,7 +74,7 @@ function TransactionRow({
         {formatDate(transaction.occurred_on)}
       </EditableCell>
       <EditableCell field="accountId" onEdit={editField}>
-        <AccountName label={accountLabel} size="sm" />
+        <AccountDisplayName label={accountLabel} size="sm" />
       </EditableCell>
       <EditableCell
         field="description"

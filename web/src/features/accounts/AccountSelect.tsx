@@ -1,6 +1,6 @@
 import { CheckIcon, Group, Select, type SelectProps } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { AccountName } from "./AccountName";
+import { AccountDisplayName } from "./AccountDisplayName";
 import { accountLabels, accountLabelText } from "./labels";
 import { allAccountsQuery } from "./queries";
 import type { Account, AccountLabel } from "./types";
@@ -31,7 +31,7 @@ export function AccountSelect(props: Omit<SelectProps, "data">) {
       renderOption={({ option, checked }) => (
         <Group gap="xs" wrap="nowrap" miw={0}>
           {checked && <CheckIcon size={12} />}
-          <AccountName
+          <AccountDisplayName
             label={labels.get(option.value) ?? { name: option.label }}
             inherit
           />

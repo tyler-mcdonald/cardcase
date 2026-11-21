@@ -1,7 +1,7 @@
 import { Text, type TextProps } from "@mantine/core";
 import type { AccountLabel } from "./types";
 
-export function AccountName({
+export function AccountDisplayName({
   label,
   ...props
 }: { label: AccountLabel } & TextProps) {
