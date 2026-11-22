@@ -12,8 +12,8 @@ const NAV_LINKS = [
 
 export function AppLayout() {
   return (
-    <Container py="xl">
-      <Group justify="space-between" mb="xl">
+    <Container className={classes.page}>
+      <Group justify="space-between" className={classes.header}>
         <Group gap="xl">
           <Anchor
             component={Link}
