@@ -29,4 +29,10 @@
   .input {
     --input-fz: 16px;
   }
+
+  .pinInputRoot {
+    --pin-input-size-xs: 44px;
+    --pin-input-size-sm: 44px;
+    --pin-input-size-md: 44px;
+  }
 }

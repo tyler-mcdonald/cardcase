@@ -7,6 +7,7 @@ import {
   Input,
   Modal,
   Pagination,
+  PinInput,
   rgba,
   type CSSVariablesResolver,
   type MantineColor,
@@ -84,6 +85,9 @@ export const theme = createTheme({
             "var(--mantine-primary-color-light-color)",
         },
       }),
+    }),
+    PinInput: PinInput.extend({
+      classNames: { root: classes.pinInputRoot },
     }),
   },
 });
