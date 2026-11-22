@@ -4,6 +4,7 @@ import {
   Button,
   createTheme,
   defaultVariantColorsResolver,
+  Input,
   Modal,
   Pagination,
   rgba,
@@ -61,6 +62,12 @@ export const theme = createTheme({
     Button: Button.extend({
       defaultProps: { variant: "light" },
       vars: (theme, props) => softRedVars("button", theme, props.color),
+    }),
+    Input: Input.extend({
+      classNames: {
+        wrapper: classes.inputWrapper,
+        input: classes.input,
+      },
     }),
     Modal: Modal.extend({
       classNames: {
