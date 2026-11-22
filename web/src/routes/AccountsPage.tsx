@@ -37,7 +37,11 @@ export function AccountsPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
+      <Group
+        justify="space-between"
+        align="flex-end"
+        className={classes.header}
+      >
         <div>
           <Title order={1} size="h2">
             Accounts
@@ -46,7 +50,9 @@ export function AccountsPage() {
             Gift cards and flight credits you're tracking.
           </Text>
         </div>
-        <Button onClick={createModal.open}>Add account</Button>
+        <Button onClick={createModal.open} className={classes.addButton}>
+          Add account
+        </Button>
       </Group>
 
       <CreateAccountModal
