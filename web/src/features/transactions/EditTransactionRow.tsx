@@ -1,18 +1,13 @@
 import { useState } from "react";
-import { Modal } from "@mantine/core";
-import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 import type { AccountLabel } from "@/features/accounts/types";
-import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
-import { useDeleteTransaction, useUpdateTransaction } from "./queries";
+import { DeleteTransactionModal } from "./DeleteTransactionModal";
 import { TransactionEditorRow } from "./TransactionEditorRow";
-import {
-  changedFields,
-  toTransactionInput,
-  transactionFormFrom,
-  type TransactionField,
-  type TransactionFormValues,
-} from "./transaction-form";
+import { transactionFormFrom, type TransactionField } from "./transaction-form";
 import type { Transaction } from "./types";
+import {
+  useTransactionDelete,
+  useUpdateTransactionSave,
+} from "./use-transaction-mutations";
 
 export function EditTransactionRow({
   transaction,
@@ -26,31 +21,8 @@ export function EditTransactionRow({
   onClose: () => void;
 }) {
   const [openedWith] = useState(transaction);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const updateTransaction = useUpdateTransaction();
-  const deleteTransaction = useDeleteTransaction();
-  const closeDeleteDialog = useGuardedClose([deleteTransaction], () =>
-    setConfirmingDelete(false),
-  );
-
-  function save(values: TransactionFormValues) {
-    const changes = changedFields(openedWith, toTransactionInput(values));
-    if (Object.keys(changes).length === 0) {
-      onClose();
-      return;
-    }
-    updateTransaction.mutate(
-      { accountId: openedWith.account.id, id: openedWith.id, changes },
-      { onSuccess: onClose },
-    );
-  }
-
-  function confirmDelete() {
-    deleteTransaction.mutate(
-      { accountId: openedWith.account.id, id: openedWith.id },
-      { onSuccess: onClose },
-    );
-  }
+  const { mutation, save } = useUpdateTransactionSave(openedWith, onClose);
+  const deletion = useTransactionDelete(openedWith, onClose);
 
   return (
     <>
@@ -58,25 +30,12 @@ export function EditTransactionRow({
         initialValues={transactionFormFrom(openedWith)}
         lockedAccountLabel={accountLabel}
         focusField={focusField === "accountId" ? "occurredOn" : focusField}
-        mutation={updateTransaction}
+        mutation={mutation}
         onSave={save}
         onClose={onClose}
-        onDelete={() => setConfirmingDelete(true)}
+        onDelete={deletion.request}
       />
-      <Modal
-        opened={confirmingDelete}
-        onClose={closeDeleteDialog}
-        onClick={(event) => event.stopPropagation()}
-        title="Delete this transaction?"
-      >
-        <DeleteConfirmation
-          message="This can't be undone."
-          isPending={deleteTransaction.isPending}
-          error={deleteTransaction.error}
-          onConfirm={confirmDelete}
-          onCancel={closeDeleteDialog}
-        />
-      </Modal>
+      <DeleteTransactionModal deletion={deletion} />
     </>
   );
 }
