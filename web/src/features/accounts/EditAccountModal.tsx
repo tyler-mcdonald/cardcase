@@ -8,6 +8,7 @@ import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 const EDITABLE_FIELDS = [
   "name",
@@ -35,9 +36,10 @@ export function EditAccountModal({
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
+  const isMobile = useIsMobile();
 
   return (
-    <Modal.Root opened={opened} onClose={close}>
+    <Modal.Root opened={opened} onClose={close} fullScreen={isMobile}>
       <Modal.Overlay />
       <Modal.Content>
         <FocusTrap.InitialFocus />

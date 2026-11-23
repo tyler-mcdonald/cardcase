@@ -135,9 +135,12 @@ export function AccountForm({
           {...form.getInputProps("description")}
         />
         {formError && <FormError message={formError} />}
-        <Group justify={secondaryAction ? "space-between" : "flex-end"}>
+        <Group
+          className={classes.actions}
+          justify={secondaryAction ? "space-between" : "flex-end"}
+        >
           {secondaryAction}
-          <Group>
+          <Group className={classes.submitActions}>
             <Button variant="default" onClick={onCancel} disabled={isPending}>
               Cancel
             </Button>

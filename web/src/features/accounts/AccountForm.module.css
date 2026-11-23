@@ -4,3 +4,12 @@
 .typeInput:checked + .typeLabel[data-disabled] {
   color: var(--sc-label-color, var(--mantine-color-disabled-color));
 }
+
+@media (max-width: 47.99375em) {
+  .actions,
+  .submitActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--mantine-spacing-xs);
+  }
+}
