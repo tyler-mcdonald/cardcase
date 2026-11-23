@@ -87,6 +87,17 @@ export function AccountForm({
     form.setValues({ name: brand.name, brand_domain: brand.domain });
   }
 
+  const submitButton = (
+    <Button type="submit" loading={isPending}>
+      {submitLabel}
+    </Button>
+  );
+  const cancelButton = (
+    <Button variant="default" onClick={onCancel} disabled={isPending}>
+      Cancel
+    </Button>
+  );
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
@@ -139,16 +150,14 @@ export function AccountForm({
         {formError && <FormError message={formError} />}
         {isMobile ? (
           <MobileFormActions
-            submitLabel={submitLabel}
-            isPending={isPending}
-            onCancel={onCancel}
+            submitButton={submitButton}
+            cancelButton={cancelButton}
             secondaryAction={secondaryAction}
           />
         ) : (
           <DesktopFormActions
-            submitLabel={submitLabel}
-            isPending={isPending}
-            onCancel={onCancel}
+            submitButton={submitButton}
+            cancelButton={cancelButton}
             secondaryAction={secondaryAction}
           />
         )}
@@ -158,47 +167,36 @@ export function AccountForm({
 }
 
 type FormActionsProps = {
-  submitLabel: string;
-  isPending: boolean;
-  onCancel: () => void;
+  submitButton: ReactNode;
+  cancelButton: ReactNode;
   secondaryAction?: ReactNode;
 };
 
 function MobileFormActions({
-  submitLabel,
-  isPending,
-  onCancel,
+  submitButton,
+  cancelButton,
   secondaryAction,
 }: FormActionsProps) {
   return (
     <Stack gap="xs">
-      <Button type="submit" loading={isPending}>
-        {submitLabel}
-      </Button>
-      <Button variant="default" onClick={onCancel} disabled={isPending}>
-        Cancel
-      </Button>
+      {submitButton}
+      {cancelButton}
       {secondaryAction}
     </Stack>
   );
 }
 
 function DesktopFormActions({
-  submitLabel,
-  isPending,
-  onCancel,
+  submitButton,
+  cancelButton,
   secondaryAction,
 }: FormActionsProps) {
   return (
     <Group justify={secondaryAction ? "space-between" : "flex-end"}>
       {secondaryAction}
       <Group>
-        <Button variant="default" onClick={onCancel} disabled={isPending}>
-          Cancel
-        </Button>
-        <Button type="submit" loading={isPending}>
-          {submitLabel}
-        </Button>
+        {cancelButton}
+        {submitButton}
       </Group>
     </Group>
   );
