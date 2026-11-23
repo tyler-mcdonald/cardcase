@@ -485,6 +485,17 @@ describe("EditAccountModal", () => {
     );
   });
 
+  it("doesn't show the delete confirmation full screen on mobile", () => {
+    mockMobileViewport();
+    renderForm();
+
+    startDelete();
+
+    expect(screen.getByRole("dialog").hasAttribute("data-full-screen")).toBe(
+      false,
+    );
+  });
+
   it("doesn't open full screen on desktop", () => {
     renderForm();
 

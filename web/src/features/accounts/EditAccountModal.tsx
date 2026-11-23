@@ -37,9 +37,23 @@ export function EditAccountModal({
   const deleteAccount = useDeleteAccount();
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
   const isMobile = useIsMobile();
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
+  const [wasOpened, setWasOpened] = useState(opened);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
+    if (opened) setConfirmingDeleteId(null);
+  }
+  const confirmingDelete =
+    account !== null && confirmingDeleteId === account.id;
 
   return (
-    <Modal.Root opened={opened} onClose={close} fullScreen={isMobile}>
+    <Modal.Root
+      opened={opened}
+      onClose={close}
+      fullScreen={isMobile && !confirmingDelete}
+    >
       <Modal.Overlay />
       <Modal.Content>
         <FocusTrap.InitialFocus />
@@ -47,6 +61,10 @@ export function EditAccountModal({
           <EditAccountContent
             key={account.id}
             account={account}
+            confirmingDelete={confirmingDelete}
+            onConfirmingDeleteChange={(confirming) =>
+              setConfirmingDeleteId(confirming ? account.id : null)
+            }
             updateAccount={updateAccount}
             deleteAccount={deleteAccount}
             close={close}
@@ -60,19 +78,22 @@ export function EditAccountModal({
 
 function EditAccountContent({
   account,
+  confirmingDelete,
+  onConfirmingDeleteChange,
   updateAccount,
   deleteAccount,
   close,
   onClose,
 }: {
   account: Account;
+  confirmingDelete: boolean;
+  onConfirmingDeleteChange: (confirming: boolean) => void;
   updateAccount: ReturnType<typeof useUpdateAccount>;
   deleteAccount: ReturnType<typeof useDeleteAccount>;
   close: () => void;
   onClose: () => void;
 }) {
   const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const balance = describeBalance(account.balance);
 
@@ -87,12 +108,12 @@ function EditAccountContent({
 
   function startDelete() {
     updateAccount.reset();
-    setConfirmingDelete(true);
+    onConfirmingDeleteChange(true);
   }
 
   function cancelDelete() {
     deleteAccount.reset();
-    flushSync(() => setConfirmingDelete(false));
+    flushSync(() => onConfirmingDeleteChange(false));
     deleteButtonRef.current?.focus();
   }
 
