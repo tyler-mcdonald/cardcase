@@ -5,6 +5,7 @@ import { AppLayout } from "@/AppLayout";
 import { useLogout } from "@/features/auth/queries";
 import { mockSignedInUser } from "@tests/features/auth/fixtures";
 import { renderWithProviders } from "@tests/render";
+import { mockMobileViewport } from "@tests/viewport";
 
 vi.mock("@/features/auth/use-auth", () => ({
   useAuth: vi.fn(),
@@ -84,5 +85,39 @@ describe("AppLayout", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Settings" }));
 
     screen.getByText("Settings content");
+  });
+});
+
+describe("AppLayout on mobile", () => {
+  beforeEach(() => {
+    mockMobileViewport();
+  });
+
+  it("shows only the brand and avatar menu in the header", () => {
+    renderLayout("/other");
+
+    screen.getByRole("link", { name: "cardcase" });
+    screen.getByRole("button", { name: "Account menu" });
+    expect(screen.queryByText("test@example.com")).toBeNull();
+  });
+
+  it("navigates with the bottom tab bar", () => {
+    renderLayout("/other");
+
+    fireEvent.click(screen.getByRole("link", { name: "Transactions" }));
+    screen.getByText("Transactions content");
+
+    fireEvent.click(screen.getByRole("link", { name: "Accounts" }));
+    screen.getByText("Home content");
+  });
+
+  it("highlights the current page's tab", () => {
+    renderLayout("/transactions");
+
+    const current = (name: string) =>
+      screen.getByRole("link", { name }).getAttribute("aria-current");
+
+    expect(current("Transactions")).toBe("page");
+    expect(current("Accounts")).toBeNull();
   });
 });

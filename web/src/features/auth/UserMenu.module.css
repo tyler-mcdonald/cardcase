@@ -1,0 +1,9 @@
+@media (max-width: 47.99375em) {
+  .target {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

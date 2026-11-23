@@ -6,16 +6,6 @@
   margin-bottom: var(--mantine-spacing-xl);
 }
 
-@media (max-width: 47.99375em) {
-  .page {
-    padding-top: 8px;
-  }
-
-  .header {
-    margin-bottom: var(--mantine-spacing-md);
-  }
-}
-
 .navLink {
   color: var(--mantine-color-dimmed);
 }

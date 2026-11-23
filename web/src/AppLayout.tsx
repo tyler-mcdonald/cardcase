@@ -1,50 +1,16 @@
-import { Anchor, Container, Group } from "@mantine/core";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { DemoWelcomeModal } from "@/features/auth/DemoWelcomeModal";
-import { HeaderAccount } from "@/features/auth/HeaderAccount";
-import { APP_NAME } from "@/lib/constants";
-import classes from "./AppLayout.module.css";
-
-const NAV_LINKS = [
-  { to: "/", label: "Accounts" },
-  { to: "/transactions", label: "Transactions" },
-];
+import { DesktopLayout } from "@/layout/DesktopLayout";
+import { MobileLayout } from "@/layout/MobileLayout";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 export function AppLayout() {
+  const Layout = useIsMobile() ? MobileLayout : DesktopLayout;
+
   return (
-    <Container className={classes.page}>
-      <Group justify="space-between" className={classes.header}>
-        <Group gap="xl">
-          <Anchor
-            component={Link}
-            to="/"
-            fw={700}
-            size="lg"
-            c="inherit"
-            underline="never"
-          >
-            {APP_NAME}
-          </Anchor>
-          <Group component="nav" gap="md">
-            {NAV_LINKS.map(({ to, label }) => (
-              <Anchor
-                key={to}
-                component={NavLink}
-                to={to}
-                end
-                size="sm"
-                underline="never"
-                className={classes.navLink}
-              >
-                {label}
-              </Anchor>
-            ))}
-          </Group>
-        </Group>
-        <HeaderAccount />
-      </Group>
+    <Layout>
       <Outlet />
       <DemoWelcomeModal />
-    </Container>
+    </Layout>
   );
 }
