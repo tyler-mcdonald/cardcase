@@ -31,10 +31,49 @@
   justify-content: center;
   gap: 2px;
   font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
   color: var(--mantine-color-dimmed);
+  transition: color 150ms ease;
+}
+
+.icons {
+  display: grid;
+}
+
+.icon,
+.activeIcon {
+  grid-area: 1 / 1;
+  transition: opacity 150ms ease;
+}
+
+.activeIcon,
+.label {
+  opacity: 0;
+}
+
+.label {
+  white-space: nowrap;
+  transition: opacity 150ms ease;
 }
 
 .tab[aria-current="page"] {
   color: var(--mantine-primary-color-light-color);
-  font-weight: 600;
+}
+
+.tab[aria-current="page"] .icon {
+  opacity: 0;
+}
+
+.tab[aria-current="page"] .activeIcon,
+.tab[aria-current="page"] .label {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .icon,
+  .activeIcon,
+  .label {
+    transition: none;
+  }
 }

@@ -19,7 +19,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
         {children}
       </Container>
       <nav className={classes.tabBar}>
-        {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+        {NAV_LINKS.map(({ to, label, icon: Icon, activeIcon: ActiveIcon }) => (
           <UnstyledButton
             key={to}
             component={NavLink}
@@ -27,8 +27,15 @@ export function MobileLayout({ children }: { children: ReactNode }) {
             end
             className={classes.tab}
           >
-            <Icon size={TAB_ICON_SIZE} aria-hidden />
-            {label}
+            <span className={classes.icons}>
+              <Icon size={TAB_ICON_SIZE} aria-hidden className={classes.icon} />
+              <ActiveIcon
+                size={TAB_ICON_SIZE}
+                aria-hidden
+                className={classes.activeIcon}
+              />
+            </span>
+            <span className={classes.label}>{label}</span>
           </UnstyledButton>
         ))}
       </nav>

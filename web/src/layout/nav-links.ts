@@ -1,6 +1,21 @@
-import { IconCreditCard, IconList } from "@tabler/icons-react";
+import {
+  IconCreditCard,
+  IconCreditCardFilled,
+  IconList,
+  IconListFilled,
+} from "@tabler/icons-react";
 
 export const NAV_LINKS = [
-  { to: "/", label: "Accounts", icon: IconCreditCard },
-  { to: "/transactions", label: "Transactions", icon: IconList },
+  {
+    to: "/",
+    label: "Accounts",
+    icon: IconCreditCard,
+    activeIcon: IconCreditCardFilled,
+  },
+  {
+    to: "/transactions",
+    label: "Transactions",
+    icon: IconList,
+    activeIcon: IconListFilled,
+  },
 ];
