@@ -18,7 +18,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
         </Group>
         {children}
       </Container>
-      <nav className={classes.tabBar}>
+      <nav aria-label="Primary" className={classes.tabBar}>
         {NAV_LINKS.map(({ to, label, icon: Icon, activeIcon: ActiveIcon }) => (
           <UnstyledButton
             key={to}
