@@ -12,6 +12,9 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       FRONTEND_URL: http://${APP_HOST:-localhost}:${WEB_PORT:-3000}
+    volumes:
+      - ./backend:/app
+      - /app/.venv
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -40,6 +43,9 @@ services:
         required: false
     environment:
       VITE_API_URL: http://${APP_HOST:-localhost}:${BACKEND_PORT:-8000}
+    volumes:
+      - ./web:/app
+      - /app/node_modules
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
     depends_on:

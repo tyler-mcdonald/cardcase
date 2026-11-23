@@ -23,7 +23,7 @@ dev-web:
 # Each copy gets its own *.localhost hostname, since browsers share localhost cookies across ports.
 up:
 	@set -- $$(python3 scripts/available_ports.py 2) && host=cardcase-$$1.localhost && \
-	APP_HOST=$$host WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --wait && \
+	APP_HOST=$$host WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --renew-anon-volumes --wait && \
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
 
