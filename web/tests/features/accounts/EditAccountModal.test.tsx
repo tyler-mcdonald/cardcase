@@ -492,4 +492,16 @@ describe("EditAccountModal", () => {
       false,
     );
   });
+
+  it("orders the actions Save, Cancel, then Delete account on mobile", () => {
+    mockMobileViewport();
+    renderForm();
+
+    const actions = ["Save changes", "Cancel", "Delete account"];
+    const names = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent)
+      .filter((name) => actions.includes(name ?? ""));
+    expect(names).toEqual(actions);
+  });
 });

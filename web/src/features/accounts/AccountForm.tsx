@@ -13,6 +13,7 @@ import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
 import type { Brand } from "@/features/brands/types";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -70,6 +71,7 @@ export function AccountForm({
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
   const { setErrors } = form;
+  const isMobile = useIsMobile();
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
 
   useEffect(() => {
@@ -135,21 +137,69 @@ export function AccountForm({
           {...form.getInputProps("description")}
         />
         {formError && <FormError message={formError} />}
-        <Group
-          className={classes.actions}
-          justify={secondaryAction ? "space-between" : "flex-end"}
-        >
-          {secondaryAction}
-          <Group className={classes.submitActions}>
-            <Button variant="default" onClick={onCancel} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" loading={isPending}>
-              {submitLabel}
-            </Button>
-          </Group>
-        </Group>
+        {isMobile ? (
+          <MobileFormActions
+            submitLabel={submitLabel}
+            isPending={isPending}
+            onCancel={onCancel}
+            secondaryAction={secondaryAction}
+          />
+        ) : (
+          <DesktopFormActions
+            submitLabel={submitLabel}
+            isPending={isPending}
+            onCancel={onCancel}
+            secondaryAction={secondaryAction}
+          />
+        )}
       </Stack>
     </form>
+  );
+}
+
+type FormActionsProps = {
+  submitLabel: string;
+  isPending: boolean;
+  onCancel: () => void;
+  secondaryAction?: ReactNode;
+};
+
+function MobileFormActions({
+  submitLabel,
+  isPending,
+  onCancel,
+  secondaryAction,
+}: FormActionsProps) {
+  return (
+    <Stack gap="xs">
+      <Button type="submit" loading={isPending}>
+        {submitLabel}
+      </Button>
+      <Button variant="default" onClick={onCancel} disabled={isPending}>
+        Cancel
+      </Button>
+      {secondaryAction}
+    </Stack>
+  );
+}
+
+function DesktopFormActions({
+  submitLabel,
+  isPending,
+  onCancel,
+  secondaryAction,
+}: FormActionsProps) {
+  return (
+    <Group justify={secondaryAction ? "space-between" : "flex-end"}>
+      {secondaryAction}
+      <Group>
+        <Button variant="default" onClick={onCancel} disabled={isPending}>
+          Cancel
+        </Button>
+        <Button type="submit" loading={isPending}>
+          {submitLabel}
+        </Button>
+      </Group>
+    </Group>
   );
 }
