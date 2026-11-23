@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
+import { Box, Button, Flex, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
@@ -37,10 +37,11 @@ export function AccountsPage() {
 
   return (
     <Stack gap="lg">
-      <Group
+      <Flex
+        direction={{ base: "column", sm: "row" }}
         justify="space-between"
-        align="flex-end"
-        className={classes.header}
+        align={{ base: "stretch", sm: "flex-end" }}
+        gap="md"
       >
         <div>
           <Title order={1} size="h2">
@@ -50,10 +51,10 @@ export function AccountsPage() {
             Gift cards and flight credits you're tracking.
           </Text>
         </div>
-        <Button onClick={createModal.open} className={classes.addButton}>
+        <Button onClick={createModal.open} h={{ base: 44, sm: undefined }}>
           Add account
         </Button>
-      </Group>
+      </Flex>
 
       <CreateAccountModal
         opened={createOpened}
