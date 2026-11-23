@@ -20,6 +20,7 @@
   grid-auto-flow: column;
   height: calc(64px + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
   background-color: var(--mantine-color-body);
   border-top: 1px solid var(--mantine-color-default-border);
 }

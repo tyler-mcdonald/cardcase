@@ -3,19 +3,19 @@ import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { MENU_ICON_SIZE, ThemeOptions } from "@/components/ThemeOptions";
 import { useLogout } from "./queries";
-import classes from "./UserMenu.module.css";
 
 interface UserMenuProps {
   email: string;
+  targetClassName?: string;
 }
 
-export function UserMenu({ email }: UserMenuProps) {
+export function UserMenu({ email, targetClassName }: UserMenuProps) {
   const logout = useLogout();
 
   return (
     <Menu position="bottom-end" width={220}>
       <Menu.Target>
-        <UnstyledButton aria-label="Account menu" className={classes.target}>
+        <UnstyledButton aria-label="Account menu" className={targetClassName}>
           <Avatar radius="xl" size={30}>
             {email.charAt(0).toUpperCase()}
           </Avatar>
