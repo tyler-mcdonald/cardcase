@@ -1,6 +1,7 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
+  grid-template-columns: repeat(auto-fill, min(296px, 100%));
+  justify-content: center;
   gap: var(--mantine-spacing-md);
 }
 
@@ -12,9 +13,5 @@
 
   .addButton {
     --button-height: 44px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
   }
 }
