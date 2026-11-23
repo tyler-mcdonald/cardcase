@@ -4,8 +4,10 @@ import {
   Button,
   createTheme,
   defaultVariantColorsResolver,
+  Input,
   Modal,
   Pagination,
+  PinInput,
   rgba,
   type CSSVariablesResolver,
   type MantineColor,
@@ -62,6 +64,12 @@ export const theme = createTheme({
       defaultProps: { variant: "light" },
       vars: (theme, props) => softRedVars("button", theme, props.color),
     }),
+    Input: Input.extend({
+      classNames: {
+        wrapper: classes.inputWrapper,
+        input: classes.input,
+      },
+    }),
     Modal: Modal.extend({
       classNames: {
         inner: classes.modalInner,
@@ -77,6 +85,9 @@ export const theme = createTheme({
             "var(--mantine-primary-color-light-color)",
         },
       }),
+    }),
+    PinInput: PinInput.extend({
+      classNames: { root: classes.pinInputRoot },
     }),
   },
 });

@@ -18,3 +18,23 @@
 :where([data-mantine-color-scheme="dark"]) .paginationControl[data-active] {
   border-color: var(--light-rim);
 }
+
+@media (max-width: 47.99375em) {
+  .inputWrapper {
+    --input-height-xs: 44px;
+    --input-height-sm: 44px;
+    --input-height-md: 44px;
+  }
+
+  .input {
+    --input-fz: 16px;
+  }
+
+  .pinInputRoot {
+    --pin-input-size-xs: 44px;
+    --pin-input-size-sm: 44px;
+    --pin-input-size-md: 44px;
+
+    gap: 4px;
+  }
+}
