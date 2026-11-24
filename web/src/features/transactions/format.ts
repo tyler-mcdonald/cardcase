@@ -19,6 +19,20 @@ function formatMagnitude(magnitude: number | null): string | null {
   return magnitude === null ? null : formatCurrency(magnitude);
 }
 
+const signedCurrencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  signDisplay: "exceptZero",
+});
+
+export function describeSignedAmount(amount: string): {
+  label: string;
+  inflow: boolean;
+} {
+  const value = Number(amount);
+  return { label: signedCurrencyFormatter.format(value), inflow: value > 0 };
+}
+
 export function formatOutflowAndInflow(amount: string): {
   outflow: string | null;
   inflow: string | null;
