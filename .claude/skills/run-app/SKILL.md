@@ -3,8 +3,6 @@ name: run-app
 description: Run the app's full local stack in Docker. Use when asked to run, start, spin-up the app, etc.
 ---
 
-# Run App
-
 ## Steps
 
 1. Pick the directory
