@@ -1,9 +1,9 @@
 ---
-name: run-in-docker
+name: run-app
 description: Run the app's full local stack in Docker. Use when asked to run, start, spin-up the app, etc.
 ---
 
-# Run in Docker
+# Run App
 
 1. Pick the directory to run from. For a PR, get its branch with `gh pr view <number> --json headRefName`.
    - No branch or PR named: the current checkout.
