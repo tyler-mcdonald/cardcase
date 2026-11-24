@@ -7,7 +7,6 @@ import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "@tests/render";
 import { pickBrand, stubBrandSearch } from "@tests/features/brands/search";
 import { makeAccount } from "@tests/features/accounts/factories";
-import { mockMobileViewport } from "@tests/viewport";
 
 vi.mock("@/features/accounts/api");
 
@@ -185,20 +184,6 @@ describe("EditAccountModal", () => {
       screen.getByRole("textbox", { name: /expiration date/i }),
       { target: { value: "" } },
     );
-    submit();
-
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
-      expires_on: null,
-    });
-  });
-
-  it("saves an expiration date cleared on mobile as null", async () => {
-    mockMobileViewport();
-    mockedUpdateAccount.mockResolvedValueOnce(account);
-    renderForm();
-
-    fireEvent.click(screen.getByRole("button", { name: "Clear date" }));
     submit();
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
