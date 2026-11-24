@@ -4,8 +4,6 @@ description: Run the app locally or in Docker. Use when asked to run, start, spi
 argument-hint: "[local|docker]"
 ---
 
-# Run App
-
 ## Steps
 
 1. Pick the directory
