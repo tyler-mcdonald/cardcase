@@ -23,6 +23,7 @@ export function TestProviders({
       theme={theme}
       cssVariablesResolver={cssVariablesResolver}
       env="test"
+      withGlobalClasses={false}
     >
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>

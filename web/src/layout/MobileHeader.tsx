@@ -5,7 +5,7 @@ import classes from "./MobileLayout.module.css";
 
 export function MobileHeader() {
   return (
-    <Group justify="space-between" className={classes.header}>
+    <Group hiddenFrom="sm" justify="space-between" className={classes.header}>
       <BrandLink />
       <MobileHeaderAccount />
     </Group>

@@ -2,24 +2,28 @@ import { Container } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { DemoWelcomeModal } from "@/features/auth/DemoWelcomeModal";
 import { DesktopHeader } from "@/layout/DesktopHeader";
-import desktopClasses from "@/layout/DesktopLayout.module.css";
 import { MobileHeader } from "@/layout/MobileHeader";
-import mobileClasses from "@/layout/MobileLayout.module.css";
 import { MobileTabBar } from "@/layout/MobileTabBar";
-import { useIsMobile } from "@/lib/hooks/use-is-mobile";
+
+const PAGE_PADDING_TOP = {
+  base: "max(8px, env(safe-area-inset-top))",
+  sm: "xl",
+};
+
+const PAGE_PADDING_BOTTOM = {
+  base: "calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + var(--mantine-spacing-xl))",
+  sm: "xl",
+};
 
 export function AppLayout() {
-  const isMobile = useIsMobile();
-
   return (
     <>
-      <Container
-        className={isMobile ? mobileClasses.page : desktopClasses.page}
-      >
-        {isMobile ? <MobileHeader /> : <DesktopHeader />}
+      <Container pt={PAGE_PADDING_TOP} pb={PAGE_PADDING_BOTTOM}>
+        <MobileHeader />
+        <DesktopHeader />
         <Outlet />
       </Container>
-      {isMobile && <MobileTabBar />}
+      <MobileTabBar />
       <DemoWelcomeModal />
     </>
   );

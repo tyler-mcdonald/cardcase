@@ -2,14 +2,6 @@
   --tab-bar-height: 64px;
 }
 
-.page {
-  padding-top: max(8px, env(safe-area-inset-top));
-  padding-bottom: calc(
-    var(--tab-bar-height) + env(safe-area-inset-bottom) +
-      var(--mantine-spacing-xl)
-  );
-}
-
 .header {
   min-height: 56px;
   margin-bottom: var(--mantine-spacing-md);
