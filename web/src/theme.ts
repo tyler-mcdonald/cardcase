@@ -77,7 +77,10 @@ export const theme = createTheme({
       },
     }),
     Pagination: Pagination.extend({
-      classNames: { control: classes.paginationControl },
+      classNames: {
+        root: classes.paginationRoot,
+        control: classes.paginationControl,
+      },
       vars: () => ({
         root: {
           "--pagination-active-bg": "var(--mantine-primary-color-light)",
