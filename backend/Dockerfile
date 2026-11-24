@@ -6,7 +6,8 @@ COPY --from=uv /uv /usr/local/bin/uv
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
-    PATH="/app/.venv/bin:$PATH" \
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
