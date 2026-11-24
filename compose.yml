@@ -11,7 +11,7 @@ services:
       - sh
       - -c
       - |
-        until python -c "import socket; socket.create_connection(('db', 5432))" 2>/dev/null; do sleep 0.2; done && python manage.py migrate --skip-checks &&
+        until python -c "import os, psycopg; psycopg.connect(os.environ['DATABASE_URL']).close()" 2>/dev/null; do sleep 0.2; done && python manage.py migrate --skip-checks &&
         exec python manage.py runserver --skip-checks 0.0.0.0:8000
     env_file: backend/.env.example
     environment:
