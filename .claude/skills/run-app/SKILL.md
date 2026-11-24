@@ -14,7 +14,7 @@ argument-hint: "[local|docker]"
 
 2. Pick the mode
    - `local` or `docker` given: use it.
-   - No argument: `local` if no PR or branch was named and ports 8000 and 3000 are both free (`lsof -i :8000 -i :3000` prints nothing); otherwise `docker`.
+   - No argument: `local` if ports 8000 and 3000 are both free (`lsof -i :8000 -i :3000` prints nothing); otherwise `docker`.
    - Tell the user which mode and why in one line.
 
 3. Start it
