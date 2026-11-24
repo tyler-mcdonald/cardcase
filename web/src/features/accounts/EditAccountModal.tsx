@@ -24,6 +24,13 @@ function editedFields(account: Account, values: AccountInput): AccountUpdate {
   return Object.fromEntries(edited.map((field) => [field, values[field]]));
 }
 
+function isConfirmingDelete(
+  account: Account | null,
+  confirmingDeleteId: string | null,
+): boolean {
+  return account !== null && confirmingDeleteId === account.id;
+}
+
 export function EditAccountModal({
   account,
   opened,
@@ -45,8 +52,7 @@ export function EditAccountModal({
     setWasOpened(opened);
     if (opened) setConfirmingDeleteId(null);
   }
-  const confirmingDelete =
-    account !== null && confirmingDeleteId === account.id;
+  const confirmingDelete = isConfirmingDelete(account, confirmingDeleteId);
 
   return (
     <Modal.Root
