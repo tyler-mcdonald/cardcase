@@ -1,6 +1,7 @@
 ---
 name: run-app
-description: Run the app locally or in Docker. Use when asked to run, start, spin-up the app, etc. Takes an optional `local` or `docker` argument.
+description: Run the app locally or in Docker. Use when asked to run, start, spin-up the app, etc.
+argument-hint: "[local|docker]"
 ---
 
 # Run App
