@@ -1,0 +1,18 @@
+.header {
+  margin-bottom: var(--mantine-spacing-xl);
+}
+
+@media (max-width: 47.99375em) {
+  .header {
+    margin-bottom: var(--mantine-spacing-md);
+  }
+}
+
+.navLink {
+  color: var(--mantine-color-dimmed);
+}
+
+.navLink[aria-current="page"] {
+  color: var(--mantine-color-text);
+  font-weight: 600;
+}
