@@ -20,6 +20,10 @@
   width: var(--modal-size);
 }
 
+.modalContent[data-full-screen] {
+  align-self: stretch;
+}
+
 :where([data-mantine-color-scheme="dark"]) .paginationControl[data-active] {
   border-color: var(--light-rim);
 }
