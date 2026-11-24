@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatSignedCurrency } from "@/lib/format";
 
 /**
  * Splits a signed amount into an unsigned outflow (negative amounts) or
@@ -19,18 +19,12 @@ function formatMagnitude(magnitude: number | null): string | null {
   return magnitude === null ? null : formatCurrency(magnitude);
 }
 
-const signedCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  signDisplay: "exceptZero",
-});
-
 export function describeSignedAmount(amount: string): {
   label: string;
   inflow: boolean;
 } {
   const value = Number(amount);
-  return { label: signedCurrencyFormatter.format(value), inflow: value > 0 };
+  return { label: formatSignedCurrency(value), inflow: value > 0 };
 }
 
 export function formatOutflowAndInflow(amount: string): {
