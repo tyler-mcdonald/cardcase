@@ -9,6 +9,15 @@ import { SKELETON_ROW_COUNT } from "./constants";
 import { describeSignedAmount } from "./format";
 import type { Transaction } from "./types";
 
+type TransactionRowProps = {
+  transaction: Transaction;
+  accountLabel: AccountLabel;
+};
+
+type SelectTransactionProps = {
+  onSelect: (transaction: Transaction) => void;
+};
+
 function TransactionsListFrame({ children }: { children: ReactNode }) {
   return <ul className={classes.list}>{children}</ul>;
 }
@@ -24,10 +33,7 @@ function SecondaryLine({ children }: { children: ReactNode }) {
 function DescribedDetails({
   transaction,
   accountLabel,
-}: {
-  transaction: Transaction;
-  accountLabel: AccountLabel;
-}) {
+}: TransactionRowProps) {
   return (
     <>
       <Text span fw={500} truncate>
@@ -43,10 +49,7 @@ function DescribedDetails({
 function UndescribedDetails({
   transaction,
   accountLabel,
-}: {
-  transaction: Transaction;
-  accountLabel: AccountLabel;
-}) {
+}: TransactionRowProps) {
   return (
     <>
       <AccountDisplayName label={accountLabel} span fw={500} />
@@ -73,11 +76,7 @@ function TransactionListRow({
   transaction,
   accountLabel,
   onSelect,
-}: {
-  transaction: Transaction;
-  accountLabel: AccountLabel;
-  onSelect: (transaction: Transaction) => void;
-}) {
+}: TransactionRowProps & SelectTransactionProps) {
   const Details = transaction.description
     ? DescribedDetails
     : UndescribedDetails;
@@ -103,8 +102,7 @@ export function TransactionsList({
 }: {
   transactions: Transaction[];
   accountLabel: (account: Transaction["account"]) => AccountLabel;
-  onSelect: (transaction: Transaction) => void;
-}) {
+} & SelectTransactionProps) {
   return (
     <TransactionsListFrame>
       {transactions.map((transaction) => (
