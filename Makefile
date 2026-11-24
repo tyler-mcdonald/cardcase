@@ -27,17 +27,14 @@ up: .docker-build.stamp
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
 
-# Rebuild the images only when what they install changes; source is mounted in.
 .docker-build.stamp: backend/Dockerfile backend/.dockerignore backend/pyproject.toml backend/uv.lock \
 	web/Dockerfile web/.dockerignore web/package.json web/pnpm-lock.yaml
 	BUILDX_NO_DEFAULT_ATTESTATIONS=1 $(compose) build
 	@touch $@
 
-# Keeps the database volume, so the next `make up` skips setting up a fresh database.
 down:
 	$(compose) down
 
-# Also deletes the database volume, so the next `make up` starts from a fresh database.
 reset:
 	$(compose) down -v
 
