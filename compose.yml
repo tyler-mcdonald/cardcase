@@ -7,7 +7,12 @@ services:
 
   backend:
     build: ./backend
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command:
+      - sh
+      - -c
+      - |
+        until python -c "import socket; socket.create_connection(('db', 5432))" 2>/dev/null; do sleep 0.2; done && python manage.py migrate --skip-checks &
+        exec python manage.py runserver --skip-checks 0.0.0.0:8000
     env_file: backend/.env.example
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -18,7 +23,7 @@ services:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test:
         [
@@ -29,7 +34,7 @@ services:
         ]
       interval: 1m
       start_period: 2m
-      start_interval: 2s
+      start_interval: 1s
       timeout: 5s
       retries: 3
 
@@ -47,14 +52,11 @@ services:
       - /srv/app/node_modules
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
       interval: 1m
       start_period: 1m
-      start_interval: 2s
+      start_interval: 1s
       timeout: 5s
       retries: 3
 

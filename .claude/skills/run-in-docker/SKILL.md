@@ -11,4 +11,4 @@ description: Run the app's full local stack in Docker. Use when asked to run, st
    - Otherwise: invoke `setup-worktree` with the branch name, then check out the PR or branch in it (`gh pr checkout <number>` or `git switch <branch>`).
 2. From that directory, run `make up` and hand the user the app URL it prints. Emailed login codes show in `make logs`.
    - Code edits reload on their own. Rerun `make up` only after a dependency, Dockerfile, or migration change, and hand the user the new URL it prints — the ports change on each run.
-3. When the user is done, run `make down`.
+3. When the user is done, run `make down`. It keeps the database; `make reset` also wipes it.
