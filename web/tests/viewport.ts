@@ -1,17 +1,4 @@
-import {
-  DEFAULT_THEME,
-  em,
-  getBreakpointValue,
-  mergeMantineTheme,
-} from "@mantine/core";
-import { theme } from "@/theme";
-
-const { breakpoints } = mergeMantineTheme(DEFAULT_THEME, theme);
-const MAX_WIDTH_OFFSET = 0.1;
-const maxWidth = getBreakpointValue("sm", breakpoints) - MAX_WIDTH_OFFSET;
-const MOBILE_MEDIA_QUERY = `(max-width: ${
-  breakpoints.sm.includes("px") ? `${maxWidth}px` : em(maxWidth)
-})`;
+import { MOBILE_MEDIA_QUERY } from "@/lib/hooks/use-is-mobile";
 
 function stubMatchMedia(matchingQueries: string[]) {
   Object.defineProperty(window, "matchMedia", {
