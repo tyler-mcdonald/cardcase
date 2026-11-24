@@ -127,6 +127,7 @@ export function TransactionsPage() {
   });
   const isAdding = editor?.kind === "new";
   const isAddingInRow = isAdding && !isMobile;
+  const isAddingInModal = isAdding && isMobile;
   const editTarget = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !isAddingInRow;
   const showTable = data !== undefined && !isEmpty;
@@ -207,7 +208,7 @@ export function TransactionsPage() {
         />
       )}
 
-      {isAdding && isMobile && (
+      {isAddingInModal && (
         <NewTransactionModal
           key={editor.key}
           accountId={filteredAccountId}

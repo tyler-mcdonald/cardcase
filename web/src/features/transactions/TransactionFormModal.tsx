@@ -14,18 +14,16 @@ import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import classes from "./TransactionFormModal.module.css";
 import type { TransactionFormValues } from "./transaction-form";
-import { type SaveMutation, useTransactionForm } from "./use-transaction-form";
-
-type Direction = "outflow" | "inflow";
+import {
+  type AmountField,
+  type SaveMutation,
+  useTransactionForm,
+} from "./use-transaction-form";
 
 const DIRECTION_OPTIONS = [
   { value: "outflow", label: "Outflow" },
   { value: "inflow", label: "Inflow" },
 ];
-
-function initialDirection(values: TransactionFormValues): Direction {
-  return values.inflow !== "" ? "inflow" : "outflow";
-}
 
 export function TransactionFormModal({
   title,
@@ -41,13 +39,13 @@ export function TransactionFormModal({
   onClose: () => void;
 }) {
   const amountId = useId();
-  const [direction, setDirection] = useState(() =>
-    initialDirection(initialValues),
+  const [direction, setDirection] = useState<AmountField>(
+    initialValues.inflow !== "" ? "inflow" : "outflow",
   );
   const { form, save, cancel, setAmount, formatAmount, saveError } =
     useTransactionForm({ initialValues, mutation, onSave, onClose });
 
-  function changeDirection(next: Direction) {
+  function changeDirection(next: AmountField) {
     setAmount(next, form.values[direction]);
     setDirection(next);
   }
@@ -78,7 +76,7 @@ export function TransactionFormModal({
                 classNames={{ label: classes.directionLabel }}
                 data={DIRECTION_OPTIONS}
                 value={direction}
-                onChange={(value) => changeDirection(value as Direction)}
+                onChange={(value) => changeDirection(value as AmountField)}
               />
               <MoneyInput
                 id={amountId}

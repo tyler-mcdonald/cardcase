@@ -11,7 +11,7 @@ import {
   validateTransactionForm,
 } from "./transaction-form";
 
-type AmountField = "outflow" | "inflow";
+export type AmountField = "outflow" | "inflow";
 
 export type SaveMutation = ClosableMutation & { error: unknown };
 
