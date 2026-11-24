@@ -26,27 +26,25 @@ const DIRECTION_OPTIONS = [
 ];
 
 export function TransactionFormModal({
-  title,
   initialValues,
   mutation,
   onSave,
   onClose,
 }: {
-  title: string;
   initialValues: TransactionFormValues;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
   onClose: () => void;
 }) {
   const amountId = useId();
-  const [direction, setDirection] = useState<AmountField>(
-    initialValues.inflow !== "" ? "inflow" : "outflow",
-  );
+  const [direction, setDirection] = useState<AmountField>("outflow");
   const { form, save, cancel, setAmount, formatAmount, saveError } =
     useTransactionForm({ initialValues, mutation, onSave, onClose });
 
   function changeDirection(next: AmountField) {
-    setAmount(next, form.values[direction]);
+    if (form.values[direction] !== "") {
+      setAmount(next, form.values[direction]);
+    }
     setDirection(next);
   }
 
@@ -55,7 +53,7 @@ export function TransactionFormModal({
       opened
       fullScreen
       onClose={cancel}
-      title={title}
+      title="Add transaction"
       closeOnClickOutside={false}
       closeOnEscape={false}
       closeButtonProps={{ size: "xl", "aria-label": "Close" }}

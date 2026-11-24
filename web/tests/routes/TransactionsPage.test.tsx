@@ -22,7 +22,7 @@ import { makeTransaction } from "@tests/features/transactions/factories";
 import { makePage } from "@tests/lib/api/factories";
 import { LocationDisplay } from "@tests/LocationDisplay";
 import { renderWithProviders } from "@tests/render";
-import { mockMobileViewport } from "@tests/viewport";
+import { mockMobileViewport, resizeToDesktopViewport } from "@tests/viewport";
 
 vi.mock("@/features/transactions/api");
 
@@ -1535,6 +1535,30 @@ describe("adding a transaction on mobile", () => {
         occurred_on: "2026-09-30",
       }),
     );
+  });
+
+  it("keeps the amount error when switching direction with no amount", async () => {
+    await openNewTransactionForm();
+
+    saveForm();
+    await form().findByText("Enter either an outflow or an inflow");
+    chooseDirection("Inflow");
+
+    expect(
+      form().getByText("Enter either an outflow or an inflow"),
+    ).toBeTruthy();
+  });
+
+  it("keeps the form and its input when the viewport widens", async () => {
+    await openNewTransactionForm();
+
+    enterAmount("4.75");
+    act(() => resizeToDesktopViewport());
+
+    expect(
+      form().getByRole<HTMLInputElement>("textbox", { name: /^Amount/ }).value,
+    ).toBe("$4.75");
+    expect(screen.queryByRole("textbox", { name: "Outflow" })).toBeNull();
   });
 
   it("defaults the date to today with no clear button", async () => {
