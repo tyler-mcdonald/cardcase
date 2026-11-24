@@ -1541,7 +1541,7 @@ describe("adding a transaction on mobile", () => {
     await openNewTransactionForm();
 
     expect(form().getByLabelText<HTMLInputElement>(/^Date/).value).toBe(
-      "2026-09-30",
+      "Sep 30, 2026",
     );
     expect(form().queryByRole("button", { name: "Clear date" })).toBeNull();
   });

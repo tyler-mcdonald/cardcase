@@ -7,8 +7,8 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
 import { useId } from "@mantine/hooks";
-import { DateField } from "@/components/DateField";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
@@ -94,10 +94,10 @@ export function TransactionFormModal({
             required
             {...form.getInputProps("accountId")}
           />
-          <DateField
+          <DateInput
             label="Date"
             required
-            clearable={false}
+            valueFormat="MMM D, YYYY"
             {...form.getInputProps("occurredOn")}
           />
           <TextInput
