@@ -8,6 +8,7 @@ import type { Account } from "@/features/accounts/types";
 import { accountLabeler } from "@/features/accounts/labels";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
+import { NewTransactionModal } from "@/features/transactions/NewTransactionModal";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
 import {
   type EditTarget,
@@ -19,6 +20,7 @@ import {
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
 import { useTransactionFilters } from "@/features/transactions/use-transaction-filters";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
@@ -83,6 +85,7 @@ function EmptyTransactions({ filtered }: { filtered: boolean }) {
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
+  const isMobile = useIsMobile();
   const { filters, setFilters } = useTransactionFilters();
   const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
     (page) => transactionsQuery({ page, ...filters }),
@@ -123,8 +126,9 @@ export function TransactionsPage() {
     isSaving,
   });
   const isAdding = editor?.kind === "new";
+  const isAddingInRow = isAdding && !isMobile;
   const editTarget = editor?.kind === "edit" ? editor : null;
-  const isEmpty = data?.items.length === 0 && !isAdding;
+  const isEmpty = data?.items.length === 0 && !isAddingInRow;
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
@@ -192,7 +196,7 @@ export function TransactionsPage() {
           onEdit={isSaving ? undefined : openEditTransaction}
           onEditClose={() => closeEditor(editor)}
           newRow={
-            isAdding && (
+            isAddingInRow && (
               <NewTransactionRow
                 key={editor.key}
                 accountId={filteredAccountId}
@@ -200,6 +204,14 @@ export function TransactionsPage() {
               />
             )
           }
+        />
+      )}
+
+      {isAdding && isMobile && (
+        <NewTransactionModal
+          key={editor.key}
+          accountId={filteredAccountId}
+          onClose={() => closeEditor(editor)}
         />
       )}
 

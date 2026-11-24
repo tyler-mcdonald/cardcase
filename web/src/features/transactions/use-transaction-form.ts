@@ -61,10 +61,19 @@ export function useTransactionForm({
     }
   }
 
+  const saveError = mutation.error ? apiErrorMessage(mutation.error) : null;
   const errorMessages = Object.values(form.errors).map(String);
-  if (mutation.error) {
-    errorMessages.push(apiErrorMessage(mutation.error));
+  if (saveError) {
+    errorMessages.push(saveError);
   }
 
-  return { form, save, cancel, setAmount, formatAmount, errorMessages };
+  return {
+    form,
+    save,
+    cancel,
+    setAmount,
+    formatAmount,
+    saveError,
+    errorMessages,
+  };
 }
