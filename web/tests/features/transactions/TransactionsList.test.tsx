@@ -45,13 +45,15 @@ describe("TransactionsList", () => {
     renderList([makeTransaction({ amount: "-24.99" })]);
 
     const amount = screen.getByText("-$24.99");
-    expect(amount.className).not.toMatch(/inflow/);
+    expect(amount.style.color).toBe("");
   });
 
   it("shows an inflow with a plus sign in green", () => {
     renderList([makeTransaction({ amount: "310.00" })]);
 
-    expect(screen.getByText("+$310.00").className).toMatch(/inflow/);
+    expect(screen.getByText("+$310.00").style.color).toBe(
+      "var(--mantine-color-green-text)",
+    );
   });
 
   it("selects the transaction when its row is tapped", () => {

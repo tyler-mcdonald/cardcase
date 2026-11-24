@@ -5,10 +5,9 @@ import { accountLabelText } from "@/features/accounts/labels";
 import type { AccountLabel } from "@/features/accounts/types";
 import { formatDate } from "@/lib/format";
 import classes from "./TransactionsList.module.css";
+import { SKELETON_ROW_COUNT } from "./constants";
 import { describeSignedAmount } from "./format";
 import type { Transaction } from "./types";
-
-const SKELETON_ROW_COUNT = 8;
 
 function TransactionsListFrame({ children }: { children: ReactNode }) {
   return <ul className={classes.list}>{children}</ul>;
@@ -16,7 +15,7 @@ function TransactionsListFrame({ children }: { children: ReactNode }) {
 
 function SecondaryLine({ children }: { children: ReactNode }) {
   return (
-    <Text size="sm" c="dimmed" truncate>
+    <Text span size="sm" c="dimmed" truncate>
       {children}
     </Text>
   );
@@ -31,7 +30,7 @@ function DescribedDetails({
 }) {
   return (
     <>
-      <Text fw={500} truncate>
+      <Text span fw={500} truncate>
         {transaction.description}
       </Text>
       <SecondaryLine>
@@ -50,7 +49,7 @@ function UndescribedDetails({
 }) {
   return (
     <>
-      <AccountDisplayName label={accountLabel} fw={500} />
+      <AccountDisplayName label={accountLabel} span fw={500} />
       <SecondaryLine>{formatDate(transaction.occurred_on)}</SecondaryLine>
     </>
   );
@@ -60,8 +59,10 @@ function SignedAmount({ amount }: { amount: string }) {
   const { label, inflow } = describeSignedAmount(amount);
   return (
     <Text
+      span
       fw={600}
-      className={`${classes.amount} ${inflow ? classes.inflow : ""}`}
+      c={inflow ? "green" : undefined}
+      className={classes.amount}
     >
       {label}
     </Text>

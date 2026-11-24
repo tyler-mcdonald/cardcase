@@ -36,7 +36,3 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-
-.inflow {
-  color: var(--mantine-color-green-text);
-}
