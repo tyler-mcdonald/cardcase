@@ -7,6 +7,7 @@ import { ApiError, GENERIC_ERROR } from "@/lib/api/errors";
 import { renderWithProviders } from "@tests/render";
 import { pickBrand, stubBrandSearch } from "@tests/features/brands/search";
 import { makeAccount } from "@tests/features/accounts/factories";
+import { mockMobileViewport } from "@tests/viewport";
 
 vi.mock("@/features/accounts/api");
 
@@ -473,5 +474,45 @@ describe("EditAccountModal", () => {
     rerenderWith({ account: other, opened: true });
 
     screen.getByRole("dialog", { name: "Edit account" });
+  });
+
+  it("opens full screen on mobile", () => {
+    mockMobileViewport();
+    renderForm();
+
+    expect(screen.getByRole("dialog").hasAttribute("data-full-screen")).toBe(
+      true,
+    );
+  });
+
+  it("doesn't show the delete confirmation full screen on mobile", () => {
+    mockMobileViewport();
+    renderForm();
+
+    startDelete();
+
+    expect(screen.getByRole("dialog").hasAttribute("data-full-screen")).toBe(
+      false,
+    );
+  });
+
+  it("doesn't open full screen on desktop", () => {
+    renderForm();
+
+    expect(screen.getByRole("dialog").hasAttribute("data-full-screen")).toBe(
+      false,
+    );
+  });
+
+  it("orders the actions Save, Cancel, then Delete account on mobile", () => {
+    mockMobileViewport();
+    renderForm();
+
+    const actions = ["Save changes", "Cancel", "Delete account"];
+    const names = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent)
+      .filter((name) => actions.includes(name ?? ""));
+    expect(names).toEqual(actions);
   });
 });

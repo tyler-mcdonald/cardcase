@@ -8,6 +8,7 @@ import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 const EDITABLE_FIELDS = [
   "name",
@@ -23,6 +24,13 @@ function editedFields(account: Account, values: AccountInput): AccountUpdate {
   return Object.fromEntries(edited.map((field) => [field, values[field]]));
 }
 
+function isConfirmingDelete(
+  account: Account | null,
+  confirmingDeleteId: string | null,
+): boolean {
+  return account !== null && confirmingDeleteId === account.id;
+}
+
 export function EditAccountModal({
   account,
   opened,
@@ -35,9 +43,23 @@ export function EditAccountModal({
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const close = useGuardedClose([updateAccount, deleteAccount], onClose);
+  const isMobile = useIsMobile();
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
+  const [wasOpened, setWasOpened] = useState(opened);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
+    if (opened) setConfirmingDeleteId(null);
+  }
+  const confirmingDelete = isConfirmingDelete(account, confirmingDeleteId);
 
   return (
-    <Modal.Root opened={opened} onClose={close}>
+    <Modal.Root
+      opened={opened}
+      onClose={close}
+      fullScreen={isMobile && !confirmingDelete}
+    >
       <Modal.Overlay />
       <Modal.Content>
         <FocusTrap.InitialFocus />
@@ -45,6 +67,10 @@ export function EditAccountModal({
           <EditAccountContent
             key={account.id}
             account={account}
+            confirmingDelete={confirmingDelete}
+            onConfirmingDeleteChange={(confirming) =>
+              setConfirmingDeleteId(confirming ? account.id : null)
+            }
             updateAccount={updateAccount}
             deleteAccount={deleteAccount}
             close={close}
@@ -58,19 +84,22 @@ export function EditAccountModal({
 
 function EditAccountContent({
   account,
+  confirmingDelete,
+  onConfirmingDeleteChange,
   updateAccount,
   deleteAccount,
   close,
   onClose,
 }: {
   account: Account;
+  confirmingDelete: boolean;
+  onConfirmingDeleteChange: (confirming: boolean) => void;
   updateAccount: ReturnType<typeof useUpdateAccount>;
   deleteAccount: ReturnType<typeof useDeleteAccount>;
   close: () => void;
   onClose: () => void;
 }) {
   const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const balance = describeBalance(account.balance);
 
@@ -85,12 +114,12 @@ function EditAccountContent({
 
   function startDelete() {
     updateAccount.reset();
-    setConfirmingDelete(true);
+    onConfirmingDeleteChange(true);
   }
 
   function cancelDelete() {
     deleteAccount.reset();
-    flushSync(() => setConfirmingDelete(false));
+    flushSync(() => onConfirmingDeleteChange(false));
     deleteButtonRef.current?.focus();
   }
 
