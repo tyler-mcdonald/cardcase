@@ -86,6 +86,7 @@ export function TransactionFormModal({
             </Stack>
           </Input.Wrapper>
           <AccountSelect
+            floatingHeight="viewport"
             label="Account"
             required
             {...form.getInputProps("accountId")}
