@@ -11,14 +11,12 @@ import { CreateAccountModal } from "@/features/accounts/CreateAccountModal";
 import { EditAccountModal } from "@/features/accounts/EditAccountModal";
 import { accountsQuery } from "@/features/accounts/queries";
 import type { Account } from "@/features/accounts/types";
-import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 import classes from "./AccountsPage.module.css";
 
 export function AccountsPage() {
   const { page, goToPage } = usePageParam();
-  const isMobile = useIsMobile();
   const { data, loadError, isPending, isFetching, refetch } =
     usePaginatedQuery(accountsQuery);
   const [createOpened, createModal] = useDisclosure(false);
@@ -53,7 +51,10 @@ export function AccountsPage() {
             Gift cards and flight credits you're tracking.
           </Text>
         </div>
-        <Button onClick={createModal.open} h={isMobile ? 44 : undefined}>
+        <Button
+          onClick={createModal.open}
+          h={{ base: 44, sm: "var(--button-height)" }}
+        >
           Add account
         </Button>
       </Flex>
