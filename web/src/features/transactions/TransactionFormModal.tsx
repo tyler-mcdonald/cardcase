@@ -4,7 +4,6 @@ import {
   Input,
   Modal,
   SegmentedControl,
-  SimpleGrid,
   Stack,
   TextInput,
 } from "@mantine/core";
@@ -108,19 +107,18 @@ export function TransactionFormModal({
           />
           {saveError && <FormError message={saveError} />}
         </Stack>
-        <SimpleGrid cols={2} spacing="xs" className={classes.actions}>
+        <Stack gap="xs" className={classes.actions}>
+          <Button type="submit" loading={mutation.isPending}>
+            Save
+          </Button>
           <Button
             variant="default"
-            h={44}
             onClick={cancel}
             disabled={mutation.isPending}
           >
             Cancel
           </Button>
-          <Button type="submit" h={44} disabled={mutation.isPending}>
-            Save
-          </Button>
-        </SimpleGrid>
+        </Stack>
       </form>
     </Modal>
   );
