@@ -13,6 +13,7 @@ import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
 import type { Brand } from "@/features/brands/types";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import classes from "./AccountForm.module.css";
 import { ACCOUNT_TYPE_DISPLAY } from "./constants";
 import type { AccountInput } from "./types";
@@ -70,6 +71,7 @@ export function AccountForm({
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
   const { setErrors } = form;
+  const isMobile = useIsMobile();
   const { error: typeError, ...typeInputProps } = form.getInputProps("type");
 
   useEffect(() => {
@@ -84,6 +86,17 @@ export function AccountForm({
   function handleBrandSelect(brand: Brand) {
     form.setValues({ name: brand.name, brand_domain: brand.domain });
   }
+
+  const submitButton = (
+    <Button type="submit" loading={isPending}>
+      {submitLabel}
+    </Button>
+  );
+  const cancelButton = (
+    <Button variant="default" onClick={onCancel} disabled={isPending}>
+      Cancel
+    </Button>
+  );
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
@@ -133,18 +146,56 @@ export function AccountForm({
           {...form.getInputProps("description")}
         />
         {formError && <FormError message={formError} />}
-        <Group justify={secondaryAction ? "space-between" : "flex-end"}>
-          {secondaryAction}
-          <Group>
-            <Button variant="default" onClick={onCancel} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" loading={isPending}>
-              {submitLabel}
-            </Button>
-          </Group>
-        </Group>
+        {isMobile ? (
+          <MobileFormActions
+            submitButton={submitButton}
+            cancelButton={cancelButton}
+            secondaryAction={secondaryAction}
+          />
+        ) : (
+          <DesktopFormActions
+            submitButton={submitButton}
+            cancelButton={cancelButton}
+            secondaryAction={secondaryAction}
+          />
+        )}
       </Stack>
     </form>
+  );
+}
+
+type FormActionsProps = {
+  submitButton: ReactNode;
+  cancelButton: ReactNode;
+  secondaryAction?: ReactNode;
+};
+
+function MobileFormActions({
+  submitButton,
+  cancelButton,
+  secondaryAction,
+}: FormActionsProps) {
+  return (
+    <Stack gap="xs">
+      {submitButton}
+      {cancelButton}
+      {secondaryAction}
+    </Stack>
+  );
+}
+
+function DesktopFormActions({
+  submitButton,
+  cancelButton,
+  secondaryAction,
+}: FormActionsProps) {
+  return (
+    <Group justify={secondaryAction ? "space-between" : "flex-end"}>
+      {secondaryAction}
+      <Group>
+        {cancelButton}
+        {submitButton}
+      </Group>
+    </Group>
   );
 }

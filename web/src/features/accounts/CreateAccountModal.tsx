@@ -5,6 +5,7 @@ import type { AccountCreateInput } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
 import { toTwoDecimalString } from "@/lib/format";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 const INITIAL_VALUES: AccountFormValues = {
   name: "",
@@ -34,9 +35,15 @@ export function CreateAccountModal({
   const createAccount = useCreateAccount();
   const close = useGuardedClose([createAccount], onClose);
   const { fieldErrors, formError } = useAccountFormErrors(createAccount.error);
+  const isMobile = useIsMobile();
 
   return (
-    <Modal opened={opened} onClose={close} title="Add account">
+    <Modal
+      opened={opened}
+      onClose={close}
+      title="Add account"
+      fullScreen={isMobile}
+    >
       <AccountForm
         initialValues={INITIAL_VALUES}
         showInitialBalance
