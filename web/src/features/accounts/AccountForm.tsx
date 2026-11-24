@@ -6,9 +6,9 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { type ReactNode, useEffect } from "react";
+import { DateField } from "@/components/DateField";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
@@ -122,11 +122,9 @@ export function AccountForm({
             {...form.getInputProps("initial_balance")}
           />
         )}
-        <DateInput
+        <DateField
           label="Expiration date"
           description="Optional — leave blank if it doesn't expire."
-          clearable
-          valueFormat="MMM D, YYYY"
           {...form.getInputProps("expires_on")}
         />
         <TextInput
