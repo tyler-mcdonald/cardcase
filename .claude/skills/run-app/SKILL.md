@@ -29,5 +29,5 @@ argument-hint: "[local|docker]"
 
 4. Stop it
    - When the user is done:
-     - `docker`: run `make down`.
+     - `docker`: run `make down`. It keeps the database; `make reset` also wipes it.
      - `local`: stop both background processes. Leave the Postgres container running.
