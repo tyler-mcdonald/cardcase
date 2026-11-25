@@ -9,7 +9,12 @@ from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from accounts import serializers
-from accounts.models import MAX_ACCOUNTS_PER_USER, Account, Transaction
+from accounts.models import (
+    MAX_ACCOUNTS_PER_USER,
+    MAX_TRANSACTION_AMOUNT,
+    Account,
+    Transaction,
+)
 from accounts.views import AccountPagination
 from tests.accounts.client import delete, get, patch, post, post_account
 from tests.accounts.factories import (
@@ -719,6 +724,14 @@ def test_update_balance_accepts_any_balance_within_the_allowed_change(
 
     assert response.status_code == 200
     assert response.json()["balance"] == balance
+
+
+def test_max_transaction_amount_matches_amount_field() -> None:
+    field = Transaction._meta.get_field("amount")
+    amount = MAX_TRANSACTION_AMOUNT.as_tuple()
+
+    assert amount.digits == (9,) * field.max_digits
+    assert amount.exponent == -field.decimal_places
 
 
 @pytest.mark.django_db

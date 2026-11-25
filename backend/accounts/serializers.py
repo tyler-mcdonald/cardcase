@@ -4,13 +4,9 @@ from typing import Any, ClassVar
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
+from .models import MAX_ACCOUNTS_PER_USER, MAX_TRANSACTION_AMOUNT, Account, Transaction
 
 _AMOUNT_FIELD = Transaction._meta.get_field("amount")
-_MAX_AMOUNT = (
-    Decimal(10) ** (_AMOUNT_FIELD.max_digits - _AMOUNT_FIELD.decimal_places)
-    - Decimal(10) ** -_AMOUNT_FIELD.decimal_places
-)
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
@@ -91,10 +87,10 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
     def _balance_change(self, account: Account, balance: Decimal) -> Decimal:
         current: Decimal = account.balance  # type: ignore[attr-defined]
         change = balance - current
-        if abs(change) > _MAX_AMOUNT:
+        if abs(change) > MAX_TRANSACTION_AMOUNT:
             raise serializers.ValidationError(
                 {
-                    "balance": f"Ensure the balance changes by no more than {_MAX_AMOUNT}."
+                    "balance": f"Ensure the balance changes by no more than {MAX_TRANSACTION_AMOUNT}."
                 }
             )
         return change
