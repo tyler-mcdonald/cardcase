@@ -46,4 +46,8 @@
 
     gap: 4px;
   }
+
+  .paginationRoot {
+    --pagination-control-size-md: 44px;
+  }
 }
