@@ -18,6 +18,11 @@ type SelectTransactionProps = {
   onSelect: (transaction: Transaction) => void;
 };
 
+type TransactionsListProps = {
+  transactions: Transaction[];
+  accountLabel: (account: Transaction["account"]) => AccountLabel;
+} & SelectTransactionProps;
+
 function TransactionsListFrame({ children }: { children: ReactNode }) {
   return <ul className={classes.list}>{children}</ul>;
 }
@@ -96,10 +101,7 @@ export function TransactionsList({
   transactions,
   accountLabel,
   onSelect,
-}: {
-  transactions: Transaction[];
-  accountLabel: (account: Transaction["account"]) => AccountLabel;
-} & SelectTransactionProps) {
+}: TransactionsListProps) {
   return (
     <TransactionsListFrame>
       {transactions.map((transaction) => (
