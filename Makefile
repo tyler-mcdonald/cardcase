@@ -21,11 +21,18 @@ dev-web:
 
 # Run the full stack in Docker on unused ports so several copies can run side by side.
 # Each copy gets its own *.localhost hostname, since browsers share localhost cookies across ports.
-up:
+up: .docker-build.stamp
 	@set -- $$(python3 scripts/available_ports.py 2) && host=cardcase-$$1.localhost && \
-	APP_HOST=$$host WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --build --renew-anon-volumes --wait && \
+	APP_HOST=$$host WEB_PORT=$$1 BACKEND_PORT=$$2 $(compose) up -d --renew-anon-volumes --wait && \
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
+
+# Rebuild images only when their build inputs change, since source is bind-mounted.
+.docker-build.stamp: compose.yml backend/Dockerfile backend/.dockerignore backend/pyproject.toml backend/uv.lock \
+	web/Dockerfile web/.dockerignore web/package.json web/pnpm-lock.yaml
+	@touch $@.tmp
+	BUILDX_NO_DEFAULT_ATTESTATIONS=1 $(compose) build
+	@mv $@.tmp $@
 
 down:
 	$(compose) down

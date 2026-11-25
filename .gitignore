@@ -1,6 +1,7 @@
 .claude/settings.local.json
 .claude/worktrees/
 .DS_Store
+.docker-build.stamp*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
