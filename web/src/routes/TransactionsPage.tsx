@@ -8,6 +8,7 @@ import type { Account } from "@/features/accounts/types";
 import { accountLabeler } from "@/features/accounts/labels";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
+import { NewTransactionModal } from "@/features/transactions/NewTransactionModal";
 import { NewTransactionRow } from "@/features/transactions/NewTransactionRow";
 import {
   type EditTarget,
@@ -19,10 +20,11 @@ import {
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
 import { useTransactionFilters } from "@/features/transactions/use-transaction-filters";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 
-type NewTransactionEditor = { kind: "new"; key: number };
+type NewTransactionEditor = { kind: "new"; key: number; asModal: boolean };
 type EditTransactionEditor = { kind: "edit" } & EditTarget;
 type Editor = NewTransactionEditor | EditTransactionEditor;
 
@@ -36,6 +38,26 @@ function isEditedRowGone(
     transactions !== undefined &&
     !transactions.some((transaction) => transaction.id === editor.id)
   );
+}
+
+function newTransactionEditor(
+  editor: Editor | null,
+  { asModal }: { asModal: boolean },
+): NewTransactionEditor | null {
+  if (editor?.kind !== "new") {
+    return null;
+  }
+  if (editor.asModal !== asModal) {
+    return null;
+  }
+  return editor;
+}
+
+function isPageEmpty(
+  transactions: unknown[] | undefined,
+  isAddingRow: boolean,
+): boolean {
+  return transactions?.length === 0 && !isAddingRow;
 }
 
 // True when the accounts have loaded and `id` isn't one of them, e.g. a stale
@@ -83,6 +105,7 @@ function EmptyTransactions({ filtered }: { filtered: boolean }) {
 
 export function TransactionsPage() {
   const { page, goToPage } = usePageParam();
+  const isMobile = useIsMobile();
   const { filters, setFilters } = useTransactionFilters();
   const { data, loadError, isPending, isFetching, refetch } = usePaginatedQuery(
     (page) => transactionsQuery({ page, ...filters }),
@@ -122,15 +145,17 @@ export function TransactionsPage() {
     isAccountsPending,
     isSaving,
   });
-  const isAdding = editor?.kind === "new";
+  const rowEditor = newTransactionEditor(editor, { asModal: false });
+  const modalEditor = newTransactionEditor(editor, { asModal: true });
   const editTarget = editor?.kind === "edit" ? editor : null;
-  const isEmpty = data?.items.length === 0 && !isAdding;
+  const isEmpty = isPageEmpty(data?.items, rowEditor !== null);
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
     setEditor((current) => ({
       kind: "new",
       key: current?.kind === "new" ? current.key + 1 : 1,
+      asModal: isMobile,
     }));
   }
 
@@ -192,14 +217,22 @@ export function TransactionsPage() {
           onEdit={isSaving ? undefined : openEditTransaction}
           onEditClose={() => closeEditor(editor)}
           newRow={
-            isAdding && (
+            rowEditor && (
               <NewTransactionRow
-                key={editor.key}
+                key={rowEditor.key}
                 accountId={filteredAccountId}
-                onClose={() => closeEditor(editor)}
+                onClose={() => closeEditor(rowEditor)}
               />
             )
           }
+        />
+      )}
+
+      {modalEditor && (
+        <NewTransactionModal
+          key={modalEditor.key}
+          accountId={filteredAccountId}
+          onClose={() => closeEditor(modalEditor)}
         />
       )}
 
