@@ -138,10 +138,13 @@
   overflow-wrap: anywhere;
 }
 
+.root {
+  position: relative;
+}
+
 .cardButton {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   cursor: pointer;
 }
 

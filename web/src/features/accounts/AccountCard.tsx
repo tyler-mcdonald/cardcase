@@ -90,12 +90,12 @@ export function AccountCard({
             {balance.label}
           </Text>
         </div>
-        <UnstyledButton
-          aria-label={`Edit ${account.name}`}
-          className={classes.cardButton}
-          onClick={onEdit}
-        />
       </Card>
+      <UnstyledButton
+        aria-label={`Edit ${account.name}`}
+        className={classes.cardButton}
+        onClick={onEdit}
+      />
     </div>
   );
 }
