@@ -21,7 +21,7 @@ import {
   useTransactionForm,
 } from "./use-transaction-form";
 
-const DIRECTION_OPTIONS = AMOUNT_FIELDS.map(({ field, label }) => ({
+const AMOUNT_FIELD_OPTIONS = AMOUNT_FIELDS.map(({ field, label }) => ({
   value: field,
   label,
 }));
@@ -38,15 +38,15 @@ export function TransactionFormModal({
   onClose: () => void;
 }) {
   const amountId = useId();
-  const [direction, setDirection] = useState<AmountField>("outflow");
+  const [amountField, setAmountField] = useState<AmountField>("outflow");
   const { form, save, cancel, setAmount, formatAmount, saveError } =
     useTransactionForm({ initialValues, mutation, onSave, onClose });
 
-  function changeDirection(next: AmountField) {
-    if (form.values[direction] !== "") {
-      setAmount(next, form.values[direction]);
+  function changeAmountField(next: AmountField) {
+    if (form.values[amountField] !== "") {
+      setAmount(next, form.values[amountField]);
     }
-    setDirection(next);
+    setAmountField(next);
   }
 
   return (
@@ -71,17 +71,17 @@ export function TransactionFormModal({
             <Stack gap="xs">
               <SegmentedControl
                 fullWidth
-                aria-label="Amount direction"
-                classNames={{ label: classes.directionLabel }}
-                data={DIRECTION_OPTIONS}
-                value={direction}
-                onChange={(value) => changeDirection(value as AmountField)}
+                aria-label="Outflow or inflow"
+                classNames={{ label: classes.amountFieldLabel }}
+                data={AMOUNT_FIELD_OPTIONS}
+                value={amountField}
+                onChange={(value) => changeAmountField(value as AmountField)}
               />
               <MoneyInput
                 id={amountId}
-                value={form.values[direction]}
-                onChange={(value) => setAmount(direction, value)}
-                onBlur={() => formatAmount(direction)}
+                value={form.values[amountField]}
+                onChange={(value) => setAmount(amountField, value)}
+                onBlur={() => formatAmount(amountField)}
                 error={Boolean(form.errors.amount)}
               />
             </Stack>

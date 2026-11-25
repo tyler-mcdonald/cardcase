@@ -1480,7 +1480,7 @@ describe("adding a transaction on mobile", () => {
     });
   }
 
-  function chooseDirection(name: "Outflow" | "Inflow") {
+  function chooseAmountField(name: "Outflow" | "Inflow") {
     fireEvent.click(form().getByRole("radio", { name }));
   }
 
@@ -1525,7 +1525,7 @@ describe("adding a transaction on mobile", () => {
 
     await chooseAccount("Starbucks");
     enterAmount("20");
-    chooseDirection("Inflow");
+    chooseAmountField("Inflow");
     saveForm();
 
     await waitFor(() =>
@@ -1537,12 +1537,12 @@ describe("adding a transaction on mobile", () => {
     );
   });
 
-  it("keeps the amount error when switching direction with no amount", async () => {
+  it("keeps the amount error when switching between outflow and inflow with no amount", async () => {
     await openNewTransactionForm();
 
     saveForm();
     await form().findByText("Enter either an outflow or an inflow");
-    chooseDirection("Inflow");
+    chooseAmountField("Inflow");
 
     expect(
       form().getByText("Enter either an outflow or an inflow"),

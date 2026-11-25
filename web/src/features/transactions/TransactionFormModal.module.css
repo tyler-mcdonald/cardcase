@@ -14,7 +14,7 @@
   gap: var(--mantine-spacing-md);
 }
 
-.directionLabel {
+.amountFieldLabel {
   display: flex;
   align-items: center;
   justify-content: center;
