@@ -38,6 +38,16 @@
   outline-offset: 2px;
 }
 
+@media (hover: hover) {
+  .root:hover .card {
+    box-shadow: 4px 4px 0 0 var(--card-shadow-color);
+  }
+}
+
+.root:active .card {
+  box-shadow: 0 0 0 0 var(--card-shadow-color);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .card {
     transition:
@@ -48,13 +58,11 @@
   @media (hover: hover) {
     .root:hover .card {
       transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0 0 var(--card-shadow-color);
     }
   }
 
   .root:active .card {
     transform: translate(3px, 3px);
-    box-shadow: 0 0 0 0 var(--card-shadow-color);
     transition-duration: 50ms;
   }
 }
