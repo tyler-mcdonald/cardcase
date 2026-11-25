@@ -44,7 +44,13 @@ function newTransactionEditor(
   editor: Editor | null,
   { asModal }: { asModal: boolean },
 ): NewTransactionEditor | null {
-  return editor?.kind === "new" && editor.asModal === asModal ? editor : null;
+  if (editor?.kind !== "new") {
+    return null;
+  }
+  if (editor.asModal !== asModal) {
+    return null;
+  }
+  return editor;
 }
 
 // True when the accounts have loaded and `id` isn't one of them, e.g. a stale
