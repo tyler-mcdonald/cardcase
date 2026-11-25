@@ -1,26 +1,14 @@
 .page {
-  padding-block: var(--mantine-spacing-xl);
+  padding-top: max(8px, env(safe-area-inset-top));
+  padding-bottom: calc(
+    var(--tab-bar-height) + env(safe-area-inset-bottom) +
+      var(--mantine-spacing-xl)
+  );
 }
 
-.header {
-  margin-bottom: var(--mantine-spacing-xl);
-}
-
-@media (max-width: 47.99375em) {
+@media (min-width: 48em) {
   .page {
-    padding-top: 8px;
+    padding-top: var(--mantine-spacing-xl);
+    padding-bottom: var(--mantine-spacing-xl);
   }
-
-  .header {
-    margin-bottom: var(--mantine-spacing-md);
-  }
-}
-
-.navLink {
-  color: var(--mantine-color-dimmed);
-}
-
-.navLink[aria-current="page"] {
-  color: var(--mantine-color-text);
-  font-weight: 600;
 }

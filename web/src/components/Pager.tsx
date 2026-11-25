@@ -1,4 +1,5 @@
 import { Pagination } from "@mantine/core";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import classes from "./Pager.module.css";
 
 export function Pager({
@@ -12,6 +13,7 @@ export function Pager({
   onChange: (page: number) => void;
   disabled?: boolean;
 }) {
+  const isMobile = useIsMobile();
   if (total <= 1) {
     return null;
   }
@@ -21,6 +23,8 @@ export function Pager({
       value={page}
       onChange={onChange}
       disabled={disabled}
+      siblings={isMobile ? 0 : 1}
+      gap={isMobile ? 2 : 8}
       className={classes.pagination}
     />
   );
