@@ -27,10 +27,12 @@ up: .docker-build.stamp
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
 
+# Rebuild images only when their build inputs change, since source is bind-mounted.
 .docker-build.stamp: compose.yml backend/Dockerfile backend/.dockerignore backend/pyproject.toml backend/uv.lock \
 	web/Dockerfile web/.dockerignore web/package.json web/pnpm-lock.yaml
+	@touch $@.tmp
 	BUILDX_NO_DEFAULT_ATTESTATIONS=1 $(compose) build
-	@touch $@
+	@mv $@.tmp $@
 
 down:
 	$(compose) down
