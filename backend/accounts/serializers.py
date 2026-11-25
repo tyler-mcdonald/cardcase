@@ -55,9 +55,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             raise serializers.ValidationError(
                 f"You can only have up to {MAX_ACCOUNTS_PER_USER} accounts."
             )
-        balance = attrs.pop("balance", None)
-        if self.instance is not None and balance is not None:
-            attrs["balance_change"] = self._balance_change(self.instance, balance)
+        self._replace_balance_with_change(attrs)
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> Account:
@@ -83,6 +81,12 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
                 occurred_on=timezone.localdate(),
             )
         return account
+
+    def _replace_balance_with_change(self, attrs: dict[str, Any]) -> None:
+        """Swap a requested balance for the change needed to reach it, on update only."""
+        balance = attrs.pop("balance", None)
+        if self.instance is not None and balance is not None:
+            attrs["balance_change"] = self._balance_change(self.instance, balance)
 
     def _balance_change(self, account: Account, balance: Decimal) -> Decimal:
         current: Decimal = account.balance  # type: ignore[attr-defined]
