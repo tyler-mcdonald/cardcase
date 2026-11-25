@@ -43,6 +43,18 @@ function renderForm() {
   return { rerenderWith };
 }
 
+function balanceInput() {
+  return screen.getByRole<HTMLInputElement>("textbox", { name: /^balance/i });
+}
+
+function noteInput() {
+  return screen.queryByRole<HTMLInputElement>("textbox", { name: /^note/i });
+}
+
+function changeBalance(value: string) {
+  fireEvent.change(balanceInput(), { target: { value } });
+}
+
 function submit() {
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 }
@@ -77,15 +89,14 @@ describe("EditAccountModal", () => {
     ).toBe("Cancelled flight");
   });
 
-  it("shows the balance read-only", () => {
+  it("prefills the balance as an editable amount", () => {
     renderForm();
 
-    const balance = screen.getByRole<HTMLInputElement>("textbox", {
-      name: /balance/i,
-    });
-    expect(balance.value).toBe("$250.00");
-    expect(balance.readOnly).toBe(true);
-    expect(balance.style.color).toBe("");
+    const input = balanceInput();
+    expect(input.value).toBe("$250.00");
+    expect(input.readOnly).toBe(false);
+    expect(input.style.color).toBe("");
+    expect(screen.queryByText(/changes only through transactions/i)).toBeNull();
   });
 
   it("shows a negative balance in red", () => {
@@ -97,11 +108,142 @@ describe("EditAccountModal", () => {
       />,
     );
 
-    const balance = screen.getByRole<HTMLInputElement>("textbox", {
-      name: /balance/i,
+    const input = balanceInput();
+    expect(input.value).toBe("-$12.34");
+    expect(input.style.color).toBe("var(--mantine-color-red-text)");
+  });
+
+  it("hides the note until the balance changes", () => {
+    renderForm();
+
+    expect(noteInput()).toBeNull();
+
+    changeBalance("200");
+
+    expect(noteInput()?.placeholder).toBe("Balance adjustment");
+    expect(noteInput()?.maxLength).toBe(1000);
+  });
+
+  it("hides the note when the balance is reverted", () => {
+    renderForm();
+
+    changeBalance("200");
+    changeBalance("250");
+
+    expect(noteInput()).toBeNull();
+  });
+
+  it("explains the adjustment only while the balance is focused", async () => {
+    renderForm();
+    const hint =
+      /saved as a transaction described by the note, or "Balance adjustment" if left blank/i;
+
+    expect(screen.queryByText(hint)).toBeNull();
+
+    fireEvent.focus(balanceInput());
+    expect(await screen.findByText(hint)).toBeTruthy();
+
+    fireEvent.blur(balanceInput());
+    expect(screen.queryByText(hint)).toBeNull();
+  });
+
+  it("saves a changed balance with its note", async () => {
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    renderForm();
+
+    changeBalance("200.5");
+    fireEvent.change(noteInput()!, { target: { value: "Spent at the store" } });
+    submit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      balance: "200.50",
+      balance_note: "Spent at the store",
     });
-    expect(balance.value).toBe("-$12.34");
-    expect(balance.style.color).toBe("var(--mantine-color-red-text)");
+  });
+
+  it("saves a negative balance", async () => {
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    renderForm();
+
+    changeBalance("-15");
+    submit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      balance: "-15.00",
+      balance_note: "",
+    });
+  });
+
+  it("saves no note when the balance is reverted", async () => {
+    mockedUpdateAccount.mockResolvedValueOnce(account);
+    renderForm();
+
+    changeBalance("200");
+    fireEvent.change(noteInput()!, { target: { value: "Spent" } });
+    changeBalance("250");
+    fireEvent.change(screen.getByRole("textbox", { name: /^name/i }), {
+      target: { value: "Delta voucher" },
+    });
+    submit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mockedUpdateAccount).toHaveBeenCalledWith("42", {
+      name: "Delta voucher",
+    });
+  });
+
+  it("requires a balance", () => {
+    renderForm();
+
+    changeBalance("");
+    submit();
+
+    expect(balanceInput().required).toBe(true);
+    expect(mockedUpdateAccount).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("shows the API's balance error on the balance field", async () => {
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", {
+        status: 400,
+        body: {
+          balance: ["Ensure the balance changes by no more than 99999999.99."],
+        },
+      }),
+    );
+    renderForm();
+
+    changeBalance("999999999");
+    submit();
+
+    await screen.findByText(
+      "Ensure the balance changes by no more than 99999999.99.",
+    );
+    expect(balanceInput().getAttribute("aria-invalid")).toBe("true");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("shows the API's note error on the note field", async () => {
+    mockedUpdateAccount.mockRejectedValueOnce(
+      new ApiError("Request failed (400)", {
+        status: 400,
+        body: {
+          balance_note: ["Ensure this field has no more than 1000 characters."],
+        },
+      }),
+    );
+    renderForm();
+
+    changeBalance("200");
+    submit();
+
+    await screen.findByText(
+      "Ensure this field has no more than 1000 characters.",
+    );
+    expect(noteInput()?.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("locks the account type", () => {
