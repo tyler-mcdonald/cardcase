@@ -4,7 +4,7 @@ import { Button, Stack, Text, Title } from "@mantine/core";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import { hasAccount } from "@/features/accounts/lookup";
 import { allAccountsQuery } from "@/features/accounts/queries";
-import type { Account, AccountLabel } from "@/features/accounts/types";
+import type { Account } from "@/features/accounts/types";
 import { accountLabeler } from "@/features/accounts/labels";
 import { LoadErrorAlert } from "@/components/LoadErrorAlert";
 import { Pager } from "@/components/Pager";
@@ -24,7 +24,10 @@ import {
   transactionsQuery,
   useIsSavingTransaction,
 } from "@/features/transactions/queries";
-import type { Transaction } from "@/features/transactions/types";
+import type {
+  AccountLabelFor,
+  Transaction,
+} from "@/features/transactions/types";
 import { useTransactionFilters } from "@/features/transactions/use-transaction-filters";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { usePageParam } from "@/lib/hooks/use-page-param";
@@ -36,8 +39,6 @@ type EditTransactionRowEditor = { kind: "edit"; inModal: false } & EditTarget;
 type EditTransactionModalEditor = { kind: "edit"; inModal: true; id: string };
 type Editor =
   NewTransactionEditor | EditTransactionRowEditor | EditTransactionModalEditor;
-
-type AccountLabelFor = (account: Transaction["account"]) => AccountLabel;
 
 // True when the row being edited is no longer on the loaded page.
 function isEditedRowGone(

@@ -1,4 +1,4 @@
-import type { Account } from "@/features/accounts/types";
+import type { Account, AccountLabel } from "@/features/accounts/types";
 import type { PageParams } from "@/lib/api/types";
 
 export type Transaction = {
@@ -15,6 +15,8 @@ export type TransactionInput = Pick<
   Transaction,
   "amount" | "description" | "occurred_on"
 >;
+
+export type AccountLabelFor = (account: Transaction["account"]) => AccountLabel;
 
 export type TransactionUpdate = Partial<TransactionInput>;
 
