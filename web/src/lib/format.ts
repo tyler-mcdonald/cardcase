@@ -5,13 +5,24 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
+const currencyOptions: Intl.NumberFormatOptions = {
   style: "currency",
   currency: "USD",
+};
+
+const currencyFormatter = new Intl.NumberFormat("en-US", currencyOptions);
+
+const signedCurrencyFormatter = new Intl.NumberFormat("en-US", {
+  ...currencyOptions,
+  signDisplay: "exceptZero",
 });
 
 export function formatCurrency(value: number): string {
   return currencyFormatter.format(value);
+}
+
+export function formatSignedCurrency(value: number): string {
+  return signedCurrencyFormatter.format(value);
 }
 
 export function formatDate(isoDate: string): string {

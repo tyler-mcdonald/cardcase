@@ -3,14 +3,12 @@ import { Skeleton, Table } from "@mantine/core";
 import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import type { AccountLabel } from "@/features/accounts/types";
 import { formatDate } from "@/lib/format";
-import { COLUMN_COUNT } from "./constants";
+import { COLUMN_COUNT, SKELETON_ROW_COUNT } from "./constants";
 import { EditTransactionRow } from "./EditTransactionRow";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
 import type { TransactionField } from "./transaction-form";
 import type { Transaction } from "./types";
-
-const SKELETON_ROW_COUNT = 8;
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
   return (

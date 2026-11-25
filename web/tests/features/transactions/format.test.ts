@@ -1,5 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { formatOutflowAndInflow } from "@/features/transactions/format";
+import {
+  describeSignedAmount,
+  formatOutflowAndInflow,
+} from "@/features/transactions/format";
+
+describe("describeSignedAmount", () => {
+  it("labels a negative amount as an outflow with a minus sign", () => {
+    expect(describeSignedAmount("-24.99")).toEqual({
+      label: "-$24.99",
+      inflow: false,
+    });
+  });
+
+  it("labels a positive amount as an inflow with a plus sign", () => {
+    expect(describeSignedAmount("310")).toEqual({
+      label: "+$310.00",
+      inflow: true,
+    });
+  });
+
+  it("labels a zero amount without a sign", () => {
+    expect(describeSignedAmount("0.00")).toEqual({
+      label: "$0.00",
+      inflow: false,
+    });
+  });
+});
 
 describe("formatOutflowAndInflow", () => {
   it("puts a negative amount under outflow", () => {
