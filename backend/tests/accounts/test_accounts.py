@@ -738,7 +738,9 @@ def test_update_balance_accepts_any_balance_within_the_allowed_change(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("balance", ["100000000.00", "-100000000.00"])
+@pytest.mark.parametrize(
+    "balance", ["100000000.00", "-100000000.00", "1e30", "1" * 31, "-" + "9" * 40]
+)
 def test_update_balance_rejects_change_over_the_largest_amount(
     auth_client: Client, user: User, balance: str
 ) -> None:
@@ -868,9 +870,7 @@ def test_update_account_locks_account(auth_client: Client, user: User) -> None:
         i for i, q in enumerate(queries.captured_queries) if "FOR UPDATE" in q["sql"]
     )
     balance_index = next(
-        i
-        for i, q in enumerate(queries.captured_queries)
-        if 'SUM("accounts_transaction"."amount")' in q["sql"]
+        i for i, q in enumerate(queries.captured_queries) if "SUM(" in q["sql"]
     )
     assert lock_index < balance_index
 

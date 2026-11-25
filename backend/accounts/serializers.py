@@ -1,7 +1,6 @@
-from decimal import Decimal
+from decimal import Decimal, DefaultContext
 from typing import Any, ClassVar
 
-from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -17,7 +16,7 @@ _MAX_AMOUNT = (
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
     balance = serializers.DecimalField(
-        max_digits=None, decimal_places=2, required=False
+        max_digits=DefaultContext.prec, decimal_places=2, required=False
     )
     balance_note = serializers.CharField(
         max_length=_DESCRIPTION_FIELD.max_length,
@@ -100,9 +99,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         return account
 
     def _balance_change(self, account: Account, balance: Decimal) -> Decimal:
-        current: Decimal = account.transactions.aggregate(
-            total=Sum("amount", default=Decimal(0))
-        )["total"]
+        current: Decimal = account.balance  # type: ignore[attr-defined]
         change = balance - current
         if abs(change) > _MAX_AMOUNT:
             raise serializers.ValidationError(
