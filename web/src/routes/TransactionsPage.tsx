@@ -40,6 +40,13 @@ function isEditedRowGone(
   );
 }
 
+function newTransactionEditor(
+  editor: Editor | null,
+  asModal: boolean,
+): NewTransactionEditor | null {
+  return editor?.kind === "new" && editor.asModal === asModal ? editor : null;
+}
+
 // True when the accounts have loaded and `id` isn't one of them, e.g. a stale
 // link to a deleted account.
 function isUnknownAccount(
@@ -125,10 +132,10 @@ export function TransactionsPage() {
     isAccountsPending,
     isSaving,
   });
-  const isAddingInRow = editor?.kind === "new" && !editor.asModal;
-  const isAddingInModal = editor?.kind === "new" && editor.asModal;
+  const rowEditor = newTransactionEditor(editor, false);
+  const modalEditor = newTransactionEditor(editor, true);
   const editTarget = editor?.kind === "edit" ? editor : null;
-  const isEmpty = data?.items.length === 0 && !isAddingInRow;
+  const isEmpty = data?.items.length === 0 && !rowEditor;
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
@@ -197,22 +204,22 @@ export function TransactionsPage() {
           onEdit={isSaving ? undefined : openEditTransaction}
           onEditClose={() => closeEditor(editor)}
           newRow={
-            isAddingInRow && (
+            rowEditor && (
               <NewTransactionRow
-                key={editor.key}
+                key={rowEditor.key}
                 accountId={filteredAccountId}
-                onClose={() => closeEditor(editor)}
+                onClose={() => closeEditor(rowEditor)}
               />
             )
           }
         />
       )}
 
-      {isAddingInModal && (
+      {modalEditor && (
         <NewTransactionModal
-          key={editor.key}
+          key={modalEditor.key}
           accountId={filteredAccountId}
-          onClose={() => closeEditor(editor)}
+          onClose={() => closeEditor(modalEditor)}
         />
       )}
 
