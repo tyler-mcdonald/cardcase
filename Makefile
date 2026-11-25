@@ -1,4 +1,4 @@
-.PHONY: setup setup-backend setup-web dev-backend dev-web up down logs
+.PHONY: setup setup-backend setup-web dev-backend dev-web up down reset logs
 .NOTPARALLEL:
 
 compose = docker compose --env-file backend/.env.example
@@ -27,8 +27,10 @@ up:
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
 
-# Also deletes the database volume, so the next `make up` starts from a fresh database.
 down:
+	$(compose) down
+
+reset:
 	$(compose) down -v
 
 logs:
