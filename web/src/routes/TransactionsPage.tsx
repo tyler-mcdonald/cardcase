@@ -34,9 +34,9 @@ import { usePageParam } from "@/lib/hooks/use-page-param";
 import { usePaginatedQuery } from "@/lib/hooks/use-paginated-query";
 import classes from "./TransactionsPage.module.css";
 
-type NewTransactionEditor = { kind: "new"; key: number; inModal: boolean };
-type EditTransactionRowEditor = { kind: "edit"; inModal: false } & EditTarget;
-type EditTransactionModalEditor = { kind: "edit"; inModal: true; id: string };
+type NewTransactionEditor = { kind: "new"; key: number; asModal: boolean };
+type EditTransactionRowEditor = { kind: "edit"; asModal: false } & EditTarget;
+type EditTransactionModalEditor = { kind: "edit"; asModal: true; id: string };
 type Editor =
   NewTransactionEditor | EditTransactionRowEditor | EditTransactionModalEditor;
 
@@ -50,6 +50,26 @@ function isEditedRowGone(
     transactions !== undefined &&
     !transactions.some((transaction) => transaction.id === editor.id)
   );
+}
+
+function newTransactionEditor(
+  editor: Editor | null,
+  { asModal }: { asModal: boolean },
+): NewTransactionEditor | null {
+  if (editor?.kind !== "new") {
+    return null;
+  }
+  if (editor.asModal !== asModal) {
+    return null;
+  }
+  return editor;
+}
+
+function isPageEmpty(
+  transactions: unknown[] | undefined,
+  isAddingRow: boolean,
+): boolean {
+  return transactions?.length === 0 && !isAddingRow;
 }
 
 // True when the accounts have loaded and `id` isn't one of them, e.g. a stale
@@ -91,7 +111,7 @@ function modalEditedTransaction(
   editor: Editor | null,
   transactions: Transaction[] | undefined,
 ): Transaction | undefined {
-  if (editor?.kind !== "edit" || !editor.inModal) {
+  if (editor?.kind !== "edit" || !editor.asModal) {
     return undefined;
   }
   return transactions?.find((transaction) => transaction.id === editor.id);
@@ -132,12 +152,12 @@ function DesktopTransactions({
     <TransactionsTable
       transactions={transactions}
       accountLabel={accountLabel}
-      editTarget={editor?.kind === "edit" && !editor.inModal ? editor : null}
+      editTarget={editor?.kind === "edit" && !editor.asModal ? editor : null}
       onEdit={onEdit}
       onEditClose={onEditorClose}
       newRow={
         editor?.kind === "new" &&
-        !editor.inModal && (
+        !editor.asModal && (
           <NewTransactionRow
             key={editor.key}
             accountId={filteredAccountId}
@@ -211,7 +231,7 @@ export function TransactionsPage() {
   if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
-  if (isMobile && editor !== null && !editor.inModal) {
+  if (isMobile && editor !== null && !editor.asModal) {
     setEditor(null);
   }
   const isAddEnabled = canAddTransaction({
@@ -220,27 +240,27 @@ export function TransactionsPage() {
     isAccountsPending,
     isSaving,
   });
-  const isAddingInRow = editor?.kind === "new" && !editor.inModal;
-  const isAddingInModal = editor?.kind === "new" && editor.inModal;
+  const rowEditor = newTransactionEditor(editor, { asModal: false });
+  const modalEditor = newTransactionEditor(editor, { asModal: true });
   const editedTransaction = modalEditedTransaction(editor, data?.items);
-  const isEmpty = data?.items.length === 0 && !isAddingInRow;
+  const isEmpty = isPageEmpty(data?.items, rowEditor !== null);
   const transactions = isEmpty ? undefined : data?.items;
 
   function openNewTransaction() {
     setEditor((current) => ({
       kind: "new",
       key: current?.kind === "new" ? current.key + 1 : 1,
-      inModal: isMobile,
+      asModal: isMobile,
     }));
   }
 
   function openEditTransactionRow(target: EditTarget) {
-    setEditor({ kind: "edit", inModal: false, ...target });
+    setEditor({ kind: "edit", asModal: false, ...target });
   }
 
   function openEditTransactionModal(transaction: Transaction) {
     if (!isSaving) {
-      setEditor({ kind: "edit", inModal: true, id: transaction.id });
+      setEditor({ kind: "edit", asModal: true, id: transaction.id });
     }
   }
 
@@ -312,11 +332,11 @@ export function TransactionsPage() {
         />
       )}
 
-      {isAddingInModal && (
+      {modalEditor && (
         <NewTransactionModal
-          key={editor.key}
+          key={modalEditor.key}
           accountId={filteredAccountId}
-          onClose={() => closeEditor(editor)}
+          onClose={() => closeEditor(modalEditor)}
         />
       )}
 
