@@ -21,18 +21,13 @@ import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import type { AccountLabel } from "@/features/accounts/types";
 import { THEME_SHADES } from "@/theme";
-import { COLUMN_COUNT } from "./constants";
+import { AMOUNT_FIELDS, COLUMN_COUNT } from "./constants";
 import classes from "./TransactionsTable.module.css";
 import type {
   TransactionField,
   TransactionFormValues,
 } from "./transaction-form";
 import { type SaveMutation, useTransactionForm } from "./use-transaction-form";
-
-const MONEY_INPUT_COLUMNS = [
-  { field: "outflow", label: "Outflow" },
-  { field: "inflow", label: "Inflow" },
-] as const;
 
 function ErrorMessages({ messages }: { messages: string[] }) {
   return (
@@ -180,7 +175,7 @@ export function TransactionEditorRow({
             {...form.getInputProps("description")}
           />
         </Table.Td>
-        {MONEY_INPUT_COLUMNS.map(({ field, label }) => (
+        {AMOUNT_FIELDS.map(({ field, label }) => (
           <Table.Td key={field}>
             <MoneyInput
               aria-label={label}

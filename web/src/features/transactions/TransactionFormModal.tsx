@@ -12,6 +12,7 @@ import { useId } from "@mantine/hooks";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
+import { AMOUNT_FIELDS } from "./constants";
 import classes from "./TransactionFormModal.module.css";
 import type { TransactionFormValues } from "./transaction-form";
 import {
@@ -20,10 +21,10 @@ import {
   useTransactionForm,
 } from "./use-transaction-form";
 
-const DIRECTION_OPTIONS = [
-  { value: "outflow", label: "Outflow" },
-  { value: "inflow", label: "Inflow" },
-];
+const DIRECTION_OPTIONS = AMOUNT_FIELDS.map(({ field, label }) => ({
+  value: field,
+  label,
+}));
 
 export function TransactionFormModal({
   initialValues,
