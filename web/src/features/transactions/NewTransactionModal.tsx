@@ -13,6 +13,7 @@ export function NewTransactionModal({
 
   return (
     <TransactionFormModal
+      title="Add transaction"
       initialValues={emptyTransactionForm(accountId)}
       mutation={mutation}
       onSave={save}
