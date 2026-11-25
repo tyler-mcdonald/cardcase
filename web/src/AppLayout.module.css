@@ -1,0 +1,14 @@
+.page {
+  padding-top: max(8px, env(safe-area-inset-top));
+  padding-bottom: calc(
+    var(--tab-bar-height) + env(safe-area-inset-bottom) +
+      var(--mantine-spacing-xl)
+  );
+}
+
+@media (min-width: 48em) {
+  .page {
+    padding-top: var(--mantine-spacing-xl);
+    padding-bottom: var(--mantine-spacing-xl);
+  }
+}

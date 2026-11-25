@@ -1,8 +1,12 @@
+import type { ReactNode } from "react";
 import { fireEvent, screen } from "@testing-library/react";
-import { Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppLayout } from "@/AppLayout";
 import { useLogout } from "@/features/auth/queries";
+import { DesktopHeader } from "@/layout/DesktopHeader";
+import { MobileHeader } from "@/layout/MobileHeader";
+import { MobileTabBar } from "@/layout/MobileTabBar";
 import { mockSignedInUser } from "@tests/features/auth/fixtures";
 import { renderWithProviders } from "@tests/render";
 
@@ -25,10 +29,10 @@ beforeEach(() => {
   } as unknown as ReturnType<typeof useLogout>);
 });
 
-function renderLayout(route: string) {
+function renderAround(layout: ReactNode, route: string) {
   return renderWithProviders(
     <Routes>
-      <Route element={<AppLayout />}>
+      <Route element={layout}>
         <Route index element={<div>Home content</div>} />
         <Route path="other" element={<div>Other content</div>} />
         <Route path="transactions" element={<div>Transactions content</div>} />
@@ -39,28 +43,42 @@ function renderLayout(route: string) {
   );
 }
 
+function renderWith(chrome: ReactNode, route: string) {
+  return renderAround(
+    <>
+      {chrome}
+      <Outlet />
+    </>,
+    route,
+  );
+}
+
 function openAccountMenu() {
   fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
 }
 
 describe("AppLayout", () => {
-  it("renders the header around the current page", () => {
-    renderLayout("/other");
+  it("renders the current page with the mobile and desktop chrome", () => {
+    renderAround(<AppLayout />, "/other");
 
-    screen.getByRole("button", { name: "Account menu" });
     screen.getByText("Other content");
+    screen.getByRole("navigation", { name: "Primary" });
+    screen.getByText("test@example.com");
   });
+});
 
-  it("shows the email and avatar menu in the header's account area", () => {
-    renderLayout("/other");
+describe("DesktopHeader", () => {
+  it("shows the email and avatar menu in the account area", () => {
+    renderWith(<DesktopHeader />, "/other");
 
     screen.getByText("test@example.com");
+    screen.getByRole("button", { name: "Account menu" });
     expect(screen.queryByRole("button", { name: "Color scheme" })).toBeNull();
     expect(screen.queryByRole("button", { name: /log out/i })).toBeNull();
   });
 
   it("links the brand back home", () => {
-    renderLayout("/other");
+    renderWith(<DesktopHeader />, "/other");
 
     fireEvent.click(screen.getByRole("link", { name: "cardcase" }));
 
@@ -68,7 +86,7 @@ describe("AppLayout", () => {
   });
 
   it("navigates between accounts and transactions", () => {
-    renderLayout("/other");
+    renderWith(<DesktopHeader />, "/other");
 
     fireEvent.click(screen.getByRole("link", { name: "Transactions" }));
     screen.getByText("Transactions content");
@@ -78,11 +96,43 @@ describe("AppLayout", () => {
   });
 
   it("opens settings from the avatar menu", () => {
-    renderLayout("/other");
+    renderWith(<DesktopHeader />, "/other");
     openAccountMenu();
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Settings" }));
 
     screen.getByText("Settings content");
+  });
+});
+
+describe("MobileHeader", () => {
+  it("shows only the brand and avatar menu", () => {
+    renderWith(<MobileHeader />, "/other");
+
+    screen.getByRole("link", { name: "cardcase" });
+    screen.getByRole("button", { name: "Account menu" });
+    expect(screen.queryByText("test@example.com")).toBeNull();
+  });
+});
+
+describe("MobileTabBar", () => {
+  it("navigates between accounts and transactions", () => {
+    renderWith(<MobileTabBar />, "/other");
+
+    fireEvent.click(screen.getByRole("link", { name: "Transactions" }));
+    screen.getByText("Transactions content");
+
+    fireEvent.click(screen.getByRole("link", { name: "Accounts" }));
+    screen.getByText("Home content");
+  });
+
+  it("highlights the current page's tab", () => {
+    renderWith(<MobileTabBar />, "/transactions");
+
+    const current = (name: string) =>
+      screen.getByRole("link", { name }).getAttribute("aria-current");
+
+    expect(current("Transactions")).toBe("page");
+    expect(current("Accounts")).toBeNull();
   });
 });

@@ -6,15 +6,16 @@ import { useLogout } from "./queries";
 
 interface UserMenuProps {
   email: string;
+  targetClassName?: string;
 }
 
-export function UserMenu({ email }: UserMenuProps) {
+export function UserMenu({ email, targetClassName }: UserMenuProps) {
   const logout = useLogout();
 
   return (
     <Menu position="bottom-end" width={220}>
       <Menu.Target>
-        <UnstyledButton aria-label="Account menu">
+        <UnstyledButton aria-label="Account menu" className={targetClassName}>
           <Avatar radius="xl" size={30}>
             {email.charAt(0).toUpperCase()}
           </Avatar>

@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Avatar,
   Button,
+  Container,
   createTheme,
   defaultVariantColorsResolver,
   Input,
@@ -63,6 +64,9 @@ export const theme = createTheme({
     Button: Button.extend({
       defaultProps: { variant: "light" },
       vars: (theme, props) => softRedVars("button", theme, props.color),
+    }),
+    Container: Container.extend({
+      classNames: { root: classes.container },
     }),
     Input: Input.extend({
       classNames: {
