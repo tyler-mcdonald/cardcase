@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from typing import ClassVar
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 MAX_ACCOUNTS_PER_USER = 250
+MAX_TRANSACTION_AMOUNT = Decimal("99999999.99")
 
 
 class AccountManager(models.Manager["Account"]):

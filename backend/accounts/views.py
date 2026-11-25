@@ -60,7 +60,22 @@ class AccountViewSet(UserScopedViewSet):
 
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
         account = serializer.save(user=self.user)
-        serializer.instance = self.get_queryset().get(pk=account.pk)
+        serializer.instance = self._with_current_balance(account)
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        with transaction.atomic():
+            get_object_or_404(
+                Account.objects.select_for_update(), pk=kwargs["pk"], user=self.user
+            )
+            return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer: BaseSerializer[Account]) -> None:
+        account = serializer.save()
+        serializer.instance = self._with_current_balance(account)
+
+    def _with_current_balance(self, account: Account) -> Account:
+        """Reload the account so its balance reflects the transactions just saved."""
+        return self.get_queryset().get(pk=account.pk)
 
     def perform_destroy(self, instance: Account) -> None:
         instance.soft_delete()

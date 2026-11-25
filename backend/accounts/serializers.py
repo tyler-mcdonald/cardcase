@@ -1,17 +1,17 @@
-from decimal import Decimal
+from decimal import Decimal, DefaultContext
 from typing import Any, ClassVar
 
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
+from .models import MAX_ACCOUNTS_PER_USER, MAX_TRANSACTION_AMOUNT, Account, Transaction
 
 _AMOUNT_FIELD = Transaction._meta.get_field("amount")
 
 
 class AccountSerializer(serializers.ModelSerializer[Account]):
     balance = serializers.DecimalField(
-        max_digits=None, decimal_places=2, read_only=True
+        max_digits=DefaultContext.prec, decimal_places=2, required=False
     )
     initial_balance = serializers.DecimalField(
         max_digits=_AMOUNT_FIELD.max_digits,
@@ -55,6 +55,7 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             raise serializers.ValidationError(
                 f"You can only have up to {MAX_ACCOUNTS_PER_USER} accounts."
             )
+        self._replace_balance_with_change(attrs)
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> Account:
@@ -68,6 +69,38 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
                 occurred_on=timezone.localdate(),
             )
         return account
+
+    def update(self, instance: Account, validated_data: dict[str, Any]) -> Account:
+        balance_change = validated_data.pop("balance_change", Decimal(0))
+        account = super().update(instance, validated_data)
+        self._record_balance_adjustment(account, balance_change)
+        return account
+
+    def _record_balance_adjustment(self, account: Account, change: Decimal) -> None:
+        if change != 0:
+            Transaction.objects.create(
+                account=account,
+                amount=change,
+                description="Manual Balance Adjustment",
+                occurred_on=timezone.localdate(),
+            )
+
+    def _replace_balance_with_change(self, attrs: dict[str, Any]) -> None:
+        """Swap a requested balance for the change needed to reach it, on update only."""
+        balance = attrs.pop("balance", None)
+        if self.instance is not None and balance is not None:
+            attrs["balance_change"] = self._balance_change(self.instance, balance)
+
+    def _balance_change(self, account: Account, balance: Decimal) -> Decimal:
+        current: Decimal = account.balance  # type: ignore[attr-defined]
+        change = balance - current
+        if abs(change) > MAX_TRANSACTION_AMOUNT:
+            raise serializers.ValidationError(
+                {
+                    "balance": f"Ensure the balance changes by no more than {MAX_TRANSACTION_AMOUNT}."
+                }
+            )
+        return change
 
     def _at_account_limit(self) -> bool:
         user = self.context["request"].user
