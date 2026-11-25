@@ -42,7 +42,7 @@ function isEditedRowGone(
 
 function newTransactionEditor(
   editor: Editor | null,
-  asModal: boolean,
+  { asModal }: { asModal: boolean },
 ): NewTransactionEditor | null {
   return editor?.kind === "new" && editor.asModal === asModal ? editor : null;
 }
@@ -132,8 +132,8 @@ export function TransactionsPage() {
     isAccountsPending,
     isSaving,
   });
-  const rowEditor = newTransactionEditor(editor, false);
-  const modalEditor = newTransactionEditor(editor, true);
+  const rowEditor = newTransactionEditor(editor, { asModal: false });
+  const modalEditor = newTransactionEditor(editor, { asModal: true });
   const editTarget = editor?.kind === "edit" ? editor : null;
   const isEmpty = data?.items.length === 0 && !rowEditor;
   const showTable = data !== undefined && !isEmpty;
