@@ -53,6 +53,13 @@ function newTransactionEditor(
   return editor;
 }
 
+function isPageEmpty(
+  transactions: unknown[] | undefined,
+  isAddingRow: boolean,
+): boolean {
+  return transactions?.length === 0 && !isAddingRow;
+}
+
 // True when the accounts have loaded and `id` isn't one of them, e.g. a stale
 // link to a deleted account.
 function isUnknownAccount(
@@ -141,7 +148,7 @@ export function TransactionsPage() {
   const rowEditor = newTransactionEditor(editor, { asModal: false });
   const modalEditor = newTransactionEditor(editor, { asModal: true });
   const editTarget = editor?.kind === "edit" ? editor : null;
-  const isEmpty = data?.items.length === 0 && !rowEditor;
+  const isEmpty = isPageEmpty(data?.items, rowEditor !== null);
   const showTable = data !== undefined && !isEmpty;
 
   function openNewTransaction() {
