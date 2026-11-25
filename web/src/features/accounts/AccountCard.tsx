@@ -10,6 +10,58 @@ const ACCOUNT_EMOJI: Record<Account["type"], string> = {
   flight_credit: "✈️",
 };
 
+function AccountCardHeader({ account }: { account: Account }) {
+  const emoji = ACCOUNT_EMOJI[account.type];
+
+  return (
+    <div className={classes.headerRow}>
+      <span
+        role="img"
+        aria-label={ACCOUNT_TYPE_DISPLAY[account.type].label}
+        className={classes.typeEmoji}
+      >
+        {account.brand_domain ? (
+          <BrandLogo
+            domain={account.brand_domain}
+            size={28}
+            fallback={emoji}
+            className={classes.brandLogo}
+          />
+        ) : (
+          emoji
+        )}
+      </span>
+    </div>
+  );
+}
+
+function AccountCardFooter({ account }: { account: Account }) {
+  const expiry = describeExpiry(account.expires_on);
+  const balance = describeBalance(account.balance);
+
+  return (
+    <div className={classes.footerRow}>
+      {expiry.expired ? (
+        <Badge color="red" variant="filled" size="xs" radius={2} ff="monospace">
+          {expiry.label}
+        </Badge>
+      ) : (
+        <Text ff="monospace" fz={11} className={classes.expiry}>
+          {expiry.label}
+        </Text>
+      )}
+      <Text
+        fw={700}
+        size="lg"
+        className={classes.balance}
+        data-negative={balance.negative || undefined}
+      >
+        {balance.label}
+      </Text>
+    </div>
+  );
+}
+
 export function AccountCard({
   account,
   onEdit,
@@ -17,31 +69,10 @@ export function AccountCard({
   account: Account;
   onEdit: () => void;
 }) {
-  const emoji = ACCOUNT_EMOJI[account.type];
-  const expiry = describeExpiry(account.expires_on);
-  const balance = describeBalance(account.balance);
-
   return (
     <div className={classes.root}>
       <Card radius="md" p="md" className={classes.card}>
-        <div className={classes.headerRow}>
-          <span
-            role="img"
-            aria-label={ACCOUNT_TYPE_DISPLAY[account.type].label}
-            className={classes.typeEmoji}
-          >
-            {account.brand_domain ? (
-              <BrandLogo
-                domain={account.brand_domain}
-                size={28}
-                fallback={emoji}
-                className={classes.brandLogo}
-              />
-            ) : (
-              emoji
-            )}
-          </span>
-        </div>
+        <AccountCardHeader account={account} />
         <div className={classes.nameRow}>
           <Text
             fw={700}
@@ -65,31 +96,7 @@ export function AccountCard({
             </Text>
           )}
         </div>
-        <div className={classes.footerRow}>
-          {expiry.expired ? (
-            <Badge
-              color="red"
-              variant="filled"
-              size="xs"
-              radius={2}
-              ff="monospace"
-            >
-              {expiry.label}
-            </Badge>
-          ) : (
-            <Text ff="monospace" fz={11} className={classes.expiry}>
-              {expiry.label}
-            </Text>
-          )}
-          <Text
-            fw={700}
-            size="lg"
-            className={classes.balance}
-            data-negative={balance.negative || undefined}
-          >
-            {balance.label}
-          </Text>
-        </div>
+        <AccountCardFooter account={account} />
       </Card>
       <UnstyledButton
         aria-label={`Edit ${account.name}`}
