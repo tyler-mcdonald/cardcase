@@ -671,8 +671,8 @@ def test_update_account_returns_balance(auth_client: Client, user: User) -> None
 
 
 @pytest.mark.django_db
-def test_balance_cannot_be_set(auth_client: Client) -> None:
-    created = post(
+def test_create_account_ignores_balance(auth_client: Client) -> None:
+    response = post(
         auth_client,
         "/accounts",
         {
@@ -680,12 +680,227 @@ def test_balance_cannot_be_set(auth_client: Client) -> None:
             "type": "gift_card",
             "initial_balance": "0",
             "balance": "99.00",
+            "balance_note": "Ignored",
         },
-    ).json()
-    updated = patch(auth_client, f"/accounts/{created['id']}", {"balance": "99.00"})
+    )
 
-    assert created["balance"] == "0.00"
-    assert updated.json()["balance"] == "0.00"
+    assert response.status_code == 201
+    assert response.json()["balance"] == "0.00"
+    assert not Transaction.objects.filter(account_id=response.json()["id"]).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("note", "expected_description"),
+    [
+        ({"balance_note": "  Spent at the store  "}, "Spent at the store"),
+        ({"balance_note": "   "}, "Balance adjustment"),
+        ({"balance_note": ""}, "Balance adjustment"),
+        ({}, "Balance adjustment"),
+    ],
+)
+def test_update_balance_adds_adjustment_for_the_difference(
+    auth_client: Client,
+    user: User,
+    note: dict[str, str],
+    expected_description: str,
+) -> None:
+    account = create_account(user)
+    create_transaction(account, amount="30.00", occurred_on="2026-01-01")
+
+    with time_machine.travel(datetime(2026, 3, 4, 12, tzinfo=UTC), tick=False):
+        response = patch(
+            auth_client, f"/accounts/{account.id}", {"balance": "12.50", **note}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["balance"] == "12.50"
+    assert "balance_note" not in response.json()
+    assert [
+        (t.amount, t.description, t.occurred_on)
+        for t in Transaction.objects.filter(account=account).exclude(
+            occurred_on=date(2026, 1, 1)
+        )
+    ] == [(Decimal("-17.50"), expected_description, date(2026, 3, 4))]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("balance", ["-25.00", "99999999.99", "-99999999.99"])
+def test_update_balance_accepts_any_balance_within_the_allowed_change(
+    auth_client: Client, user: User, balance: str
+) -> None:
+    account = create_account(user)
+
+    response = patch(auth_client, f"/accounts/{account.id}", {"balance": balance})
+
+    assert response.status_code == 200
+    assert response.json()["balance"] == balance
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("balance", ["100000000.00", "-100000000.00"])
+def test_update_balance_rejects_change_over_the_largest_amount(
+    auth_client: Client, user: User, balance: str
+) -> None:
+    account = create_account(user, name="Amazon")
+
+    response = patch(
+        auth_client, f"/accounts/{account.id}", {"balance": balance, "name": "New"}
+    )
+
+    assert response.status_code == 400
+    assert "balance" in response.json()
+    account.refresh_from_db()
+    assert account.name == "Amazon"
+    assert not Transaction.objects.filter(account=account).exists()
+
+
+@pytest.mark.django_db
+def test_update_balance_limits_change_relative_to_current_balance(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+    create_transaction(account, amount="-50.00")
+
+    response = patch(auth_client, f"/accounts/{account.id}", {"balance": "99999999.49"})
+
+    assert response.status_code == 400
+    assert "balance" in response.json()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("payload", [{"balance": "30.00"}, {"balance": "30"}, {}])
+def test_update_with_unchanged_or_omitted_balance_creates_no_transaction(
+    auth_client: Client, user: User, payload: dict[str, str]
+) -> None:
+    account = create_account(user, name="Amazon")
+    create_transaction(account, amount="30.00")
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}",
+        {**payload, "name": "Renamed", "balance_note": "Ignored"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Renamed"
+    assert response.json()["balance"] == "30.00"
+    assert Transaction.objects.filter(account=account).count() == 1
+
+
+@pytest.mark.django_db
+def test_update_balance_rejects_note_over_1000_characters(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}",
+        {"balance": "10.00", "balance_note": "x" * 1001},
+    )
+
+    assert response.status_code == 400
+    assert "balance_note" in response.json()
+    assert not Transaction.objects.filter(account=account).exists()
+
+
+@pytest.mark.django_db
+def test_update_balance_accepts_1000_character_note_after_trimming(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+    note = "x" * 1000
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}",
+        {"balance": "10.00", "balance_note": f"  {note}  "},
+    )
+
+    assert response.status_code == 200
+    assert Transaction.objects.get(account=account).description == note
+
+
+@pytest.mark.django_db
+def test_update_balance_saves_other_fields_together(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user, name="Amazon")
+
+    response = patch(
+        auth_client, f"/accounts/{account.id}", {"balance": "10.00", "name": "New"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "New"
+    assert response.json()["balance"] == "10.00"
+
+
+@pytest.mark.django_db
+def test_update_is_rolled_back_when_balance_adjustment_fails(
+    auth_client: Client, user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    account = create_account(user, name="Amazon")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise DatabaseError("boom")
+
+    monkeypatch.setattr(Transaction.objects, "create", fail)
+
+    with pytest.raises(DatabaseError):
+        patch(
+            auth_client, f"/accounts/{account.id}", {"balance": "10.00", "name": "New"}
+        )
+
+    account.refresh_from_db()
+    assert account.name == "Amazon"
+
+
+@pytest.mark.django_db
+def test_update_account_locks_account(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+
+    with CaptureQueriesContext(connection) as queries:
+        patch(auth_client, f"/accounts/{account.id}", {"balance": "10.00"})
+
+    lock_index = next(
+        i for i, q in enumerate(queries.captured_queries) if "FOR UPDATE" in q["sql"]
+    )
+    balance_index = next(
+        i
+        for i, q in enumerate(queries.captured_queries)
+        if 'SUM("accounts_transaction"."amount")' in q["sql"]
+    )
+    assert lock_index < balance_index
+
+
+@pytest.mark.django_db
+def test_repeated_balance_update_records_one_adjustment(
+    auth_client: Client, user: User
+) -> None:
+    account = create_account(user)
+
+    for _ in range(2):
+        patch(auth_client, f"/accounts/{account.id}", {"balance": "10.00"})
+
+    assert Transaction.objects.filter(account=account).count() == 1
+
+
+@pytest.mark.django_db
+def test_balance_adjustment_can_be_renamed(auth_client: Client, user: User) -> None:
+    account = create_account(user)
+    patch(auth_client, f"/accounts/{account.id}", {"balance": "10.00"})
+    adjustment = Transaction.objects.get(account=account)
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}/transactions/{adjustment.id}",
+        {"description": "Refund"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["description"] == "Refund"
 
 
 @pytest.mark.django_db

@@ -61,6 +61,16 @@ class AccountViewSet(UserScopedViewSet):
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
         self._save_with_balance(serializer, user=self.user)
 
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        with transaction.atomic():
+            get_object_or_404(
+                Account.objects.select_for_update(), pk=kwargs["pk"], user=self.user
+            )
+            return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer: BaseSerializer[Account]) -> None:
+        self._save_with_balance(serializer)
+
     def _save_with_balance(
         self, serializer: BaseSerializer[Account], **kwargs: Any
     ) -> None:
