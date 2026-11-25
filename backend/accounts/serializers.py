@@ -19,7 +19,6 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
         max_digits=DefaultContext.prec, decimal_places=2, required=False
     )
     balance_note = serializers.CharField(
-        max_length=_DESCRIPTION_FIELD.max_length,
         allow_blank=True,
         required=False,
         write_only=True,
@@ -69,7 +68,15 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             )
         balance = attrs.pop("balance", None)
         if self.instance is not None and balance is not None:
-            attrs["balance_change"] = self._balance_change(self.instance, balance)
+            change = self._balance_change(self.instance, balance)
+            attrs["balance_change"] = change
+            note = attrs.get("balance_note", "")
+            if change != 0 and len(note) > _DESCRIPTION_FIELD.max_length:
+                raise serializers.ValidationError(
+                    {
+                        "balance_note": f"Ensure this field has no more than {_DESCRIPTION_FIELD.max_length} characters."
+                    }
+                )
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> Account:

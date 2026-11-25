@@ -791,6 +791,25 @@ def test_update_with_unchanged_or_omitted_balance_creates_no_transaction(
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("payload", [{"balance": "30.00"}, {}])
+def test_update_without_balance_change_ignores_oversized_note(
+    auth_client: Client, user: User, payload: dict[str, str]
+) -> None:
+    account = create_account(user, name="Amazon")
+    create_transaction(account, amount="30.00")
+
+    response = patch(
+        auth_client,
+        f"/accounts/{account.id}",
+        {**payload, "name": "Renamed", "balance_note": "x" * 1001},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Renamed"
+    assert Transaction.objects.filter(account=account).count() == 1
+
+
+@pytest.mark.django_db
 def test_update_balance_rejects_note_over_1000_characters(
     auth_client: Client, user: User
 ) -> None:
