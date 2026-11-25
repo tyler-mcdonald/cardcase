@@ -7,8 +7,8 @@ import {
   TextInput,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { isNotEmpty, useForm } from "@mantine/form";
-import { type ReactNode, useEffect } from "react";
+import { isNotEmpty, useForm, type UseFormReturnType } from "@mantine/form";
+import { type ReactNode, useEffect, useState } from "react";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { BrandNameInput } from "@/features/brands/BrandNameInput";
@@ -20,16 +20,24 @@ import type { AccountInput } from "./types";
 
 export type AccountFormValues = AccountInput & {
   initial_balance: number | "";
+  balance?: number | "";
+  balance_note?: string;
 };
 
-const requireInitialBalance = isNotEmpty("Initial balance is required");
+const BALANCE_ADJUSTMENT = "Balance adjustment";
 
-function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
-  if (Number.isNaN(Number(value))) {
-    return "Initial balance must be a number";
-  }
-  return requireInitialBalance(value);
+function amountValidator(label: string) {
+  const requireAmount = isNotEmpty(`${label} is required`);
+  return (value: number | "" | undefined) => {
+    if (Number.isNaN(Number(value))) {
+      return `${label} must be a number`;
+    }
+    return requireAmount(value);
+  };
 }
+
+const validateInitialBalance = amountValidator("Initial balance");
+const validateBalance = amountValidator("Balance");
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
@@ -38,6 +46,7 @@ const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
 type AccountFormProps = {
   initialValues: AccountFormValues;
   showInitialBalance?: boolean;
+  editableBalance?: boolean;
   typeLocked?: boolean;
   autoFocus?: boolean;
   submitLabel: string;
@@ -52,6 +61,7 @@ type AccountFormProps = {
 export function AccountForm({
   initialValues,
   showInitialBalance = false,
+  editableBalance = false,
   typeLocked = false,
   autoFocus = true,
   submitLabel,
@@ -67,6 +77,7 @@ export function AccountForm({
     validate: {
       name: isNotEmpty("Name is required"),
       initial_balance: validateInitialBalance,
+      balance: (value) => (editableBalance ? validateBalance(value) : null),
     },
     transformValues: (values) => ({ ...values, name: values.name.trim() }),
   });
@@ -101,6 +112,12 @@ export function AccountForm({
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack>
+        {editableBalance && (
+          <EditableBalanceFields
+            form={form}
+            savedBalance={initialValues.balance}
+          />
+        )}
         <BrandNameInput
           label="Name"
           required
@@ -163,6 +180,58 @@ export function AccountForm({
         )}
       </Stack>
     </form>
+  );
+}
+
+function EditableBalanceFields({
+  form,
+  savedBalance,
+}: {
+  form: UseFormReturnType<AccountFormValues>;
+  savedBalance: AccountFormValues["balance"];
+}) {
+  const [focused, setFocused] = useState(false);
+  const { onFocus, onBlur, ...balanceProps } = form.getInputProps("balance");
+  const balance = Number(form.values.balance);
+
+  return (
+    <>
+      <MoneyInput
+        label="Balance"
+        required
+        min={undefined}
+        allowNegative
+        fixedDecimalScale
+        description={
+          focused
+            ? `The change is saved as a transaction described by the note, or "${BALANCE_ADJUSTMENT}" if left blank.`
+            : undefined
+        }
+        inputWrapperOrder={["label", "input", "description", "error"]}
+        styles={
+          balance < 0
+            ? { input: { color: "var(--mantine-color-red-text)" } }
+            : undefined
+        }
+        {...balanceProps}
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
+      />
+      {balance !== Number(savedBalance) && (
+        <TextInput
+          label="Note"
+          placeholder={BALANCE_ADJUSTMENT}
+          maxLength={1000}
+          {...form.getInputProps("balance_note")}
+        />
+      )}
+    </>
   );
 }
 

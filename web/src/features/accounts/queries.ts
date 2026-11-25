@@ -17,6 +17,7 @@ import {
 import type { AccountUpdate } from "./types";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
+const TRANSACTIONS_QUERY_KEY = ["transactions"] as const;
 
 function invalidateAccounts(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
@@ -50,7 +51,11 @@ export function useUpdateAccount() {
   return useMutation({
     mutationFn: ({ id, changes }: { id: string; changes: AccountUpdate }) =>
       updateAccount(id, changes),
-    onSettled: () => invalidateAccounts(queryClient),
+    onSettled: () =>
+      Promise.all([
+        invalidateAccounts(queryClient),
+        queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+      ]),
   });
 }
 

@@ -1,12 +1,12 @@
-import { Button, FocusTrap, Modal, Stack, TextInput } from "@mantine/core";
+import { Button, FocusTrap, Modal } from "@mantine/core";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DeleteConfirmation } from "@/components/DeleteConfirmation";
-import { AccountForm } from "./AccountForm";
-import { describeBalance } from "./format";
+import { AccountForm, type AccountFormValues } from "./AccountForm";
 import { useDeleteAccount, useUpdateAccount } from "./queries";
 import type { Account, AccountInput, AccountUpdate } from "./types";
 import { useAccountFormErrors } from "./use-account-form-errors";
+import { toTwoDecimalString } from "@/lib/format";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
@@ -22,6 +22,14 @@ function editedFields(account: Account, values: AccountInput): AccountUpdate {
     (field) => values[field] !== account[field],
   );
   return Object.fromEntries(edited.map((field) => [field, values[field]]));
+}
+
+function balanceChange(
+  account: Account,
+  { balance = 0, balance_note = "" }: AccountFormValues,
+): AccountUpdate {
+  if (Number(balance) === Number(account.balance)) return {};
+  return { balance: toTwoDecimalString(balance), balance_note };
 }
 
 function isConfirmingDelete(
@@ -101,10 +109,12 @@ function EditAccountContent({
 }) {
   const { fieldErrors, formError } = useAccountFormErrors(updateAccount.error);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
-  const balance = describeBalance(account.balance);
 
-  function save(values: AccountInput) {
-    const changes = editedFields(account, values);
+  function save(values: AccountFormValues) {
+    const changes = {
+      ...editedFields(account, values),
+      ...balanceChange(account, values),
+    };
     if (Object.keys(changes).length === 0) {
       close();
       return;
@@ -144,40 +154,33 @@ function EditAccountContent({
           />
         )}
         <div hidden={confirmingDelete}>
-          <Stack>
-            <TextInput
-              label="Balance"
-              description="Changes only through transactions."
-              readOnly
-              value={balance.label}
-              styles={{
-                input: balance.negative
-                  ? { color: "var(--mantine-color-red-text)" }
-                  : undefined,
-              }}
-            />
-            <AccountForm
-              initialValues={{ ...account, initial_balance: 0 }}
-              typeLocked
-              autoFocus={false}
-              submitLabel="Save changes"
-              isPending={updateAccount.isPending}
-              fieldErrors={fieldErrors}
-              formError={formError}
-              onSubmit={save}
-              onCancel={close}
-              secondaryAction={
-                <Button
-                  ref={deleteButtonRef}
-                  color="red"
-                  onClick={startDelete}
-                  disabled={updateAccount.isPending}
-                >
-                  Delete account
-                </Button>
-              }
-            />
-          </Stack>
+          <AccountForm
+            initialValues={{
+              ...account,
+              initial_balance: 0,
+              balance: Number(account.balance),
+              balance_note: "",
+            }}
+            editableBalance
+            typeLocked
+            autoFocus={false}
+            submitLabel="Save changes"
+            isPending={updateAccount.isPending}
+            fieldErrors={fieldErrors}
+            formError={formError}
+            onSubmit={save}
+            onCancel={close}
+            secondaryAction={
+              <Button
+                ref={deleteButtonRef}
+                color="red"
+                onClick={startDelete}
+                disabled={updateAccount.isPending}
+              >
+                Delete account
+              </Button>
+            }
+          />
         </div>
       </Modal.Body>
     </>
