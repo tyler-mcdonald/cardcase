@@ -680,7 +680,6 @@ def test_create_account_ignores_balance(auth_client: Client) -> None:
             "type": "gift_card",
             "initial_balance": "0",
             "balance": "99.00",
-            "balance_note": "Ignored",
         },
     )
 
@@ -690,38 +689,23 @@ def test_create_account_ignores_balance(auth_client: Client) -> None:
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    ("note", "expected_description"),
-    [
-        ({"balance_note": "  Spent at the store  "}, "Spent at the store"),
-        ({"balance_note": "   "}, "Balance adjustment"),
-        ({"balance_note": ""}, "Balance adjustment"),
-        ({}, "Balance adjustment"),
-    ],
-)
 def test_update_balance_adds_adjustment_for_the_difference(
-    auth_client: Client,
-    user: User,
-    note: dict[str, str],
-    expected_description: str,
+    auth_client: Client, user: User
 ) -> None:
     account = create_account(user)
     create_transaction(account, amount="30.00", occurred_on="2026-01-01")
 
     with time_machine.travel(datetime(2026, 3, 4, 12, tzinfo=UTC), tick=False):
-        response = patch(
-            auth_client, f"/accounts/{account.id}", {"balance": "12.50", **note}
-        )
+        response = patch(auth_client, f"/accounts/{account.id}", {"balance": "12.50"})
 
     assert response.status_code == 200
     assert response.json()["balance"] == "12.50"
-    assert "balance_note" not in response.json()
     assert [
         (t.amount, t.description, t.occurred_on)
         for t in Transaction.objects.filter(account=account).exclude(
             occurred_on=date(2026, 1, 1)
         )
-    ] == [(Decimal("-17.50"), expected_description, date(2026, 3, 4))]
+    ] == [(Decimal("-17.50"), "Manual Balance Adjustment", date(2026, 3, 4))]
 
 
 @pytest.mark.django_db
@@ -779,68 +763,13 @@ def test_update_with_unchanged_or_omitted_balance_creates_no_transaction(
     create_transaction(account, amount="30.00")
 
     response = patch(
-        auth_client,
-        f"/accounts/{account.id}",
-        {**payload, "name": "Renamed", "balance_note": "Ignored"},
+        auth_client, f"/accounts/{account.id}", {**payload, "name": "Renamed"}
     )
 
     assert response.status_code == 200
     assert response.json()["name"] == "Renamed"
     assert response.json()["balance"] == "30.00"
     assert Transaction.objects.filter(account=account).count() == 1
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("payload", [{"balance": "30.00"}, {}])
-def test_update_without_balance_change_ignores_oversized_note(
-    auth_client: Client, user: User, payload: dict[str, str]
-) -> None:
-    account = create_account(user, name="Amazon")
-    create_transaction(account, amount="30.00")
-
-    response = patch(
-        auth_client,
-        f"/accounts/{account.id}",
-        {**payload, "name": "Renamed", "balance_note": "x" * 1001},
-    )
-
-    assert response.status_code == 200
-    assert response.json()["name"] == "Renamed"
-    assert Transaction.objects.filter(account=account).count() == 1
-
-
-@pytest.mark.django_db
-def test_update_balance_rejects_note_over_1000_characters(
-    auth_client: Client, user: User
-) -> None:
-    account = create_account(user)
-
-    response = patch(
-        auth_client,
-        f"/accounts/{account.id}",
-        {"balance": "10.00", "balance_note": "x" * 1001},
-    )
-
-    assert response.status_code == 400
-    assert "balance_note" in response.json()
-    assert not Transaction.objects.filter(account=account).exists()
-
-
-@pytest.mark.django_db
-def test_update_balance_accepts_1000_character_note_after_trimming(
-    auth_client: Client, user: User
-) -> None:
-    account = create_account(user)
-    note = "x" * 1000
-
-    response = patch(
-        auth_client,
-        f"/accounts/{account.id}",
-        {"balance": "10.00", "balance_note": f"  {note}  "},
-    )
-
-    assert response.status_code == 200
-    assert Transaction.objects.get(account=account).description == note
 
 
 @pytest.mark.django_db
