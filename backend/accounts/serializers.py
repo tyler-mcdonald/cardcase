@@ -7,7 +7,7 @@ from rest_framework import serializers
 from .models import MAX_ACCOUNTS_PER_USER, Account, Transaction
 
 _AMOUNT_FIELD = Transaction._meta.get_field("amount")
-_DESCRIPTION_FIELD = Transaction._meta.get_field("description")
+_MAX_NOTE_LENGTH: int = Transaction._meta.get_field("description").max_length or 0
 _MAX_AMOUNT = (
     Decimal(10) ** (_AMOUNT_FIELD.max_digits - _AMOUNT_FIELD.decimal_places)
     - Decimal(10) ** -_AMOUNT_FIELD.decimal_places
@@ -71,10 +71,10 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
             change = self._balance_change(self.instance, balance)
             attrs["balance_change"] = change
             note = attrs.get("balance_note", "")
-            if change != 0 and len(note) > _DESCRIPTION_FIELD.max_length:
+            if change != 0 and len(note) > _MAX_NOTE_LENGTH:
                 raise serializers.ValidationError(
                     {
-                        "balance_note": f"Ensure this field has no more than {_DESCRIPTION_FIELD.max_length} characters."
+                        "balance_note": f"Ensure this field has no more than {_MAX_NOTE_LENGTH} characters."
                     }
                 )
         return attrs
