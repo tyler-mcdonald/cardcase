@@ -22,14 +22,17 @@ export type AccountFormValues = AccountInput & {
   initial_balance: number | "";
 };
 
-const requireInitialBalance = isNotEmpty("Initial balance is required");
-
-function validateInitialBalance(value: AccountFormValues["initial_balance"]) {
-  if (Number.isNaN(Number(value))) {
-    return "Initial balance must be a number";
-  }
-  return requireInitialBalance(value);
+function amountValidator(label: string) {
+  const requireAmount = isNotEmpty(`${label} is required`);
+  return (value: number | "" | undefined) => {
+    if (Number.isNaN(Number(value))) {
+      return `${label} must be a number`;
+    }
+    return requireAmount(value);
+  };
 }
+
+const validateInitialBalance = amountValidator("Initial balance");
 
 const TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_DISPLAY).map(
   ([value, { label }]) => ({ value, label }),
