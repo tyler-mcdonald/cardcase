@@ -7,12 +7,7 @@ services:
 
   backend:
     build: ./backend
-    command:
-      - sh
-      - -c
-      - |
-        until python -c "import os, psycopg; psycopg.connect(os.environ['DATABASE_URL']).close()" 2>/dev/null; do sleep 0.2; done && python manage.py migrate --skip-checks &&
-        exec python manage.py runserver --skip-checks 0.0.0.0:8000
+    command: sh -c "python manage.py migrate --skip-checks && exec python manage.py runserver --skip-checks 0.0.0.0:8000"
     env_file: backend/.env.example
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -23,7 +18,7 @@ services:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
     healthcheck:
       test:
         [
