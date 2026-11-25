@@ -8,7 +8,7 @@ import { EditTransactionRow } from "./EditTransactionRow";
 import classes from "./TransactionsTable.module.css";
 import { formatOutflowAndInflow } from "./format";
 import type { TransactionField } from "./transaction-form";
-import type { Transaction } from "./types";
+import type { AccountLabelFor, Transaction } from "./types";
 
 function TransactionsTableFrame({ children }: { children: ReactNode }) {
   return (
@@ -108,7 +108,7 @@ export function TransactionsTable({
   onEditClose,
 }: {
   transactions: Transaction[];
-  accountLabel: (account: Transaction["account"]) => AccountLabel;
+  accountLabel: AccountLabelFor;
   newRow?: ReactNode;
   editTarget: EditTarget | null;
   onEdit?: (target: EditTarget) => void;

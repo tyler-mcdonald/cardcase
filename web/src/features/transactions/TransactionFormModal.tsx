@@ -4,6 +4,7 @@ import {
   Input,
   Modal,
   SegmentedControl,
+  SimpleGrid,
   Stack,
   TextInput,
 } from "@mantine/core";
@@ -12,7 +13,9 @@ import { useId } from "@mantine/hooks";
 import { FormError } from "@/components/FormError";
 import { MoneyInput } from "@/components/MoneyInput";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
+import type { AccountLabel } from "@/features/accounts/types";
 import { AMOUNT_FIELDS } from "./constants";
+import { LockedAccountInput } from "./LockedAccountInput";
 import classes from "./TransactionFormModal.module.css";
 import type { TransactionFormValues } from "./transaction-form";
 import {
@@ -26,19 +29,31 @@ const AMOUNT_FIELD_OPTIONS = AMOUNT_FIELDS.map(({ field, label }) => ({
   label,
 }));
 
+function initialAmountField(values: TransactionFormValues): AmountField {
+  return values.inflow === "" ? "outflow" : "inflow";
+}
+
 export function TransactionFormModal({
+  title,
   initialValues,
+  lockedAccountLabel,
   mutation,
   onSave,
   onClose,
+  onDelete,
 }: {
+  title: string;
   initialValues: TransactionFormValues;
+  lockedAccountLabel?: AccountLabel;
   mutation: SaveMutation;
   onSave: (values: TransactionFormValues) => void;
   onClose: () => void;
+  onDelete?: () => void;
 }) {
   const amountId = useId();
-  const [amountField, setAmountField] = useState<AmountField>("outflow");
+  const [amountField, setAmountField] = useState(() =>
+    initialAmountField(initialValues),
+  );
   const { form, save, cancel, setAmount, formatAmount, saveError } =
     useTransactionForm({ initialValues, mutation, onSave, onClose });
 
@@ -54,7 +69,7 @@ export function TransactionFormModal({
       opened
       fullScreen
       onClose={cancel}
-      title="Add transaction"
+      title={title}
       closeOnClickOutside={false}
       closeOnEscape={false}
       closeButtonProps={{ size: "xl", "aria-label": "Close" }}
@@ -86,12 +101,18 @@ export function TransactionFormModal({
               />
             </Stack>
           </Input.Wrapper>
-          <AccountSelect
-            floatingHeight="viewport"
-            label="Account"
-            required
-            {...form.getInputProps("accountId")}
-          />
+          {lockedAccountLabel === undefined ? (
+            <AccountSelect
+              floatingHeight="viewport"
+              label="Account"
+              required
+              {...form.getInputProps("accountId")}
+            />
+          ) : (
+            <Input.Wrapper label="Account">
+              <LockedAccountInput accountLabel={lockedAccountLabel} />
+            </Input.Wrapper>
+          )}
           <DateInput
             label="Date"
             required
@@ -109,13 +130,24 @@ export function TransactionFormModal({
           <Button type="submit" loading={mutation.isPending}>
             Save
           </Button>
-          <Button
-            variant="default"
-            onClick={cancel}
-            disabled={mutation.isPending}
-          >
-            Cancel
-          </Button>
+          <SimpleGrid cols={onDelete ? 2 : 1} spacing="xs">
+            <Button
+              variant="default"
+              onClick={cancel}
+              disabled={mutation.isPending}
+            >
+              Cancel
+            </Button>
+            {onDelete && (
+              <Button
+                color="red"
+                onClick={onDelete}
+                disabled={mutation.isPending}
+              >
+                Delete
+              </Button>
+            )}
+          </SimpleGrid>
         </Stack>
       </form>
     </Modal>

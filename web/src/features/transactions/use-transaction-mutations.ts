@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useGuardedClose } from "@/lib/hooks/use-guarded-close";
 import {
@@ -8,6 +9,7 @@ import {
 import {
   changedFields,
   toTransactionInput,
+  transactionFormFrom,
   type TransactionFormValues,
 } from "./transaction-form";
 import type { Transaction } from "./types";
@@ -72,3 +74,19 @@ export function useTransactionDelete(
 }
 
 export type TransactionDelete = ReturnType<typeof useTransactionDelete>;
+
+export function useTransactionEdit(
+  transaction: Transaction,
+  onClose: () => void,
+) {
+  const [openedWith] = useState(transaction);
+  const { mutation, save } = useUpdateTransactionSave(openedWith, onClose);
+  const deletion = useTransactionDelete(openedWith, onClose);
+
+  return {
+    initialValues: transactionFormFrom(openedWith),
+    mutation,
+    save,
+    deletion,
+  };
+}

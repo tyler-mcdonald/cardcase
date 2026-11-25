@@ -7,7 +7,6 @@ import {
 import {
   Button,
   Group,
-  Input,
   Stack,
   Table,
   Text,
@@ -17,11 +16,11 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useClickOutside } from "@mantine/hooks";
 import { MoneyInput } from "@/components/MoneyInput";
-import { AccountDisplayName } from "@/features/accounts/AccountDisplayName";
 import { AccountSelect } from "@/features/accounts/AccountSelect";
 import type { AccountLabel } from "@/features/accounts/types";
 import { THEME_SHADES } from "@/theme";
 import { AMOUNT_FIELDS, COLUMN_COUNT } from "./constants";
+import { LockedAccountInput } from "./LockedAccountInput";
 import classes from "./TransactionsTable.module.css";
 import type {
   TransactionField,
@@ -151,18 +150,7 @@ export function TransactionEditorRow({
               onBlur={closeAccountDropdownOnBlur}
             />
           ) : (
-            <Input
-              component="div"
-              role="textbox"
-              aria-label="Account"
-              aria-disabled
-              aria-readonly
-              size="xs"
-              disabled
-              withAria={false}
-            >
-              <AccountDisplayName label={lockedAccountLabel} inherit />
-            </Input>
+            <LockedAccountInput accountLabel={lockedAccountLabel} size="xs" />
           )}
         </Table.Td>
         <Table.Td>

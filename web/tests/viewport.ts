@@ -44,6 +44,10 @@ export function mockMobileViewport() {
   stubMatchMedia([MOBILE_MEDIA_QUERY]);
 }
 
+export function resizeToMobileViewport() {
+  changeViewport([MOBILE_MEDIA_QUERY]);
+}
+
 export function resizeToDesktopViewport() {
   changeViewport([]);
 }

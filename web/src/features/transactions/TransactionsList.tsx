@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/format";
 import classes from "./TransactionsList.module.css";
 import { SKELETON_ROW_COUNT } from "./constants";
 import { describeSignedAmount } from "./format";
-import type { Transaction } from "./types";
+import type { AccountLabelFor, Transaction } from "./types";
 
 type TransactionRowProps = {
   transaction: Transaction;
@@ -20,7 +20,7 @@ type SelectTransactionProps = {
 
 type TransactionsListProps = {
   transactions: Transaction[];
-  accountLabel: (account: Transaction["account"]) => AccountLabel;
+  accountLabel: AccountLabelFor;
 } & SelectTransactionProps;
 
 function TransactionsListFrame({ children }: { children: ReactNode }) {
