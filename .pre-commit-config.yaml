@@ -4,7 +4,7 @@ repos:
   # version in ./pyproject.toml. The alternative is a
   # more complex config here, so for now, opting to take
   # the minor risk of a ruff version mismatch.
-  rev: v0.17.5
+  rev: v0.17.6
   hooks:
     # Run the linter.
     - id: ruff-check
