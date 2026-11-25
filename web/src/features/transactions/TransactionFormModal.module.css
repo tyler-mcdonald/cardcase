@@ -1,0 +1,30 @@
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.body,
+.form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.form {
+  gap: var(--mantine-spacing-md);
+}
+
+.amountFieldLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.actions {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding-block: var(--mantine-spacing-sm);
+  background-color: var(--mantine-color-body);
+}

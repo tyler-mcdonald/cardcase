@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatSignedCurrency } from "@/lib/format";
 
 /**
  * Splits a signed amount into an unsigned outflow (negative amounts) or
@@ -17,6 +17,16 @@ export function splitSignedAmount(amount: string): {
 
 function formatMagnitude(magnitude: number | null): string | null {
   return magnitude === null ? null : formatCurrency(magnitude);
+}
+
+export function describeSignedAmount(amount: string): {
+  label: string;
+  inflow: boolean;
+} {
+  return {
+    label: formatSignedCurrency(Number(amount)),
+    inflow: splitSignedAmount(amount).inflow !== null,
+  };
 }
 
 export function formatOutflowAndInflow(amount: string): {

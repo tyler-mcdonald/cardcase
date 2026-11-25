@@ -22,6 +22,11 @@ import { makeTransaction } from "@tests/features/transactions/factories";
 import { makePage } from "@tests/lib/api/factories";
 import { LocationDisplay } from "@tests/LocationDisplay";
 import { renderWithProviders } from "@tests/render";
+import {
+  mockMobileViewport,
+  resizeToDesktopViewport,
+  resizeToMobileViewport,
+} from "@tests/viewport";
 
 vi.mock("@/features/transactions/api");
 
@@ -1002,6 +1007,44 @@ describe("editing a transaction", () => {
       screen.getAllByRole("textbox", { name: "Description" }),
     ).toHaveLength(1);
   });
+
+  it("keeps the editor and its input when the viewport narrows", async () => {
+    await openEditor(latte.description);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    act(() => resizeToMobileViewport());
+
+    expect(inputValue("Description")).toBe("Mocha");
+    expect(screen.getByRole("table")).toBeTruthy();
+  });
+
+  it("shows a failed save's error after the viewport narrows", async () => {
+    mockedUpdateTransaction.mockRejectedValueOnce(
+      new ApiError("Request failed (500)", { status: 500 }),
+    );
+    await openEditor(latte.description);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    save();
+    act(() => resizeToMobileViewport());
+
+    expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+    expect(inputValue("Description")).toBe("Mocha");
+  });
+
+  it("shows the list once the editor closes on a narrowed viewport", async () => {
+    await openEditor(latte.description);
+
+    act(() => resizeToMobileViewport());
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("table")).toBeNull());
+    expect(screen.getByRole("button", { name: /Latte/ })).toBeTruthy();
+  });
 });
 
 describe("deleting a transaction", () => {
@@ -1423,5 +1466,447 @@ describe("filtering by account", () => {
     expect(
       screen.getByRole<HTMLInputElement>("combobox", { name: "Account" }).value,
     ).toBe("Delta");
+  });
+});
+
+describe("adding a transaction on mobile", () => {
+  beforeEach(() => {
+    mockMobileViewport();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 8, 30, 12));
+    mockedListTransactions.mockResolvedValue(
+      makePage([makeTransaction({ description: "Groceries" })]),
+    );
+    mockedListAllAccounts.mockResolvedValue(
+      makePage([
+        makeAccount({ id: "starbucks-id", name: "Starbucks" }),
+        makeAccount({ id: "delta-id", name: "Delta" }),
+      ]),
+    );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function openNewTransactionForm(route = "/") {
+    renderWithProviders(<TransactionsPage />, { route });
+    await screen.findByText("Groceries");
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Add transaction" })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+    return screen.findByRole("dialog", { name: "Add transaction" });
+  }
+
+  function form() {
+    return within(screen.getByRole("dialog", { name: "Add transaction" }));
+  }
+
+  function accountInput() {
+    return form().getByRole<HTMLInputElement>("combobox", { name: /^Account/ });
+  }
+
+  async function chooseAccount(name: string) {
+    fireEvent.click(accountInput());
+    fireEvent.click(await screen.findByRole("option", { name }));
+  }
+
+  function enterAmount(amount: string) {
+    fireEvent.change(form().getByRole("textbox", { name: /^Amount/ }), {
+      target: { value: amount },
+    });
+  }
+
+  function chooseAmountField(name: "Outflow" | "Inflow") {
+    fireEvent.click(form().getByRole("radio", { name }));
+  }
+
+  function saveForm() {
+    fireEvent.click(form().getByRole("button", { name: "Save" }));
+  }
+
+  it("opens a full-screen form instead of a new row", async () => {
+    const dialog = await openNewTransactionForm();
+
+    expect(dialog.closest("[data-full-screen]")).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "Outflow" })).toBeNull();
+    expect(
+      form().getByRole<HTMLInputElement>("radio", { name: "Outflow" }).checked,
+    ).toBe(true);
+  });
+
+  it("saves an outflow as a negative amount", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterAmount("4.75");
+    fireEvent.change(form().getByRole("textbox", { name: "Description" }), {
+      target: { value: "Latte" },
+    });
+    saveForm();
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("starbucks-id", {
+        amount: "-4.75",
+        description: "Latte",
+        occurred_on: "2026-09-30",
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("saves an inflow as a positive amount", async () => {
+    mockedCreateTransaction.mockResolvedValueOnce(makeTransaction());
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterAmount("20");
+    chooseAmountField("Inflow");
+    saveForm();
+
+    await waitFor(() =>
+      expect(mockedCreateTransaction).toHaveBeenCalledWith("starbucks-id", {
+        amount: "20.00",
+        description: "",
+        occurred_on: "2026-09-30",
+      }),
+    );
+  });
+
+  it("keeps the amount error when switching between outflow and inflow with no amount", async () => {
+    await openNewTransactionForm();
+
+    saveForm();
+    await form().findByText("Enter either an outflow or an inflow");
+    chooseAmountField("Inflow");
+
+    expect(
+      form().getByText("Enter either an outflow or an inflow"),
+    ).toBeTruthy();
+  });
+
+  it("keeps the form and its input when the viewport widens", async () => {
+    await openNewTransactionForm();
+
+    enterAmount("4.75");
+    act(() => resizeToDesktopViewport());
+
+    expect(
+      form().getByRole<HTMLInputElement>("textbox", { name: /^Amount/ }).value,
+    ).toBe("$4.75");
+    expect(screen.queryByRole("textbox", { name: "Outflow" })).toBeNull();
+  });
+
+  it("defaults the date to today with no clear button", async () => {
+    await openNewTransactionForm();
+
+    expect(form().getByLabelText<HTMLInputElement>(/^Date/).value).toBe(
+      "Sep 30, 2026",
+    );
+    expect(form().queryByRole("button", { name: "Clear date" })).toBeNull();
+  });
+
+  it("pre-selects the filtered account", async () => {
+    await openNewTransactionForm("/?account=delta-id");
+
+    expect(accountInput().value).toBe("Delta");
+  });
+
+  it("shows validation errors in the form", async () => {
+    await openNewTransactionForm();
+
+    saveForm();
+
+    expect(await form().findByText("Account is required")).toBeTruthy();
+    expect(
+      form().getByText("Enter either an outflow or an inflow"),
+    ).toBeTruthy();
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("shows a save error in the form and stays open", async () => {
+    mockedCreateTransaction.mockRejectedValueOnce(
+      new ApiError("Request failed (500)", { status: 500 }),
+    );
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterAmount("5");
+    saveForm();
+
+    expect((await form().findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+  });
+
+  it("disables Save while saving", async () => {
+    mockedCreateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    await openNewTransactionForm();
+
+    await chooseAccount("Starbucks");
+    enterAmount("5");
+    saveForm();
+
+    await waitFor(() =>
+      expect(
+        form().getByRole("button", { name: "Save" }).hasAttribute("disabled"),
+      ).toBe(true),
+    );
+  });
+
+  it("closes without saving on cancel", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.click(form().getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("closes without saving from the close button", async () => {
+    await openNewTransactionForm();
+
+    fireEvent.click(form().getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedCreateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("stays open when Escape is pressed", async () => {
+    const dialog = await openNewTransactionForm();
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    expect(screen.getByRole("dialog", { name: "Add transaction" })).toBe(
+      dialog,
+    );
+  });
+
+  it("keeps the empty state visible", async () => {
+    mockedListTransactions.mockResolvedValue(makePage([]));
+    renderWithProviders(<TransactionsPage />);
+    await screen.findByText("No transactions yet.");
+
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "Add transaction" }),
+    ).toBeTruthy();
+    expect(screen.getByText("No transactions yet.")).toBeTruthy();
+  });
+});
+
+describe("the transactions list on mobile", () => {
+  const latte = makeTransaction({
+    id: "latte-id",
+    account: { id: "starbucks-id", name: "Starbucks", type: "gift_card" },
+    amount: "-4.75",
+    description: "Latte",
+    occurred_on: "2026-09-28",
+  });
+  const refund = makeTransaction({
+    id: "refund-id",
+    account: { id: "delta-id", name: "Delta", type: "flight_credit" },
+    amount: "150.00",
+    description: "Refund",
+    occurred_on: "2026-09-27",
+  });
+
+  beforeEach(() => {
+    mockMobileViewport();
+    mockedListTransactions.mockResolvedValue(makePage([latte, refund]));
+    mockedListAllAccounts.mockResolvedValue(makePage([]));
+  });
+
+  async function openEditForm(description = latte.description) {
+    renderPage();
+    fireEvent.click(await screen.findByText(description));
+    return screen.findByRole("dialog", { name: "Edit transaction" });
+  }
+
+  function form() {
+    return within(screen.getByRole("dialog", { name: "Edit transaction" }));
+  }
+
+  function amountInput() {
+    return form().getByRole<HTMLInputElement>("textbox", { name: /^Amount/ });
+  }
+
+  function changeDescription(value: string) {
+    fireEvent.change(form().getByRole("textbox", { name: "Description" }), {
+      target: { value },
+    });
+  }
+
+  function saveForm() {
+    fireEvent.click(form().getByRole("button", { name: "Save" }));
+  }
+
+  it("shows the list instead of the table", async () => {
+    renderPage();
+
+    const row = await screen.findByRole("button", { name: /Latte/ });
+    expect(row.closest("li")).toBeTruthy();
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("opens a full-screen edit form prefilled with an outflow", async () => {
+    const dialog = await openEditForm();
+
+    expect(dialog.closest("[data-full-screen]")).toBeTruthy();
+    expect(amountInput().value).toBe("$4.75");
+    expect(
+      form().getByRole<HTMLInputElement>("radio", { name: "Outflow" }).checked,
+    ).toBe(true);
+    expect(form().getByLabelText<HTMLInputElement>(/^Date/).value).toBe(
+      "Sep 28, 2026",
+    );
+    expect(
+      form().getByRole<HTMLInputElement>("textbox", { name: "Description" })
+        .value,
+    ).toBe(latte.description);
+  });
+
+  it("prefills an inflow with Inflow selected", async () => {
+    await openEditForm(refund.description);
+
+    expect(amountInput().value).toBe("$150.00");
+    expect(
+      form().getByRole<HTMLInputElement>("radio", { name: "Inflow" }).checked,
+    ).toBe(true);
+  });
+
+  it("shows the account but doesn't allow changing it", async () => {
+    await openEditForm();
+
+    const account = form().getByRole("textbox", { name: "Account" });
+    expect(account.textContent).toBe(latte.account.name);
+    expect(account.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("sends only the changed fields", async () => {
+    mockedUpdateTransaction.mockResolvedValueOnce(latte);
+    await openEditForm();
+
+    changeDescription("Mocha");
+    saveForm();
+
+    await waitFor(() =>
+      expect(mockedUpdateTransaction).toHaveBeenCalledWith(
+        latte.account.id,
+        latte.id,
+        { description: "Mocha" },
+      ),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("sends switching outflow to inflow as a sign change", async () => {
+    mockedUpdateTransaction.mockResolvedValueOnce(latte);
+    await openEditForm();
+
+    fireEvent.click(form().getByRole("radio", { name: "Inflow" }));
+    saveForm();
+
+    await waitFor(() =>
+      expect(mockedUpdateTransaction).toHaveBeenCalledWith(
+        latte.account.id,
+        latte.id,
+        { amount: "4.75" },
+      ),
+    );
+  });
+
+  it("closes without saving when nothing changed", async () => {
+    await openEditForm();
+
+    saveForm();
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedUpdateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("closes without saving on cancel", async () => {
+    await openEditForm();
+
+    changeDescription("Mocha");
+    fireEvent.click(form().getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedUpdateTransaction).not.toHaveBeenCalled();
+  });
+
+  it("deletes the transaction after confirmation", async () => {
+    mockedDeleteTransaction.mockResolvedValueOnce(undefined);
+    await openEditForm();
+
+    fireEvent.click(form().getByRole("button", { name: "Delete" }));
+    const confirmation = await screen.findByRole("dialog", {
+      name: "Delete this transaction?",
+    });
+    expect(mockedDeleteTransaction).not.toHaveBeenCalled();
+    mockedListTransactions.mockResolvedValue(makePage([refund]));
+    fireEvent.click(
+      within(confirmation).getByRole("button", { name: "Delete" }),
+    );
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(mockedDeleteTransaction).toHaveBeenCalledWith(
+      latte.account.id,
+      latte.id,
+    );
+    expect(screen.queryByText(latte.description)).toBeNull();
+  });
+
+  it("disables paging while saving", async () => {
+    mockedListTransactions.mockResolvedValue(
+      makePage([latte, refund], { count: 3, hasNext: true }),
+    );
+    mockedUpdateTransaction.mockReturnValueOnce(new Promise(() => {}));
+    await openEditForm();
+
+    changeDescription("Mocha");
+    saveForm();
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "2", hidden: true })
+          .hasAttribute("disabled"),
+      ).toBe(true),
+    );
+  });
+
+  it("closes when the transaction leaves the current page", async () => {
+    await openEditForm();
+    mockedListTransactions.mockResolvedValue(makePage([refund]));
+
+    try {
+      act(() => {
+        focusManager.setFocused(false);
+        focusManager.setFocused(true);
+      });
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    } finally {
+      focusManager.setFocused(undefined);
+    }
+  });
+
+  it("keeps the form when the viewport widens", async () => {
+    await openEditForm();
+
+    changeDescription("Mocha");
+    act(() => resizeToDesktopViewport());
+
+    expect(
+      form().getByRole<HTMLInputElement>("textbox", { name: "Description" })
+        .value,
+    ).toBe("Mocha");
+    expect(screen.getByRole("table")).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "Outflow" })).toBeNull();
   });
 });

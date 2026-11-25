@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Avatar,
   Button,
+  Container,
   createTheme,
   defaultVariantColorsResolver,
   Input,
@@ -64,6 +65,9 @@ export const theme = createTheme({
       defaultProps: { variant: "light" },
       vars: (theme, props) => softRedVars("button", theme, props.color),
     }),
+    Container: Container.extend({
+      classNames: { root: classes.container },
+    }),
     Input: Input.extend({
       classNames: {
         wrapper: classes.inputWrapper,
@@ -77,7 +81,10 @@ export const theme = createTheme({
       },
     }),
     Pagination: Pagination.extend({
-      classNames: { control: classes.paginationControl },
+      classNames: {
+        root: classes.paginationRoot,
+        control: classes.paginationControl,
+      },
       vars: () => ({
         root: {
           "--pagination-active-bg": "var(--mantine-primary-color-light)",

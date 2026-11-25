@@ -27,7 +27,7 @@ up: .docker-build.stamp
 	echo "==> App running at http://$$host:$$1" && \
 	echo "==> Backend running at http://$$host:$$2"
 
-.docker-build.stamp: backend/Dockerfile backend/.dockerignore backend/pyproject.toml backend/uv.lock \
+.docker-build.stamp: compose.yml backend/Dockerfile backend/.dockerignore backend/pyproject.toml backend/uv.lock \
 	web/Dockerfile web/.dockerignore web/package.json web/pnpm-lock.yaml
 	BUILDX_NO_DEFAULT_ATTESTATIONS=1 $(compose) build
 	@touch $@

@@ -7,7 +7,7 @@ import { NAV_LINKS } from "./nav-links";
 
 export function DesktopHeader() {
   return (
-    <Group justify="space-between" mb={{ base: "md", sm: "xl" }}>
+    <Group visibleFrom="sm" justify="space-between" mb="xl">
       <Group gap="xl">
         <BrandLink />
         <Group component="nav" gap="md">
