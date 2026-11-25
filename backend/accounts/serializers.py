@@ -73,14 +73,17 @@ class AccountSerializer(serializers.ModelSerializer[Account]):
     def update(self, instance: Account, validated_data: dict[str, Any]) -> Account:
         balance_change = validated_data.pop("balance_change", Decimal(0))
         account = super().update(instance, validated_data)
-        if balance_change != 0:
+        self._record_balance_adjustment(account, balance_change)
+        return account
+
+    def _record_balance_adjustment(self, account: Account, change: Decimal) -> None:
+        if change != 0:
             Transaction.objects.create(
                 account=account,
-                amount=balance_change,
+                amount=change,
                 description="Manual Balance Adjustment",
                 occurred_on=timezone.localdate(),
             )
-        return account
 
     def _replace_balance_with_change(self, attrs: dict[str, Any]) -> None:
         """Swap a requested balance for the change needed to reach it, on update only."""
