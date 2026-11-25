@@ -1,0 +1,30 @@
+.toolbar {
+  display: grid;
+  grid-template-areas:
+    "title title"
+    "filter add";
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--mantine-spacing-md) var(--mantine-spacing-xs);
+}
+
+.title {
+  grid-area: title;
+}
+
+.filter {
+  grid-area: filter;
+}
+
+.add {
+  grid-area: add;
+}
+
+@media (min-width: 48em) {
+  .toolbar {
+    grid-template-areas:
+      "title add"
+      "filter .";
+    row-gap: var(--mantine-spacing-lg);
+  }
+}
