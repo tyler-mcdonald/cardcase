@@ -22,7 +22,11 @@ import { makeTransaction } from "@tests/features/transactions/factories";
 import { makePage } from "@tests/lib/api/factories";
 import { LocationDisplay } from "@tests/LocationDisplay";
 import { renderWithProviders } from "@tests/render";
-import { mockMobileViewport, resizeToDesktopViewport } from "@tests/viewport";
+import {
+  mockMobileViewport,
+  resizeToDesktopViewport,
+  resizeToMobileViewport,
+} from "@tests/viewport";
 
 vi.mock("@/features/transactions/api");
 
@@ -1002,6 +1006,44 @@ describe("editing a transaction", () => {
     expect(
       screen.getAllByRole("textbox", { name: "Description" }),
     ).toHaveLength(1);
+  });
+
+  it("keeps the editor and its input when the viewport narrows", async () => {
+    await openEditor(latte.description);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    act(() => resizeToMobileViewport());
+
+    expect(inputValue("Description")).toBe("Mocha");
+    expect(screen.getByRole("table")).toBeTruthy();
+  });
+
+  it("shows a failed save's error after the viewport narrows", async () => {
+    mockedUpdateTransaction.mockRejectedValueOnce(
+      new ApiError("Request failed (500)", { status: 500 }),
+    );
+    await openEditor(latte.description);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Mocha" },
+    });
+    save();
+    act(() => resizeToMobileViewport());
+
+    expect((await screen.findByRole("alert")).textContent).toBe(GENERIC_ERROR);
+    expect(inputValue("Description")).toBe("Mocha");
+  });
+
+  it("shows the list once the editor closes on a narrowed viewport", async () => {
+    await openEditor(latte.description);
+
+    act(() => resizeToMobileViewport());
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("table")).toBeNull());
+    expect(screen.getByRole("button", { name: /Latte/ })).toBeTruthy();
   });
 });
 

@@ -65,6 +65,10 @@ function newTransactionEditor(
   return editor;
 }
 
+function isEditingInRow(editor: Editor | null): boolean {
+  return editor !== null && !editor.asModal;
+}
+
 function isPageEmpty(
   transactions: unknown[] | undefined,
   isAddingRow: boolean,
@@ -231,9 +235,6 @@ export function TransactionsPage() {
   if (isEditedRowGone(editor, data?.items)) {
     setEditor(null);
   }
-  if (isMobile && editor !== null && !editor.asModal) {
-    setEditor(null);
-  }
   const isAddEnabled = canAddTransaction({
     isLoaded: data !== undefined,
     isFiltered: filters.account !== undefined,
@@ -245,6 +246,7 @@ export function TransactionsPage() {
   const editedTransaction = modalEditedTransaction(editor, data?.items);
   const isEmpty = isPageEmpty(data?.items, rowEditor !== null);
   const transactions = isEmpty ? undefined : data?.items;
+  const showList = isMobile && !isEditingInRow(editor);
 
   function openNewTransaction() {
     setEditor((current) => ({
@@ -313,7 +315,7 @@ export function TransactionsPage() {
         <EmptyTransactions filtered={filters.account !== undefined} />
       )}
 
-      {isMobile ? (
+      {showList ? (
         <MobileTransactions
           isPending={isPending}
           transactions={transactions}
