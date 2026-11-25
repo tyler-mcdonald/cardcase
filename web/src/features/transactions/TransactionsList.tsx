@@ -30,10 +30,7 @@ function SecondaryLine({ children }: { children: ReactNode }) {
   );
 }
 
-function DescribedDetails({
-  transaction,
-  accountLabel,
-}: TransactionRowProps) {
+function DescribedDetails({ transaction, accountLabel }: TransactionRowProps) {
   return (
     <>
       <Text span fw={500} truncate>
