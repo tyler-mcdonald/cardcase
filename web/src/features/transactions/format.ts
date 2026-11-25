@@ -23,8 +23,10 @@ export function describeSignedAmount(amount: string): {
   label: string;
   inflow: boolean;
 } {
-  const value = Number(amount);
-  return { label: formatSignedCurrency(value), inflow: value > 0 };
+  return {
+    label: formatSignedCurrency(Number(amount)),
+    inflow: splitSignedAmount(amount).inflow !== null,
+  };
 }
 
 export function formatOutflowAndInflow(amount: string): {
