@@ -59,7 +59,13 @@ class AccountViewSet(UserScopedViewSet):
             return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer: BaseSerializer[Account]) -> None:
-        account = serializer.save(user=self.user)
+        self._save_with_balance(serializer, user=self.user)
+
+    def _save_with_balance(
+        self, serializer: BaseSerializer[Account], **kwargs: Any
+    ) -> None:
+        """Save, then refetch so the response shows the current balance."""
+        account = serializer.save(**kwargs)
         serializer.instance = self.get_queryset().get(pk=account.pk)
 
     def perform_destroy(self, instance: Account) -> None:
