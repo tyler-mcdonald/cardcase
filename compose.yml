@@ -4,6 +4,7 @@ services:
       file: backend/docker-compose.yml
       service: db
     ports: !reset []
+    restart: "no"
 
   backend:
     build: ./backend
